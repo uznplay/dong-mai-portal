@@ -909,12 +909,12 @@
                     alert('Vui lòng bôi đen văn bản trước khi tạo link!');
                     return;
                 }
-                
+
                 const url = prompt('Nhập URL (ví dụ: https://example.com):', 'https://');
-                
+
                 if (url && url.trim() !== '' && url !== 'https://') {
                     document.execCommand('createLink', false, url);
-                    
+
                     // Style the link
                     setTimeout(() => {
                         const links = document.querySelectorAll('a[href="' + url + '"]');
@@ -941,30 +941,30 @@
         function setBlockType(type) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
-            
+
             let node = selection.anchorNode;
             while (node && !node.classList?.contains('notion-block')) {
                 node = node.parentNode;
             }
-            
+
             if (node) {
                 node.dataset.type = type;
                 const content = node.querySelector('.notion-block-content');
                 if (content) content.focus();
             }
-            
+
             document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
         }
 
         function setAlignment(alignment) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
-            
+
             let node = selection.anchorNode;
             while (node && !node.classList?.contains('notion-block-content')) {
                 node = node.parentNode;
             }
-            
+
             if (node) {
                 node.style.textAlign = alignment;
             }
@@ -974,6 +974,10 @@
             document.execCommand(command, false, color);
             document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
         }
+    </script>
+
+    <!-- Toast -->
+    <div id="toast"
         class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         <p id="toastMessage">Thông báo</p>
     </div>
@@ -984,6 +988,50 @@
         let blocks = [];
         let currentBlockIndex = -1;
         let blockSelectorPosition = null;
+
+        // Publish function
+        async function publish() {
+            if (!currentAdmin) {
+                alert('Vui lòng đăng nhập lại!');
+                window.location.href = '/admin/login.html';
+                return;
+            }
+
+            const title = document.getElementById('postTitle')?.value || '';
+            const content = getEditorContent();
+
+            if (!title.trim()) {
+                alert('Vui lòng nhập tiêu đề!');
+                return;
+            }
+
+            if (confirm('Bạn có chắc muốn đăng bài này?')) {
+                try {
+                    const publishData = {
+                        title: title,
+                        content: content,
+                        status: 'published',
+                        published_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    };
+
+                    if (currentPostId) {
+                        // Update existing
+                        await supabase.from('featured_news').update(publishData).eq('id', currentPostId);
+                    } else {
+                        // Create new
+                        publishData.author_id = currentAdmin.id;
+                        await supabase.from('featured_news').insert([publishData]);
+                    }
+
+                    showToast('Đã đăng bài thành công!');
+                    setTimeout(() => window.location.href = '/admin/', 1500);
+                } catch (error) {
+                    console.error('Publish error:', error);
+                    alert('Lỗi khi đăng bài: ' + error.message);
+                }
+            }
+        }
 
         // Check auth
         async function checkAuth() {
