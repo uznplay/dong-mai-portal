@@ -77,7 +77,7 @@ function logout() {
     if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         localStorage.removeItem('adminUser');
         localStorage.removeItem('supabaseSession');
-        window.location.href = 'login.html';
+        window.location.href = '/admin/login.html';
     }
 }
 
@@ -92,6 +92,6 @@ window.initAdminLayout = function (activePageId) {
     // Auth Check (Simple)
     const session = localStorage.getItem('supabaseSession');
     if (!session && !window.location.href.includes('login.html')) {
-        window.location.href = 'login.html';
+        window.location.href = '/admin/login.html';
     }
 };
