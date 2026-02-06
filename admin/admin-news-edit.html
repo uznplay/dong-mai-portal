@@ -892,6 +892,75 @@
             });
             document.getElementById(id).classList.toggle('active');
         }
+
+        // Text Formatting Functions
+        function formatText(command) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            if (command === 'createLink') {
+                const selectedText = selection.toString();
+                const url = prompt('Nhập URL (ví dụ: https://example.com):', selectedText.startsWith('http') ? selectedText : 'https://');
+
+                if (url && url.trim() !== '' && url !== 'https://') {
+                    document.execCommand('createLink', false, url);
+
+                    // Style the link
+                    setTimeout(() => {
+                        const range = selection.getRangeAt(0);
+                        let node = range.commonAncestorContainer;
+                        while (node && node.nodeName !== 'A') {
+                            node = node.parentNode;
+                        }
+                        if (node && node.nodeName === 'A') {
+                            node.setAttribute('target', '_blank');
+                            node.setAttribute('rel', 'noopener noreferrer');
+                            node.style.color = '#2563EB';
+                            node.style.textDecoration = 'underline';
+                        }
+                    }, 10);
+                }
+            } else {
+                document.execCommand(command, false, null);
+            }
+        }
+
+        function setBlockType(type) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            let node = selection.anchorNode;
+            while (node && !node.classList?.contains('notion-block')) {
+                node = node.parentNode;
+            }
+
+            if (node) {
+                node.dataset.type = type;
+                const content = node.querySelector('.notion-block-content');
+                if (content) content.focus();
+            }
+
+            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
+        }
+
+        function setAlignment(alignment) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            let node = selection.anchorNode;
+            while (node && !node.classList?.contains('notion-block-content')) {
+                node = node.parentNode;
+            }
+
+            if (node) {
+                node.style.textAlign = alignment;
+            }
+        }
+
+        function setColor(command, color) {
+            document.execCommand(command, false, color);
+            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
+        }
     </script>
 
     <!-- Image Upload (hidden) --><input type="file" id="imageUpload" accept="image/*" multiple class="hidden"
