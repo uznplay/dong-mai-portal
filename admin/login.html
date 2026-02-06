@@ -154,6 +154,22 @@
             lucide.createIcons();
         }
 
+        // Initialize Supabase
+        window.supabase = window.supabaseClient || supabase.createClient(
+            window.SUPABASE_CONFIG.url,
+            window.SUPABASE_CONFIG.key
+        );
+
+        // Check if already logged in
+        async function checkAuth() {
+            const adminUser = localStorage.getItem('adminUser');
+            if (adminUser) {
+                window.location.href = '/admin/';
+            }
+        }
+
+        checkAuth();
+
         // Handle login
         async function handleLogin(event) {
             event.preventDefault();
@@ -170,92 +186,66 @@
             errorDiv.classList.add('hidden');
 
             try {
-                // Call Supabase auth
-                const { data, error } = await supabase.auth.signInWithPassword({
+                // Timeout function
+                const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Kết nối server quá lâu (Timeout)')), ms));
+
+                // 1. Sign In
+                const loginPromise = supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
-                if (error) {
-                    throw new Error(error.message);
-                }
+                const { data, error } = await Promise.race([loginPromise, timeout(10000)]);
 
-                // Get user role from admin_users table
-                const { data: adminUser, error: adminError } = await supabase
+                if (error) throw error;
+                if (!data || !data.user) throw new Error('Đăng nhập thất bại');
+
+                // 2. Check Role (with separate timeout)
+                const rolePromise = supabase
                     .from('admin_users')
                     .select('*')
                     .eq('email', email)
                     .single();
 
+                const { data: adminUser, error: adminError } = await Promise.race([rolePromise, timeout(8000)]);
+
                 if (adminError || !adminUser) {
-                    throw new Error('Tài khoản không có quyền truy cập admin');
+                    console.error('Role check error:', adminError);
+                    throw new Error('Không thể xác minh quyền Admin. Vui lòng thử lại hoặc liên hệ quản trị viên.');
                 }
 
                 if (!adminUser.is_active) {
-                    throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
+                    throw new Error('Tài khoản đã bị khóa.');
                 }
 
                 // Store session
                 localStorage.setItem('adminUser', JSON.stringify(adminUser));
                 localStorage.setItem('supabaseSession', JSON.stringify(data.session));
 
-                // Log activity
-                await logAdminActivity(adminUser.id, 'login', 'auth', null, {
+                // 3. Log Activity (Non-blocking)
+                logAdminActivity(adminUser.id, 'login', 'auth', null, {
                     timestamp: new Date().toISOString()
-                });
+                }).catch(console.error);
 
-                // Redirect to dashboard
+                // Redirect
                 window.location.href = '/admin/';
 
             } catch (error) {
+                console.error('Login error:', error);
                 errorDiv.classList.remove('hidden');
                 document.getElementById('errorText').textContent = error.message;
+
+                // Reset button
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '<i data-lucide="log-in" class="w-5 h-5"></i> Đăng nhập';
                 lucide.createIcons();
+
+                // Clear any partial session
+                localStorage.removeItem('adminUser');
+                localStorage.removeItem('supabaseSession');
+                await supabase.auth.signOut();
             }
         }
-
-        // Log admin activity
-        async function logAdminActivity(adminId, action, entityType, entityId, details) {
-            // Logging disabled
-            return;
-        }
-        try {
-            await supabase.from('admin_activity_logs').insert({
-                admin_id: adminId,
-                action: action,
-                entity_type: entityType,
-                entity_id: entityId,
-                details: details,
-                ip_address: await getClientIP(),
-                user_agent: navigator.userAgent
-            });
-        } catch (e) {
-            console.error('Failed to log activity:', e);
-        }
-        }
-
-        // Get client IP (placeholder)
-        async function getClientIP() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                return data.ip;
-            } catch {
-                return 'unknown';
-            }
-        }
-
-        // Check if already logged in
-        async function checkAuth() {
-            const adminUser = localStorage.getItem('adminUser');
-            if (adminUser) {
-                window.location.href = 'admin-dashboard.html';
-            }
-        }
-
-        checkAuth();
     </script>
 
     <!-- Supabase Client -->
