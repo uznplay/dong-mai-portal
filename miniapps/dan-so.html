@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin dân số - Phường Đông Mai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Dân số & Kế hoạch hóa GD</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai, Quảng Ninh</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-2xl mb-4 border border-red-100">
+                    <i data-lucide="database" class="text-red-primary" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Cập nhật thông tin dân số</h2>
+                <p class="text-gray-600">Báo cáo biến động dân số, sinh con, kết hôn</p>
+            </div>
+            <div class="space-y-4">
+                <button
+                    class="w-full text-left p-4 rounded-xl border border-gray-200 hover:border-indigo-500 transition-all flex items-center justify-between group">
+                    <span class="font-medium">Báo cáo mới sinh</span>
+                    <i data-lucide="chevron-right" class="text-gray-400 group-hover:text-indigo-500"></i>
+                </button>
+                <button
+                    class="w-full text-left p-4 rounded-xl border border-gray-200 hover:border-indigo-500 transition-all flex items-center justify-between group">
+                    <span class="font-medium">Cập nhật thông tin thành viên hộ gia đình</span>
+                    <i data-lucide="chevron-right" class="text-gray-400 group-hover:text-indigo-500"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

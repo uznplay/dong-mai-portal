@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Security: Disable DevTools as early as possible -->
+    <!-- TEMPORARILY DISABLED FOR TESTING -->
+    <!-- <script src='https://cdn.jsdelivr.net/npm/disable-devtool@0.3.7' disable-devtool-auto url='about:blank'
+        disable-menu='true' disable-select='true' disable-copy='true' disable-cut='true' disable-paste='true'
+        clear-log='true'></script> -->
+    <title>Danh bạ Cán bộ - Phường Đông Mai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-red-700 text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                <span class="font-bold">Quay lại Trang chủ</span>
+            </a>
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Danh bạ Cán bộ Phụ trách</h1>
+            <div class="w-24"></div> <!-- Spacer for centering -->
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+
+        <div class="text-center mb-12 animate-fade-in-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Lãnh đạo & Cán bộ Trung tâm HCC</h2>
+            <p class="text-gray-600">Thông tin liên hệ trực tiếp để hỗ trợ giải quyết thủ tục hành chính</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+
+            <!-- 1. Mr. Hung -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.1s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100">
+                    <img src="https://ui-avatars.com/api/?name=Vu+Ngoc+Hung&background=EF4444&color=fff&size=256"
+                        class="w-full h-full rounded-full object-cover">
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Ông VŨ NGỌC HÙNG</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Chủ tịch
+                    UBND Phường</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0913313928"
+                            class="hover:text-red-700">0913.313.928</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:vungochung@quangninh.gov.vn"
+                            class="hover:text-red-700">vungochung@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0913313928"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+            <!-- 2. Mr. Hoa -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.2s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100 relative">
+                    <img src="hoa.jpg" class="w-full h-full rounded-full object-cover shadow-sm"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Dinh+Xuan+Hoa&background=0D8ABC&color=fff&size=256'">
+                    <span
+                        class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white">✓</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Ông ĐINH XUÂN HÒA</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Phó Giám
+                    đốc Trung tâm HCC</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0936656258"
+                            class="hover:text-red-700">0936.656.258</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:dinhxuanhoa@quangninh.gov.vn"
+                            class="hover:text-red-700">dinhxuanhoa@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0936656258"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+            <!-- 3. Mr. Trong -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.3s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100 relative">
+                    <img src="trong.jpg" class="w-full h-full rounded-full object-cover shadow-sm"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Phung+Van+Trong&background=10B981&color=fff&size=256'">
+                    <span
+                        class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white">✓</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Ông PHÙNG VĂN TRỌNG</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Chuyên
+                    Viên</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0396629666"
+                            class="hover:text-red-700">0396.629.666</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:phungvantrong@quangninh.gov.vn"
+                            class="hover:text-red-700">phungvantrong@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0396629666"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+            <!-- 4. Ms. Thuy -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.4s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100 relative">
+                    <!-- Using the uploaded image 'thuy.jpg' -->
+                    <img src="thuy.jpg" class="w-full h-full rounded-full object-cover shadow-sm"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Tran+Thi+Thanh+Thuy&background=EC4899&color=fff&size=256'">
+                    <span
+                        class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white">✓</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Bà TRẦN THỊ THANH THỦY</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Chuyên
+                    Viên - Phụ trách Văn thư</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0355270595"
+                            class="hover:text-red-700">0355.270.595</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:tranthithanhthuy@quangninh.gov.vn"
+                            class="hover:text-red-700">tranthithanhthuy@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0355270595"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+            <!-- 5. Ms. Lan -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.5s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100 relative">
+                    <img src="lan.jpg" class="w-full h-full rounded-full object-cover shadow-sm"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Vu+Thi+Lan&background=8B5CF6&color=fff&size=256'">
+                    <span
+                        class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white">✓</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Bà VŨ THỊ LAN</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Chuyên
+                    Viên</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0385328685"
+                            class="hover:text-red-700">0385.328.685</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:vuthilan5@quangninh.gov.vn"
+                            class="hover:text-red-700">vuthilan5@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0385328685"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+            <!-- 6. Mr. Ninh -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card flex flex-col items-center text-center animate-fade-in-up border-t-4 border-t-red-600"
+                style="animation-delay: 0.6s">
+                <div class="w-24 h-24 mb-4 rounded-full p-1 border-2 border-red-100 relative">
+                    <img src="ninh.jpg" class="w-full h-full rounded-full object-cover shadow-sm"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Dinh+Van+Ninh&background=3B82F6&color=fff&size=256'">
+                    <span
+                        class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white">✓</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Ông ĐINH VĂN NINH</h3>
+                <span class="inline-block bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-4">Chuyên
+                    Viên</span>
+                <div class="space-y-2 w-full text-left bg-gray-50 p-4 rounded-xl mb-4">
+                    <p class="text-sm flex items-center gap-3 text-gray-700 font-medium"><i data-lucide="phone"
+                            class="w-4 h-4 text-red-600"></i> <a href="tel:0348438866"
+                            class="hover:text-red-700">0348.438.866</a></p>
+                    <p class="text-sm flex items-center gap-3 text-gray-700 break-all"><i data-lucide="mail"
+                            class="w-4 h-4 text-red-600"></i> <a href="mailto:dinhvanninh@quangninh.gov.vn"
+                            class="hover:text-red-700">dinhvanninh@quangninh.gov.vn</a></p>
+                </div>
+                <a href="tel:0348438866"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Gọi điện ngay
+                </a>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="index.html"
+                class="inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-full transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Quay lại Trang chủ
+            </a>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2026 UBND Phường Đông Mai. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
+</body>
+
+</html>

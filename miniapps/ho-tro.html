@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hỗ trợ xã hội - Phường Đông Mai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Hỗ trợ xã hội</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary no-print">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                    Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl mb-4">
+                    <i data-lucide="heart-handshake" class="text-white" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Đăng ký hỗ trợ xã hội</h2>
+                <p class="text-gray-600">Đăng ký trợ cấp, hỗ trợ cho các hoàn cảnh khó khăn</p>
+            </div>
+            <form id="socialForm">
+                <div class="form-group">
+                    <label class="form-label required">Loại hỗ trợ</label>
+                    <select class="form-select">
+                        <option>Trợ cấp người cao tuổi</option>
+                        <option>Trợ cấp người khuyết tật</option>
+                        <option>Hỗ trợ đột xuất (thiên tai, hỏa hoạn)</option>
+                        <option>Hộ nghèo/Cận nghèo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Họ tên người thụ hưởng</label>
+                    <input type="text" class="form-input">
+                </div>
+                <!-- ... more fields ... -->
+                <div class="p-4 bg-orange-50 rounded-lg text-orange-800 text-sm mb-6">
+                    Hồ sơ cần được xác minh thực tế. Cán bộ phường sẽ liên hệ lại trong vòng 3 ngày làm việc.
+                </div>
+                <button type="submit" class="btn-submit w-full justify-center">Gửi đăng ký</button>
+            </form>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script>
+        document.getElementById('socialForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            showNotification('Đã gửi yêu cầu hỗ trợ', 'success');
+            setTimeout(() => goBack(), 2000);
+        });
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

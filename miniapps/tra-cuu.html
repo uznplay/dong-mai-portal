@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu giấy tờ - Phường Đông Mai</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <!-- Header -->
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Tra cứu giấy tờ</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary no-print">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                    Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4">
+                    <i data-lucide="search" class="text-white" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Tra cứu giấy tờ</h2>
+                <p class="text-gray-600">Kiểm tra tình trạng hồ sơ và kết quả giải quyết thủ tục</p>
+            </div>
+
+            <div id="searchForm" class="max-w-xl mx-auto">
+                <div class="form-group">
+                    <label class="form-label required">Loại tra cứu</label>
+                    <select id="searchType" class="form-select">
+                        <option value="">-- Chọn loại tra cứu --</option>
+                        <option value="so_ho_so">Số hồ sơ</option>
+                        <option value="cmnd">Số CMND/CCCD</option>
+                        <option value="so_dien_thoai">Số điện thoại</option>
+                    </select>
+                    <span class="form-error" id="searchTypeError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required" id="searchValueLabel">Nhập thông tin tra cứu</label>
+                    <input type="text" id="searchValue" class="form-input" placeholder="Nhập thông tin để tra cứu">
+                    <span class="form-error" id="searchValueError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Loại thủ tục (tùy chọn)</label>
+                    <select id="procedureType" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option value="khai_sinh">Khai sinh</option>
+                        <option value="khai_tu">Khai tử</option>
+                        <option value="hon_nhan">Hôn nhân</option>
+                        <option value="tam_tru">Tạm trú/Tạm vắng</option>
+                        <option value="ho_khau">Hộ khẩu</option>
+                        <option value="cmnd">CMND/CCCD</option>
+                        <option value="xac_nhan">Giấy xác nhận</option>
+                        <option value="ho_tro">Hỗ trợ xã hội</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 mt-8">
+                    <button onclick="searchDocuments()" class="btn-submit flex-1">
+                        <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+                        Tra cứu ngay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Section (hidden initially) -->
+            <div id="resultSection" style="display: none;">
+                <div class="border-t border-gray-200 my-8"></div>
+
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
+                        <i data-lucide="check-circle" class="text-green-600" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Tìm thấy hồ sơ</h3>
+                    <p class="text-gray-600" id="resultCount">Tìm thấy 2 hồ sơ phù hợp</p>
+                </div>
+
+                <div id="resultsContainer" class="space-y-4">
+                    <!-- Results will be inserted here -->
+                </div>
+
+                <div class="flex gap-4 mt-8 no-print">
+                    <button onclick="printResult()" class="btn-secondary">
+                        <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
+                        In kết quả
+                    </button>
+                    <button onclick="resetSearch()" class="btn-secondary">
+                        <i data-lucide="rotate-ccw" style="width: 18px; height: 18px;"></i>
+                        Tra cứu mới
+                    </button>
+                </div>
+
+                <!-- DichVuCong Link -->
+                <div class="mt-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg no-print">
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="info" class="text-blue-600 flex-shrink-0 mt-1"
+                            style="width: 20px; height: 20px;"></i>
+                        <div>
+                            <h4 class="font-bold text-blue-900 mb-1">Tra cứu chi tiết hơn</h4>
+                            <p class="text-sm text-blue-800 mb-3">Truy cập Cổng Dịch vụ công Quốc gia để tra cứu thông
+                                tin chi tiết và tải file đính kèm</p>
+                            <a href="https://dichvucong.gov.vn/p/home/dvc-tra-cuu-ho-so.html" target="_blank"
+                                class="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700">
+                                Truy cập DichVuCong.gov.vn
+                                <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        // Update search value label based on type
+        document.getElementById('searchType').addEventListener('change', function () {
+            const label = document.getElementById('searchValueLabel');
+            const input = document.getElementById('searchValue');
+
+            switch (this.value) {
+                case 'so_ho_so':
+                    label.textContent = 'Số hồ sơ';
+                    input.placeholder = 'VD: HS202601280001';
+                    break;
+                case 'cmnd':
+                    label.textContent = 'Số CMND/CCCD';
+                    input.placeholder = 'VD: 024123456789';
+                    break;
+                case 'so_dien_thoai':
+                    label.textContent = 'Số điện thoại';
+                    input.placeholder = 'VD: 0912345678';
+                    break;
+                default:
+                    label.textContent = 'Nhập thông tin tra cứu';
+                    input.placeholder = 'Nhập thông tin để tra cứu';
+            }
+        });
+
+        async function searchDocuments() {
+            const searchType = document.getElementById('searchType').value;
+            const searchValue = document.getElementById('searchValue').value.trim();
+            const procedureType = document.getElementById('procedureType').value;
+
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+
+            // Validation
+            let hasError = false;
+
+            if (!searchType) {
+                document.getElementById('searchTypeError').textContent = 'Vui lòng chọn loại tra cứu';
+                document.getElementById('searchTypeError').classList.add('show');
+                hasError = true;
+            }
+
+            if (!searchValue) {
+                document.getElementById('searchValueError').textContent = 'Vui lòng nhập thông tin tra cứu';
+                document.getElementById('searchValueError').classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Show loading
+            const button = event.target;
+            const hideLoading = showLoading(button);
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Sample results
+                const results = [
+                    {
+                        soHoSo: 'HS202601150234',
+                        loaiThuTuc: 'Đăng ký khai sinh',
+                        ngayNop: '15/01/2026',
+                        trangThai: 'Hoàn thành',
+                        statusType: 'success',
+                        ngayTraKetQua: '20/01/2026',
+                        noiNhan: 'Bộ phận một cửa - Phòng 102',
+                        canBoXuLy: 'Nguyễn Văn A',
+                        ghiChu: 'Hồ sơ đã hoàn thành, vui lòng đến nhận kết quả'
+                    },
+                    {
+                        soHoSo: 'HS202601100145',
+                        loaiThuTuc: 'Giấy xác nhận hộ khẩu',
+                        ngayNop: '10/01/2026',
+                        trangThai: 'Đang xử lý',
+                        statusType: 'warning',
+                        ngayTraKetQua: '30/01/2026 (dự kiến)',
+                        noiNhan: 'Bộ phận một cửa - Phòng 102',
+                        canBoXuLy: 'Trần Thị B',
+                        ghiChu: 'Hồ sơ đang được xem xét'
+                    }
+                ];
+
+                displayResults(results);
+
+            } catch (error) {
+                showNotification('Có lỗi xảy ra khi tra cứu. Vui lòng thử lại!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            document.getElementById('resultCount').textContent = `Tìm thấy ${results.length} hồ sơ phù hợp`;
+
+            container.innerHTML = results.map(result => `
+                <div class="result-card ${result.statusType === 'success' ? 'result-success' : 'result-info'}">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="text-sm text-gray-600 mb-1">Số hồ sơ</div>
+                            <div class="text-xl font-bold text-gray-900">${result.soHoSo}</div>
+                        </div>
+                        <span class="badge badge-${result.statusType}">
+                            <i data-lucide="${result.statusType === 'success' ? 'check-circle-2' : 'clock'}" style="width: 16px; height: 16px;"></i>
+                            ${result.trangThai}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="info-row">
+                            <div class="info-label">Loại thủ tục:</div>
+                            <div class="info-value">${result.loaiThuTuc}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ngày nộp:</div>
+                            <div class="info-value">${result.ngayNop}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ngày trả kết quả:</div>
+                            <div class="info-value">${result.ngayTraKetQua}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Nơi nhận:</div>
+                            <div class="info-value">${result.noiNhan}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Cán bộ xử lý:</div>
+                            <div class="info-value">${result.canBoXuLy}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ghi chú:</div>
+                            <div class="info-value">${result.ghiChu}</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-300">
+                        <a href="https://dichvucong.gov.vn/p/home/dvc-chi-tiet-ho-so.html?ma=${result.soHoSo}" 
+                           target="_blank"
+                           class="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700 no-print">
+                            <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                            Xem chi tiết trên DichVuCong.gov.vn
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('searchForm').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+
+            lucide.createIcons();
+        }
+
+        function resetSearch() {
+            document.getElementById('searchForm').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('searchType').value = '';
+            document.getElementById('searchValue').value = '';
+            document.getElementById('procedureType').value = '';
+            document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+        }
+
+        // Initialize icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

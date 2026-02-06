@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "functions": {
+    "api/chatbot.py": {
+      "maxDuration": 60
+    },
+    "api/create-admin.py": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/chatbot",
+      "destination": "/api/chatbot.py"
+    },
+    {
+      "source": "/api/feedback",
+      "destination": "/api/feedback.py"
+    },
+    {
+      "source": "/api/create-admin",
+      "destination": "/api/create-admin.py"
+    }
+  ]
+}

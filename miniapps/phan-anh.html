@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phản ánh kiến nghị - Phường Đông Mai</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Phản ánh kiến nghị</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai, Quảng Ninh</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary no-print">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                    Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-2xl mb-4 border border-red-100">
+                    <i data-lucide="megaphone" class="text-red-primary" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Phản ánh kiến nghị</h2>
+                <p class="text-gray-600">Gửi ý kiến đóng góp, phản ánh về ANTT, đô thị, vệ sinh môi trường</p>
+            </div>
+
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label class="form-label required">Lĩnh vực phản ánh</label>
+                    <select id="topic" class="form-select">
+                        <option value="">-- Chọn lĩnh vực --</option>
+                        <option value="antt">An ninh trật tự</option>
+                        <option value="dothi">Trật tự đô thị</option>
+                        <option value="moitruong">Vệ sinh môi trường</option>
+                        <option value="hanhchinh">Thái độ phục vụ hành chính</option>
+                        <option value="khac">Khác</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Tiêu đề</label>
+                    <input type="text" id="title" class="form-input" placeholder="Tóm tắt nội dung phản ánh">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Nội dung phản ánh</label>
+                    <textarea id="content" class="form-textarea" style="min-height: 150px;"
+                        placeholder="Mô tả chi tiết sự việc, thời gian, địa điểm..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hình ảnh/Video đính kèm</label>
+                    <div
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
+                        <i data-lucide="image-plus" class="mx-auto text-gray-400 mb-2"
+                            style="width: 32px; height: 32px;"></i>
+                        <p class="text-sm text-gray-500">Nhấn để tải lên hình ảnh hoặc video minh chứng</p>
+                        <input type="file" class="hidden" multiple accept="image/*,video/*">
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200 my-6 pt-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Thông tin người gửi (Được bảo mật)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label required">Họ và tên</label>
+                            <input type="text" id="senderName" class="form-input" placeholder="Nhập họ tên của bạn">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Số điện thoại</label>
+                            <input type="tel" id="senderPhone" class="form-input" placeholder="Nhập số điện thoại">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <input type="checkbox" id="anonymous" class="w-4 h-4 text-red-600 rounded">
+                        <label for="anonymous" class="text-sm text-gray-700">Tôi muốn ẩn danh thông tin này khi công
+                            khai phản ánh</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit w-full justify-center">
+                    <i data-lucide="send" style="width: 20px; height: 20px;"></i>
+                    Gửi phản ánh
+                </button>
+            </form>
+
+            <div id="successSection" style="display: none;">
+                <div class="result-card result-success text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-3">
+                        <i data-lucide="check-circle" class="text-green-600" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Đã gửi phản ánh thành công!</h3>
+                    <p class="text-gray-600 mb-6">Cảm ơn bạn đã đóng góp ý kiến xây dựng phường Đông Mai văn minh, sạch
+                        đẹp.</p>
+
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 text-left max-w-md mx-auto">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-500">Mã phản ánh:</span>
+                            <span class="font-bold text-blue-600" id="paId">PA-2026-8892</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Trạng thái:</span>
+                            <span class="text-yellow-600 font-medium">Đang chờ tiếp nhận</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <button onclick="goBack()" class="btn-secondary">
+                            Về trang chủ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+
+            // Validate
+            const topic = document.getElementById('topic').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const name = document.getElementById('senderName').value;
+            const phone = document.getElementById('senderPhone').value;
+            const anonymous = document.getElementById('anonymous').checked;
+
+            if (!topic || !title || !content || !name || !phone) {
+                showNotification('Vui lòng điền đầy đủ các thông tin bắt buộc', 'error');
+                return;
+            }
+
+            const hideLoading = showLoading(btn);
+
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        topic, title, content, name, phone, anonymous
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    hideLoading();
+                    document.getElementById('paId').textContent = 'PA-' + Date.now().toString().slice(-6);
+                    this.style.display = 'none';
+                    document.getElementById('successSection').style.display = 'block';
+                    lucide.createIcons();
+                    showNotification('Gửi phản ánh thành công', 'success');
+                } else {
+                    throw new Error(result.error || 'Lỗi hệ thống');
+                }
+            } catch (error) {
+                hideLoading();
+                showNotification(error.message, 'error');
+                console.error(error);
+            }
+        });
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
