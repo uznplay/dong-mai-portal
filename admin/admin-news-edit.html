@@ -984,12 +984,19 @@
     <script>lucide.createIcons();
 
         let currentAdmin = null;
-        let currentPostId = null;
-        let blocks = [];
-        let currentBlockIndex = -1;
-        let blockSelectorPosition = null;
 
-        // Publish function
+        // Close slash menu when clicking outside
+        document.addEventListener('click', function (e) {
+            const slashMenu = document.getElementById('slashMenu');
+            if (slashMenu && !slashMenu.classList.contains('hidden')) {
+                if (!e.target.closest('#slashMenu') && !e.target.closest('.notion-block-content')) {
+                    slashMenu.style.display = 'none';
+                    slashMenu.classList.add('hidden');
+                }
+            }
+        });
+
+        // Check auth
         async function publish() {
             if (!currentAdmin) {
                 alert('Vui lòng đăng nhập lại!');
