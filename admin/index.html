@@ -12,23 +12,16 @@
     <link rel="stylesheet" href="../styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        // Immediate Auth Check
+        // Immediate Auth Check (Simplified to prevent false rejections)
         (function () {
             const sessionStr = localStorage.getItem('supabaseSession');
-            if (!sessionStr) {
-                window.location.replace('/admin/login.html');
-                return;
-            }
-            try {
-                const session = JSON.parse(sessionStr);
-                if (session.expires_at && new Date().getTime() > session.expires_at * 1000) {
-                    localStorage.removeItem('adminUser');
-                    localStorage.removeItem('supabaseSession');
-                    window.location.replace('/admin/login.html');
-                }
-            } catch (e) {
+            const adminUser = localStorage.getItem('adminUser');
+
+            // Only redirect if BOTH are missing
+            if (!sessionStr || !adminUser) {
                 window.location.replace('/admin/login.html');
             }
+            // Expiry check will be done by admin-spa.js after page loads
         })();
     </script>
     <style>
