@@ -11,6 +11,15 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Immediate Auth Check
+        (function () {
+            const session = localStorage.getItem('supabaseSession');
+            if (!session) {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
