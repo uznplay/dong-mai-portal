@@ -9,6 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
+    <!-- Supabase Client (Load Early) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script>
+        // Initialize Supabase
+        window.supabase = window.supabaseClient || supabase.createClient(
+            window.SUPABASE_CONFIG.url,
+            window.SUPABASE_CONFIG.key
+        );
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -170,6 +180,23 @@
 
         checkAuth();
 
+        // Log admin activity (non-blocking)
+        async function logAdminActivity(adminId, action, entityType, entityId, details) {
+            try {
+                await supabase.from('admin_activity_logs').insert({
+                    admin_id: adminId,
+                    action: action,
+                    entity_type: entityType,
+                    entity_id: entityId,
+                    details: details,
+                    ip_address: 'unknown',
+                    user_agent: navigator.userAgent
+                });
+            } catch (e) {
+                console.error('Failed to log activity:', e);
+            }
+        }
+
         // Handle login
         async function handleLogin(event) {
             event.preventDefault();
@@ -246,17 +273,6 @@
                 await supabase.auth.signOut();
             }
         }
-    </script>
-
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../config.js"></script>
-    <script>
-        // Initialize Supabase
-        window.supabase = window.supabaseClient || supabase.createClient(
-            window.SUPABASE_CONFIG.url,
-            window.SUPABASE_CONFIG.key
-        );
     </script>
 </body>
 
