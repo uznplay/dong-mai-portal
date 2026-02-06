@@ -144,15 +144,24 @@
             color: #4b5563;
         }
 
-        .notion-block-content[data-type="code"] {
-            background: #1e293b;
-            color: #f1f5f9;
+        .notion-block-content[data-type="code"],
+        pre.notion-block-content[data-type="code"] {
+            background: #1e293b !important;
+            color: #f1f5f9 !important;
             padding: 16px;
             border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             white-space: pre-wrap;
             border: 1px solid #334155;
+        }
+
+        /* Code block caret color for visibility */
+        .notion-block-content[data-type="code"]:focus,
+        pre.notion-block-content[data-type="code"]:focus {
+            caret-color: #60a5fa;
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
         }
 
         /* Callout & Divider */
