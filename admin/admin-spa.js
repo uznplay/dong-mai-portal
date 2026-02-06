@@ -21,9 +21,29 @@ function initSPA() {
 }
 
 function checkAuth() {
-    const session = localStorage.getItem('supabaseSession');
-    if (!session) {
-        window.location.href = 'login.html';
+    const sessionStr = localStorage.getItem('supabaseSession');
+    if (!sessionStr) {
+        window.location.href = '/admin/login.html';
+        return;
+    }
+
+    try {
+        const session = JSON.parse(sessionStr);
+        // Safety check if expires_at exists
+        if (session.expires_at) {
+            const expiresAt = session.expires_at * 1000;
+            if (new Date().getTime() > expiresAt) {
+                localStorage.removeItem('adminUser');
+                localStorage.removeItem('supabaseSession');
+                window.location.href = '/admin/login.html';
+                return;
+            }
+        }
+    } catch (e) {
+        // Corrupt session data
+        localStorage.removeItem('adminUser');
+        localStorage.removeItem('supabaseSession');
+        window.location.href = '/admin/login.html';
     }
 }
 
@@ -40,7 +60,7 @@ function logout() {
     if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         localStorage.removeItem('adminUser');
         localStorage.removeItem('supabaseSession');
-        window.location.href = 'login.html';
+        window.location.href = '/admin/login.html';
     }
 }
 

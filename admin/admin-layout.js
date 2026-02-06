@@ -90,8 +90,28 @@ window.initAdminLayout = function (activePageId) {
     }
 
     // Auth Check (Simple)
-    const session = localStorage.getItem('supabaseSession');
-    if (!session && !window.location.href.includes('login.html')) {
+    // Auth Check with Expiry
+    const sessionStr = localStorage.getItem('supabaseSession');
+    if (!sessionStr && !window.location.href.includes('login.html')) {
         window.location.href = '/admin/login.html';
+        return;
+    }
+
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr);
+            const expiresAt = session.expires_at * 1000; // Supabase uses seconds
+            const now = new Date().getTime();
+
+            if (now > expiresAt) {
+                console.log('Session expired, logging out...');
+                localStorage.removeItem('adminUser');
+                localStorage.removeItem('supabaseSession');
+                window.location.href = '/admin/login.html';
+            }
+        } catch (e) {
+            console.error('Session parse error:', e);
+            window.location.href = '/admin/login.html';
+        }
     }
 };

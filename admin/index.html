@@ -14,8 +14,19 @@
     <script>
         // Immediate Auth Check
         (function () {
-            const session = localStorage.getItem('supabaseSession');
-            if (!session) {
+            const sessionStr = localStorage.getItem('supabaseSession');
+            if (!sessionStr) {
+                window.location.replace('/admin/login.html');
+                return;
+            }
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.expires_at && new Date().getTime() > session.expires_at * 1000) {
+                    localStorage.removeItem('adminUser');
+                    localStorage.removeItem('supabaseSession');
+                    window.location.replace('/admin/login.html');
+                }
+            } catch (e) {
                 window.location.replace('/admin/login.html');
             }
         })();

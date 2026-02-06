@@ -912,8 +912,22 @@
         // Check auth
         async function checkAuth() {
             const adminUser = localStorage.getItem('adminUser');
+            const sessionStr = localStorage.getItem('supabaseSession');
 
-            if (!adminUser) {
+            if (!adminUser || !sessionStr) {
+                window.location.href = '/admin/login.html';
+                return null;
+            }
+
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.expires_at && new Date().getTime() > session.expires_at * 1000) {
+                    localStorage.removeItem('adminUser');
+                    localStorage.removeItem('supabaseSession');
+                    window.location.href = '/admin/login.html';
+                    return null;
+                }
+            } catch (e) {
                 window.location.href = '/admin/login.html';
                 return null;
             }
