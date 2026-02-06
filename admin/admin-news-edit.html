@@ -811,89 +811,83 @@
                 <span class="text-lg">A</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
             </div>
 
-            <!-- ... color dropdown content ... -->
+            <!-- Color Dropdown Menu (Inside Toolbar) -->
+            <div id="colorDropdown" class="toolbar-dropdown-menu"
+                style="width: 200px; max-height: 300px; overflow-y: auto;">
+                <div class="p-2 text-xs font-bold text-gray-500">COLOR</div>
+                <div class="color-item" onclick="setColor('foreColor', 'black')">
+                    <div class="w-4 h-4 border rounded bg-black"></div> Default
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#9CA3AF')">
+                    <div class="w-4 h-4 border rounded bg-gray-400"></div> Gray
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#B45309')">
+                    <div class="w-4 h-4 border rounded bg-yellow-700"></div> Brown
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#EA580C')">
+                    <div class="w-4 h-4 border rounded bg-orange-600"></div> Orange
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#D97706')">
+                    <div class="w-4 h-4 border rounded bg-yellow-500"></div> Yellow
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#16A34A')">
+                    <div class="w-4 h-4 border rounded bg-green-600"></div> Green
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#2563EB')">
+                    <div class="w-4 h-4 border rounded bg-blue-600"></div> Blue
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#9333EA')">
+                    <div class="w-4 h-4 border rounded bg-purple-600"></div> Purple
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#DB2777')">
+                    <div class="w-4 h-4 border rounded bg-pink-600"></div> Pink
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#DC2626')">
+                    <div class="w-4 h-4 border rounded bg-red-600"></div> Red
+                </div>
 
-            <script>
-                // ...
-            </script>
-
-            <!-- (Removed duplicate script) -->
+                <div class="p-2 text-xs font-bold text-gray-500 border-t mt-1">BACKGROUND</div>
+                <div class="color-item" onclick="setColor('hiliteColor', 'white')">
+                    <div class="w-4 h-4 border rounded bg-white"></div> Default
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#F3F4F6')">
+                    <div class="w-4 h-4 border rounded bg-gray-100"></div> Gray background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#FEF3C7')">
+                    <div class="w-4 h-4 border rounded bg-yellow-100"></div> Yellow background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#DCFCE7')">
+                    <div class="w-4 h-4 border rounded bg-green-100"></div> Green background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#DBEAFE')">
+                    <div class="w-4 h-4 border rounded bg-blue-100"></div> Blue background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#FEE2E2')">
+                    <div class="w-4 h-4 border rounded bg-red-100"></div> Red background
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- ... (rest of body) ... -->
 
-    <script>
-        function toggleDropdown(id) {
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => {
-                if (e.id !== id) e.classList.remove('active');
-            });
-            document.getElementById(id).classList.toggle('active');
-        }
-    </script>
-    <div id="colorDropdown" class="toolbar-dropdown-menu" style="width: 200px; max-height: 300px; overflow-y: auto;">
-        <div class="p-2 text-xs font-bold text-gray-500">COLOR</div>
-        <div class="color-item" onclick="setColor('foreColor', 'black')">
-            <div class="w-4 h-4 border rounded bg-black"></div> Default
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#9CA3AF')">
-            <div class="w-4 h-4 border rounded bg-gray-400"></div> Gray
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#B45309')">
-            <div class="w-4 h-4 border rounded bg-yellow-700"></div> Brown
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#EA580C')">
-            <div class="w-4 h-4 border rounded bg-orange-600"></div> Orange
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#D97706')">
-            <div class="w-4 h-4 border rounded bg-yellow-500"></div> Yellow
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#16A34A')">
-            <div class="w-4 h-4 border rounded bg-green-600"></div> Green
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#2563EB')">
-            <div class="w-4 h-4 border rounded bg-blue-600"></div> Blue
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#9333EA')">
-            <div class="w-4 h-4 border rounded bg-purple-600"></div> Purple
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#DB2777')">
-            <div class="w-4 h-4 border rounded bg-pink-600"></div> Pink
-        </div>
-        <div class="color-item" onclick="setColor('foreColor', '#DC2626')">
-            <div class="w-4 h-4 border rounded bg-red-600"></div> Red
-        </div>
-
-        <div class="p-2 text-xs font-bold text-gray-500 border-t mt-1">BACKGROUND</div>
-        <div class="color-item" onclick="setColor('hiliteColor', 'white')">
-            <div class="w-4 h-4 border rounded bg-white"></div> Default
-        </div>
-        <div class="color-item" onclick="setColor('hiliteColor', '#F3F4F6')">
-            <div class="w-4 h-4 border rounded bg-gray-100"></div> Gray background
-        </div>
-        <div class="color-item" onclick="setColor('hiliteColor', '#FEF3C7')">
-            <div class="w-4 h-4 border rounded bg-yellow-100"></div> Yellow background
-        </div>
-        <div class="color-item" onclick="setColor('hiliteColor', '#DCFCE7')">
-            <div class="w-4 h-4 border rounded bg-green-100"></div> Green background
-        </div>
-        <div class="color-item" onclick="setColor('hiliteColor', '#DBEAFE')">
-            <div class="w-4 h-4 border rounded bg-blue-100"></div> Blue background
-        </div>
-        <div class="color-item" onclick="setColor('hiliteColor', '#FEE2E2')">
-            <div class="w-4 h-4 border rounded bg-red-100"></div> Red background
-        </div>
-    </div>
     </div>
     </div>
 
-    <script>
-        function toggleDropdown(id) {
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => {
-                if (e.id !== id) e.classList.remove('active');
-            });
-            document.getElementById(id).classList.toggle('active');
-        }
+    <!-- Image Upload (hidden) --><input type="file" id="imageUpload" accept="image/*" multiple class="hidden"
+        onchange="uploadImage(event)">
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <p id="toastMessage">Thông báo</p>
+    </div>
+    <script>lucide.createIcons();
+
+        let currentAdmin = null;
+        let currentPostId = null;
+        let blocks = [];
+        let currentBlockIndex = -1;
+        let blockSelectorPosition = null;
 
         // Text Formatting Functions
         function formatText(command) {
@@ -902,24 +896,25 @@
 
             if (command === 'createLink') {
                 const selectedText = selection.toString();
-                const url = prompt('Nhập URL (ví dụ: https://example.com):', selectedText.startsWith('http') ? selectedText : 'https://');
-
+                if (!selectedText) {
+                    alert('Vui lòng bôi đen văn bản trước khi tạo link!');
+                    return;
+                }
+                
+                const url = prompt('Nhập URL (ví dụ: https://example.com):', 'https://');
+                
                 if (url && url.trim() !== '' && url !== 'https://') {
                     document.execCommand('createLink', false, url);
-
+                    
                     // Style the link
                     setTimeout(() => {
-                        const range = selection.getRangeAt(0);
-                        let node = range.commonAncestorContainer;
-                        while (node && node.nodeName !== 'A') {
-                            node = node.parentNode;
-                        }
-                        if (node && node.nodeName === 'A') {
-                            node.setAttribute('target', '_blank');
-                            node.setAttribute('rel', 'noopener noreferrer');
-                            node.style.color = '#2563EB';
-                            node.style.textDecoration = 'underline';
-                        }
+                        const links = document.querySelectorAll('a[href="' + url + '"]');
+                        links.forEach(link => {
+                            link.setAttribute('target', '_blank');
+                            link.setAttribute('rel', 'noopener noreferrer');
+                            link.style.color = '#2563EB';
+                            link.style.textDecoration = 'underline';
+                        });
                     }, 10);
                 }
             } else {
@@ -927,33 +922,40 @@
             }
         }
 
+        function toggleDropdown(id) {
+            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => {
+                if (e.id !== id) e.classList.remove('active');
+            });
+            document.getElementById(id).classList.toggle('active');
+        }
+
         function setBlockType(type) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
-
+            
             let node = selection.anchorNode;
             while (node && !node.classList?.contains('notion-block')) {
                 node = node.parentNode;
             }
-
+            
             if (node) {
                 node.dataset.type = type;
                 const content = node.querySelector('.notion-block-content');
                 if (content) content.focus();
             }
-
+            
             document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
         }
 
         function setAlignment(alignment) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
-
+            
             let node = selection.anchorNode;
             while (node && !node.classList?.contains('notion-block-content')) {
                 node = node.parentNode;
             }
-
+            
             if (node) {
                 node.style.textAlign = alignment;
             }
@@ -963,12 +965,6 @@
             document.execCommand(command, false, color);
             document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
         }
-    </script>
-
-    <!-- Image Upload (hidden) --><input type="file" id="imageUpload" accept="image/*" multiple class="hidden"
-        onchange="uploadImage(event)">
-    <!-- Toast -->
-    <div id="toast"
         class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         <p id="toastMessage">Thông báo</p>
     </div>
