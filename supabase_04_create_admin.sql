@@ -41,3 +41,5 @@ WHERE email = 'admin@dongmai.gov.vn';
 -- Chạy lệnh sau để đổi password:
 -- UPDATE admin_users SET password_hash = '$2a$10$NEW_HASH_HERE' WHERE email = 'admin@dongmai.gov.vn';
 
+
+

@@ -182,6 +182,76 @@
             width: 100%;
         }
 
+        /* List styles */
+        .notion-block-content ul,
+        .notion-block-content ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .notion-block-content ul li,
+        .notion-block-content ol li {
+            margin: 2px 0;
+            line-height: 1.6;
+        }
+
+        .notion-block-content ul {
+            list-style-type: disc;
+        }
+
+        .notion-block-content ol {
+            list-style-type: decimal;
+        }
+
+        /* Remove list styling when empty */
+        .notion-block-content ul:empty,
+        .notion-block-content ol:empty {
+            display: none;
+        }
+
+        /* Link styles */
+        .notion-block-content a,
+        #postTitle a {
+            color: #2563EB;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notion-block-content a:hover,
+        #postTitle a:hover {
+            color: #1d4ed8;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        /* Link tooltip on hover */
+        .notion-block-content a[href]:hover::after,
+        #postTitle a[href]:hover::after {
+            content: attr(href);
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 1000;
+            margin-top: -30px;
+        }
+
+        /* Code tag style (inline code) */
+        .notion-block-content code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #dc2626;
+        }
+
 
 
 
@@ -337,6 +407,244 @@
             height: 1px;
             background: #e5e7eb;
             margin: 4px 0;
+        }
+
+        /* Button Toolbar */
+        .button-toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            z-index: 10000;
+            display: none;
+            gap: 2px;
+        }
+
+        .button-toolbar.active {
+            display: flex;
+        }
+
+        .btn-toolbar-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #374151;
+            transition: background 0.1s;
+        }
+
+        .btn-toolbar-btn:hover {
+            background: #f3f4f6;
+        }
+
+        /* Color Picker Menu */
+        .color-picker-menu {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            z-index: 10001;
+        }
+
+        .color-picker-menu .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 40px);
+            gap: 6px;
+        }
+
+        .color-picker-menu .color-grid div {
+            width: 40px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .color-picker-menu .color-grid div:hover {
+            transform: scale(1.1);
+        }
+
+        /* Inline Button & Code - Editable Nested Blocks */
+        .inline-button {
+            display: inline-block;
+            cursor: text;
+            outline: 2px solid transparent;
+            transition: outline 0.2s;
+            text-align: center;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .inline-button:hover {
+            outline: 2px solid #667eea;
+        }
+
+        .inline-button.editing {
+            outline: 2px solid #2563eb !important;
+        }
+
+        .inline-code {
+            display: inline;
+            cursor: text;
+            outline: 2px solid transparent;
+            transition: outline 0.2s;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .inline-code:hover {
+            outline: 2px solid #667eea;
+        }
+
+        .inline-code.editing {
+            outline: 2px solid #dc2626 !important;
+        }
+
+        /* Code Toolbar */
+        .code-toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            z-index: 10000;
+            display: flex;
+            gap: 2px;
+        }
+
+        .code-toolbar-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #dc2626;
+            transition: background 0.1s;
+        }
+
+        .code-toolbar-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Button Editor Panel */
+        .button-editor {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            z-index: 10001;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .button-editor .editor-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .button-editor .editor-section label {
+            font-size: 13px;
+            color: #374151;
+            font-weight: 500;
+            min-width: 70px;
+        }
+
+        .button-editor input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .button-editor input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        .button-editor select {
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .button-editor select:focus {
+            border-color: #667eea;
+        }
+
+        .button-editor .color-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #e5e5e5;
+            cursor: pointer;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+
+        .button-editor .color-btn:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+
+        .button-editor .delete-btn {
+            width: 100%;
+            padding: 10px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .button-editor .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .button-editor input[type="color"] {
+            width: 100%;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Color option styles */
+        .color-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .color-option.solid {
+            color: #333;
+            text-shadow: none;
         }
 
         /* Block action button (3 dots) */
@@ -548,7 +856,7 @@
                                 class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">Cài
                                 đặt</span>
                         </button>
-                        <div class="h-4 w-px bg-gray-200 mx-2"></div><button onclick="publish()"
+                        <div class="h-4 w-px bg-gray-200 mx-2"></div><button onclick="publishPost()"
                             class="text-sm font-medium px-3 py-1.5 bg-gray-900 text-white rounded hover:bg-black transition-colors">Đăng
                             bài </button>
                     </div>
@@ -576,8 +884,11 @@
                         <div id="notionEditor" class="notion-editor min-h-[500px] outline-none pb-20">
                             <!-- Blocks will be rendered here -->
                         </div>
-                        <p class="text-sm text-gray-300 mt-4 select-none">Gõ <kbd
-                                class="font-mono bg-gray-50 px-1 rounded">/</kbd>để thêm nội dung </p>
+                        <p class="text-sm text-gray-300 mt-4 select-none">
+                            Nhấn <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Enter</kbd> xuống dòng ·
+                            <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Shift+Enter</kbd> tạo block mới ·
+                            <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Shift+Enter</kbd> thoát code/button
+                        </p>
                     </div>
                 </div>
             </div>
@@ -802,6 +1113,13 @@
                 class="w-4 h-4"></i></button>
         <button class="toolbar-btn" onclick="formatText('createLink')" title="Link"><i data-lucide="link"
                 class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('buttonLink')" title="Button Link" style="color: #8B5CF6;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="8" width="18" height="6" rx="2"/>
+                <path d="M12 8V5"/>
+                <path d="M9 5h6"/>
+            </svg>
+        </button>
 
         <div class="toolbar-separator"></div>
 
@@ -890,7 +1208,8 @@
         class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         <p id="toastMessage">Thông báo</p>
     </div>
-    <script>lucide.createIcons();
+    <script>
+        lucide.createIcons();
 
         let currentAdmin = null;
         let currentPostId = null;
@@ -898,185 +1217,18 @@
         let currentBlockIndex = -1;
         let blockSelectorPosition = null;
 
-        // Text Formatting Functions
-        function formatText(command) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
+        // Text Formatting Functions removed - now handled by notion-features.js
+        // See window.formatText in notion-features.js
 
-            if (command === 'createLink') {
-                const selectedText = selection.toString();
-                if (!selectedText) {
-                    alert('Vui lòng bôi đen văn bản trước khi tạo link!');
-                    return;
-                }
+        // Make publish globally accessible
+        window.publishPost = async function() {
+            await savePost('published');
+        };
 
-                const url = prompt('Nhập URL (ví dụ: https://example.com):', 'https://');
-
-                if (url && url.trim() !== '' && url !== 'https://') {
-                    document.execCommand('createLink', false, url);
-
-                    // Style the link
-                    setTimeout(() => {
-                        const links = document.querySelectorAll('a[href="' + url + '"]');
-                        links.forEach(link => {
-                            link.setAttribute('target', '_blank');
-                            link.setAttribute('rel', 'noopener noreferrer');
-                            link.style.color = '#2563EB';
-                            link.style.textDecoration = 'underline';
-                        });
-                    }, 10);
-                }
-            } else {
-                document.execCommand(command, false, null);
-            }
-        }
-
-        function toggleDropdown(id) {
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => {
-                if (e.id !== id) e.classList.remove('active');
-            });
-            document.getElementById(id).classList.toggle('active');
-        }
-
-        function setBlockType(type) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            let node = selection.anchorNode;
-            while (node && !node.classList?.contains('notion-block')) {
-                node = node.parentNode;
-            }
-
-            if (node) {
-                node.dataset.type = type;
-                const content = node.querySelector('.notion-block-content');
-                if (content) content.focus();
-            }
-
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
-        }
-
-        function setAlignment(alignment) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            let node = selection.anchorNode;
-            while (node && !node.classList?.contains('notion-block-content')) {
-                node = node.parentNode;
-            }
-
-            if (node) {
-                node.style.textAlign = alignment;
-            }
-        }
-
-        function setColor(command, color) {
-            document.execCommand(command, false, color);
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
-        }
-    </script>
-
-    <!-- Toast -->
-    <div id="toast"
-        class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
-        <p id="toastMessage">Thông báo</p>
-    </div>
-    <script>lucide.createIcons();
-
-        let currentAdmin = null;
-
-        // Close slash menu when clicking outside
-        document.addEventListener('click', function (e) {
-            const slashMenu = document.getElementById('slashMenu');
-            if (slashMenu && !slashMenu.classList.contains('hidden')) {
-                if (!e.target.closest('#slashMenu') && !e.target.closest('.notion-block-content')) {
-                    slashMenu.style.display = 'none';
-                    slashMenu.classList.add('hidden');
-                }
-            }
-        });
-
-        // --- TOOLBAR FUNCTIONS ---
-        function formatText(command) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            if (command === 'createLink') {
-                const selectedText = selection.toString();
-                if (!selectedText) {
-                    alert('Vui lòng bôi đen văn bản trước khi tạo link!');
-                    return;
-                }
-
-                const url = prompt('Nhập URL (ví dụ: https://example.com):', 'https://');
-
-                if (url && url.trim() !== '' && url !== 'https://') {
-                    document.execCommand('createLink', false, url);
-
-                    // Style the link immediately
-                    setTimeout(() => {
-                        const links = document.querySelectorAll('a[href="' + url + '"]');
-                        links.forEach(link => {
-                            link.setAttribute('target', '_blank');
-                            link.setAttribute('rel', 'noopener noreferrer');
-                            link.style.color = '#2563EB';
-                            link.style.textDecoration = 'underline';
-                        });
-                    }, 10);
-                }
-            } else {
-                document.execCommand(command, false, null);
-            }
-        }
-
-        function toggleDropdown(id) {
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => {
-                if (e.id !== id) e.classList.remove('active');
-            });
-            const dropdown = document.getElementById(id);
-            if (dropdown) dropdown.classList.toggle('active');
-        }
-
-        function setBlockType(type) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            let node = selection.anchorNode;
-            while (node && !node.classList?.contains('notion-block')) {
-                node = node.parentNode;
-            }
-
-            if (node) {
-                node.dataset.type = type;
-                const content = node.querySelector('.notion-block-content');
-                if (content) content.focus();
-
-                // Visual feedback (optional, handled by CSS mostly)
-            }
-
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
-        }
-
-        function setAlignment(alignment) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            let node = selection.anchorNode;
-            while (node && !node.classList?.contains('notion-block-content')) {
-                node = node.parentNode;
-            }
-
-            if (node) {
-                node.style.textAlign = alignment;
-            }
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
-        }
-
-        function setColor(command, color) {
-            document.execCommand(command, false, color);
-            document.querySelectorAll('.toolbar-dropdown-menu').forEach(e => e.classList.remove('active'));
-        }
-        // -------------------------
+        // Make saveDraft globally accessible
+        window.saveDraftPost = async function() {
+            await savePost('draft');
+        };
 
         // Check auth
         async function checkAuth() {
@@ -1124,15 +1276,16 @@
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
-        // Initialize editor
+        // Initialize editor (Legacy - kept for reference)
+        // Keyboard handling now done in notion-features.js
         function initEditor_Legacy() {
             const editor = document.getElementById('notionEditor');
 
             // Add first paragraph block
             addBlock('paragraph', true);
 
-            // Handle keyboard shortcuts
-            editor.addEventListener('keydown', handleEditorKeydown);
+            // Keyboard handling moved to notion-features.js
+            // editor.addEventListener('keydown', handleEditorKeydown);
             editor.addEventListener('click', hideBlockSelector);
         }
 
@@ -1289,15 +1442,38 @@
                     break;
                 case 'divider': content = `<hr class="notion-block-content" data-type="${type}">`;
                     break;
-                case 'image': content = ` <div class="image-block-wrapper"><img src="" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" onclick="removeBlock('${id}')"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+                case 'image': content = `<div class="image-block-wrapper"><img src="" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
                     break;
                 default: content = `<p class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="Nhập nội dung hoặc gõ '/' để chọn block..."></p>`;
             }
 
-            block.innerHTML = ` <div class="block-controls"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" onclick="showBlockMenuFor('${id}')" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" onclick="showBlockActions(event, '${id}')" title="Thêm tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content
-                }
+            block.innerHTML = `<div class="block-controls" contenteditable="false"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" data-block-id="${id}" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content}`;
 
-            `;
+            // Add event listeners for this block
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+            
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+            
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
 
             if (index >= 0) {
                 const children = editor.children;
@@ -1489,12 +1665,35 @@
             block.id = id;
             block.dataset.type = 'image';
 
-            const content = ` <div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" onclick="removeBlock('${id}')"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+            const content = `<div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
 
-            block.innerHTML = ` <div class="block-controls"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" onclick="showBlockMenuFor('${id}')" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" onclick="showBlockActions(event, '${id}')" title="Thêm tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content
-                }
+            block.innerHTML = `<div class="block-controls" contenteditable="false"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" data-block-id="${id}" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content}`;
 
-        `;
+            // Add event listeners
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+            
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+            
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
 
             editor.appendChild(block);
             lucide.createIcons();
@@ -1896,7 +2095,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             await checkAuth();
-            // initEditor(); \n initEditorFeatures(); // Call new init
+            initEditorFeatures();
 
             // Check for existing post
             const urlParams = new URLSearchParams(window.location.search);

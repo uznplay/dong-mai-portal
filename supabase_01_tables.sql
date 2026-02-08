@@ -68,3 +68,5 @@ CREATE TABLE IF NOT EXISTS admin_activity_logs (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+
+
