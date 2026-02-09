@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         // Immediate Auth Check (Simplified to prevent false rejections)
@@ -43,7 +43,7 @@
         <aside class="w-64 bg-white shadow-xl z-30 flex flex-col h-full">
             <div class="p-6 border-b">
                 <div class="flex items-center gap-3">
-                    <img src="../logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <img src="/logo.png" alt="Logo" class="w-10 h-10 object-contain">
                     <div>
                         <h1 class="font-bold text-gray-900">Admin Portal</h1>
                         <p class="text-xs text-gray-500">Phường Đông Mai</p>
@@ -422,11 +422,11 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../config.js"></script>
+    <script src="/config.js"></script>
     <script>
         window.supabase = window.supabaseClient || supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
     </script>
-    <script src="admin-spa.js"></script>
+    <script src="/admin/admin-spa.js"></script>
 </body>
 
 </html>
