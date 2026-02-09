@@ -4,6 +4,12 @@
     padding-left: 72px;
 }
 
+.notion-editor.drag-over-image {
+    background: rgba(35, 131, 226, 0.1);
+    border: 2px dashed #2383e2;
+    border-radius: 8px;
+}
+
 .notion-block {
     position: relative;
     padding: 3px 2px;
@@ -34,25 +40,30 @@
     transition: opacity 0.15s ease-in-out;
 }
 
-.block-drag-handle {
-    width: 18px;
-    height: 18px;
+.block-move-up,
+.block-move-down {
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
-    cursor: grab;
+    border-radius: 4px;
+    cursor: pointer;
     color: #9ca3af;
-    transition: all 0.1s;
+    transition: all 0.15s ease;
+    background: transparent;
+    border: none;
 }
 
-.block-drag-handle:hover {
-    background: rgba(0, 0, 0, 0.06);
-    color: #4b5563;
+.block-move-up:hover,
+.block-move-down:hover {
+    background: #e5e7eb;
+    color: #2383e2;
 }
 
-.block-drag-handle:active {
-    cursor: grabbing;
+.block-move-up:active,
+.block-move-down:active {
+    transform: scale(0.9);
 }
 
 .block-add-btn {

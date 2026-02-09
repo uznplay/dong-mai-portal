@@ -135,7 +135,6 @@ window.deleteCode = function(codeId) {
 // ==========================================
 // GLOBAL VARIABLES
 // ==========================================
-let draggedBlock = null;
 let selectedBlockId = null;
 let textToolbar = null;
 let blockActionsMenu = null;
@@ -184,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initEditorFeatures() {
-    initBlockDragDrop();
     initKeyboardShortcuts();
     initTextToolbar();
     initInlineElementHandlers();
@@ -246,77 +244,45 @@ function initInlineElementHandlers() {
     const editor = document.getElementById('notionEditor');
     if (!editor) return;
 
-    // Input handler - ensure new text doesn't inherit inline formatting
-    editor.addEventListener('input', function(e) {
-        const activeEl = document.activeElement;
-        
-        // If typing in inline element that's now empty or has formatting
-        if (activeEl.classList.contains('inline-button') || activeEl.classList.contains('inline-code')) {
-            // Clear inline styles when user types new content
-            activeEl.style.color = '';
-            activeEl.style.background = '';
-            
-            // Remove inline-button class to convert to normal text
-            if (activeEl.classList.contains('inline-button')) {
-                activeEl.classList.remove('inline-button');
-                activeEl.removeAttribute('data-url');
-                activeEl.removeAttribute('data-background');
-                activeEl.removeAttribute('data-text-color');
-                activeEl.removeAttribute('data-padding');
-                activeEl.removeAttribute('data-font-size');
-                activeEl.removeAttribute('data-border-radius');
-                activeEl.style.display = '';
-                activeEl.style.fontWeight = '';
-            }
-            
-            // Remove inline-code class
-            if (activeEl.classList.contains('inline-code')) {
-                activeEl.classList.remove('inline-code');
-                activeEl.style.fontFamily = '';
-                activeEl.style.padding = '';
-                activeEl.style.borderRadius = '';
-            }
-            
-            activeEl.classList.remove('editing');
+    // Click on inline element = FOCUS
+    editor.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('inline-button')) {
+            e.preventDefault();
+            e.target.focus();
+            e.target.classList.add('editing');
+        }
+        if (e.target.classList.contains('inline-code')) {
+            e.preventDefault();
+            e.target.focus();
+            e.target.classList.add('editing');
         }
     });
 
-    // Click once = Edit via textarea (supports multi-line)
-    editor.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        if (target.classList.contains('inline-button') || target.classList.contains('inline-code')) {
-            e.preventDefault();
+    // Double click = show toolbar
+    editor.addEventListener('dblclick', function(e) {
+        if (e.target.classList.contains('inline-button')) {
             e.stopPropagation();
-            
-            // BUTTON → Mở bảng format đầy đủ (màu sắc, link, kích thước...)
-            if (target.classList.contains('inline-button')) {
-                showButtonEditor(target);
-                return;
-            }
-            
-            // CODE → Popup đơn giản (chỉ sửa text)
-            if (target.classList.contains('inline-code')) {
-                editCodeText(target);
-                return;
-            }
+            showButtonEditor(e.target);
+        }
+        if (e.target.classList.contains('inline-code')) {
+            e.stopPropagation();
+            showCodeToolbar(e.target);
         }
     });
 
     // Mouse DOWN outside = Exit element
     document.addEventListener('mousedown', function(e) {
+        const editor = document.getElementById('notionEditor');
         const clickedInline = e.target.closest('.inline-button') || e.target.closest('.inline-code');
         const clickedToolbar = e.target.closest('.button-editor') || e.target.closest('#codeToolbar');
 
         if (!clickedInline && !clickedToolbar) {
-            // Exit all editing elements
-            document.querySelectorAll('.inline-button.editing, .inline-code.editing').forEach(el => {
-                el.classList.remove('editing');
-            });
+            // User clicked outside - exit any editing element
+            exitAllInlineElements();
         }
     });
 
-    // Keyboard handling for inline elements
+    // Keyboard handling
     editor.addEventListener('keydown', function(e) {
         const activeEl = document.activeElement;
 
@@ -332,7 +298,6 @@ function initInlineElementHandlers() {
             // ESCAPE = Exit
             if (e.key === 'Escape') {
                 e.preventDefault();
-                e.stopImmediatePropagation();
                 exitInlineElement(activeEl);
                 return;
             }
@@ -340,7 +305,7 @@ function initInlineElementHandlers() {
             // SHIFT + ENTER = Exit inline element immediately
             if (e.key === 'Enter' && e.shiftKey) {
                 e.preventDefault();
-                e.stopImmediatePropagation();
+                e.stopPropagation(); // Prevent bubbling to main keyboard handler
                 exitInlineElement(activeEl);
                 return;
             }
@@ -353,50 +318,30 @@ function initInlineElementHandlers() {
 
                 if (!e.shiftKey) {
                     e.preventDefault();
-                    e.stopImmediatePropagation();
+                    e.stopPropagation(); // Prevent bubbling
                     exitInlineElement(activeEl);
                     return;
                 }
             }
 
-            // Backspace at start = Remove element and start fresh
-            if (e.key === 'Backspace' && atStart) {
+            // Backspace at start OR Delete at end = Remove element
+            if ((e.key === 'Backspace' && atStart) ||
+                (e.key === 'Delete' && atEnd)) {
                 e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                // Get the parent block content
-                const contentBlock = activeEl.closest('.notion-block-content');
-                if (contentBlock) {
-                    // Remove the inline element
-                    activeEl.remove();
-                    
-                    // Insert a text node to anchor cursor
-                    const anchor = document.createTextNode('\u200B'); // Zero-width space
-                    contentBlock.insertBefore(anchor, null);
-                    
-                    contentBlock.focus();
-                    
-                    const sel = window.getSelection();
-                    const r = document.createRange();
-                    r.setStart(anchor, 1);
-                    r.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(r);
-                    
-                    // Clear all formatting aggressively
-                    try { document.execCommand('removeFormat', false, null); } catch(err) {}
-                }
-                return;
-            }
-            // Delete at end = Remove element
-            if (e.key === 'Delete' && atEnd) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
+                e.stopPropagation(); // Prevent bubbling
                 removeInlineElement(activeEl);
                 return;
             }
+
+            // ESCAPE = Exit
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent bubbling
+                exitInlineElement(activeEl);
+                return;
+            }
         }
-    }, true); // Use capture phase to run first
+    });
 }
 
 function exitAllInlineElements() {
@@ -410,31 +355,42 @@ function exitAllInlineElements() {
 
 function exitInlineElement(el) {
     el.classList.remove('editing');
+
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    // Create a range that starts AFTER the element
+    const range = document.createRange();
+    range.setStartAfter(el);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // Focus back on editor to ensure we're "out"
+    const editor = document.getElementById('notionEditor');
+    if (editor) {
+        editor.focus();
+    }
 }
 
 function removeInlineElement(el) {
-    const contentBlock = el.closest('.notion-block-content');
-    if (!contentBlock) return;
+    const parent = el.parentNode;
+    const text = el.textContent;
 
-    // Remove the inline element
-    el.remove();
-    
-    // Insert a text node to anchor cursor
-    const anchor = document.createTextNode('\u200B'); // Zero-width space
-    contentBlock.insertBefore(anchor, null);
-    
-    contentBlock.focus();
-    
-    const sel = window.getSelection();
-    const r = document.createRange();
-    r.setStart(anchor, 1);
-    r.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(r);
-    
-    // Clear all formatting aggressively
-    try { document.execCommand('removeFormat', false, null); } catch(err) {}
-    
+    // Create text node with content
+    const textNode = document.createTextNode(text);
+    parent.insertBefore(textNode, el);
+    parent.removeChild(el);
+
+    // Move cursor to text
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.setStart(textNode, text.length);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
     showToast('Đã xóa');
 }
 
@@ -664,115 +620,6 @@ function showCodeToolbar(codeEl) {
     }, 3000);
 }
 
-// Edit code text - popup đơn giản
-function editCodeText(codeEl) {
-    const originalText = codeEl.textContent;
-    const rect = codeEl.getBoundingClientRect();
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10002;
-    `;
-    
-    const dialog = document.createElement('div');
-    dialog.style.cssText = `
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        width: 400px;
-        max-width: 90%;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    `;
-    
-    const title = document.createElement('h3');
-    title.textContent = '✏️ Sửa Code';
-    title.style.cssText = 'margin: 0 0 12px 0; color: #1f2937;';
-    
-    const textarea = document.createElement('textarea');
-    textarea.value = originalText;
-    textarea.style.cssText = `
-        width: 100%;
-        min-height: 100px;
-        padding: 12px;
-        border: 2px solid #e5e7eb;
-        border-radius: 8px;
-        font-family: monospace;
-        font-size: 13px;
-        resize: vertical;
-        outline: none;
-        box-sizing: border-box;
-        background: #1f2937;
-        color: #10b981;
-    `;
-    textarea.focus();
-    
-    const btnRow = document.createElement('div');
-    btnRow.style.cssText = `
-        display: flex;
-        gap: 10px;
-        margin-top: 12px;
-        justify-content: flex-end;
-    `;
-    
-    const okBtn = document.createElement('button');
-    okBtn.textContent = 'OK';
-    okBtn.style.cssText = `
-        padding: 8px 20px;
-        background: #10b981;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    `;
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Huỷ';
-    cancelBtn.style.cssText = `
-        padding: 8px 20px;
-        background: #e5e7eb;
-        color: #374151;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    `;
-    
-    btnRow.appendChild(cancelBtn);
-    btnRow.appendChild(okBtn);
-    dialog.appendChild(title);
-    dialog.appendChild(textarea);
-    dialog.appendChild(btnRow);
-    modal.appendChild(dialog);
-    
-    document.body.appendChild(modal);
-    
-    okBtn.onclick = function() {
-        codeEl.textContent = textarea.value;
-        document.body.removeChild(modal);
-        showToast('Đã cập nhật code');
-    };
-    
-    cancelBtn.onclick = function() {
-        document.body.removeChild(modal);
-    };
-    
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            document.body.removeChild(modal);
-        }
-    };
-}
-
 // ==========================================
 // 2. BLOCK MANAGEMENT
 // ==========================================
@@ -824,14 +671,12 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
             content = `<div class="image-block-wrapper"><img src="${src}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" onclick="removeBlock('${id}')"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
             break;
         default:
-            content = `<p class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="${placeholderMap['paragraph']}">${initialHTML}</p>`;
+            // Use div instead of p to avoid browser HTML parsing issues with nested elements
+            content = `<div class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="${placeholderMap['paragraph']}">${initialHTML}</div>`;
     }
 
     block.innerHTML = `
         <div class="block-controls" contenteditable="false">
-            <div class="block-drag-handle" draggable="true" title="Kéo để di chuyển">
-                <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
-            </div>
             <div class="block-add-btn" onclick="showBlockMenuFor('${id}')" title="Thêm block">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             </div>
@@ -895,62 +740,24 @@ function initKeyboardShortcuts() {
         const activeBlock = document.activeElement.closest('.notion-block');
         if (!activeBlock) return;
 
-        // Skip if inside inline element (inline handler will handle)
-        if (document.activeElement.classList.contains('inline-button') ||
-            document.activeElement.classList.contains('inline-code')) {
-            return;
-        }
-
         const index = Array.from(editor.children).indexOf(activeBlock);
 
         // ENTER = Line break within current block (NOT new block)
         if (e.key === 'Enter' && !e.shiftKey) {
             if (document.getElementById('blockTypeSelector').classList.contains('active')) return;
             e.preventDefault();
-            e.stopImmediatePropagation();
-            
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                // Delete any selected content
-                range.deleteContents();
-                // Insert BR
-                const br = document.createElement('br');
-                range.insertNode(br);
-                // Move cursor after BR
-                range.setStartAfter(br);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
+            document.execCommand('insertHTML', false, '<br>');
             return;
         }
 
         // SHIFT + ENTER = Create new block
         if (e.key === 'Enter' && e.shiftKey) {
             e.preventDefault();
-            e.stopImmediatePropagation();
-            
-            // Split content and create new block
             const currentType = activeBlock.dataset.type;
-            const contentEl = activeBlock.querySelector('.notion-block-content');
-            
-            if (contentEl) {
-                // Get current block content
-                const currentHTML = contentEl.innerHTML;
-                
-                if (currentType === 'ul' || currentType === 'ol') {
-                    addBlock(currentType, true, index + 1);
-                } else {
-                    // Create new paragraph block with current content
-                    addBlock('paragraph', true, index + 1, '');
-                }
+            if (currentType === 'ul' || currentType === 'ol') {
+                addBlock(currentType, true, index + 1);
             } else {
-                if (currentType === 'ul' || currentType === 'ol') {
-                    addBlock(currentType, true, index + 1);
-                } else {
-                    addBlock('paragraph', true, index + 1);
-                }
+                addBlock('paragraph', true, index + 1);
             }
             return;
         }
@@ -967,7 +774,7 @@ function initKeyboardShortcuts() {
                 if (prev) prev.querySelector('.notion-block-content')?.focus();
             }
         }
-    }, true); // Use capture phase
+    });
 }
 
 // ==========================================
@@ -1045,8 +852,7 @@ function formatText(command, value = null) {
 
         // Create editable code block
         const codeId = 'code-' + Date.now();
-        // Insert code block WITH a | anchor after it for easy exit
-        const codeHTML = `<span id="${codeId}" class="inline-code" contenteditable="true" style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #dc2626;" title="Click để edit">${selectedText}</span>&nbsp;| `;
+        const codeHTML = `<span id="${codeId}" class="inline-code" contenteditable="true" style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #dc2626;" title="Click để edit, Shift+Enter hoặc mũi tên để thoát">${selectedText}</span>`;
 
         document.execCommand('insertHTML', false, codeHTML);
 
@@ -1054,6 +860,11 @@ function formatText(command, value = null) {
             const codeEl = document.getElementById(codeId);
             if (codeEl) {
                 codeEl.focus();
+                const range = document.createRange();
+                range.selectNodeContents(codeEl);
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
             }
         }, 10);
 
@@ -1074,8 +885,7 @@ function formatText(command, value = null) {
         const btnText = selection.toString();
         const btnId = 'btn-' + Date.now();
 
-        // Insert button WITH a | anchor after it for easy exit
-        const btnHTML = `<span id="${btnId}" class="inline-button" contenteditable="true" data-url="${url}" data-background="${buttonSettings.background}" data-text-color="${buttonSettings.textColor}" data-padding="${buttonSettings.padding}" data-font-size="${buttonSettings.fontSize}" data-border-radius="${buttonSettings.borderRadius}" style="display: inline-block; background: ${buttonSettings.background}; color: ${buttonSettings.textColor}; padding: ${buttonSettings.padding}; border-radius: ${buttonSettings.borderRadius}; font-size: ${buttonSettings.fontSize}; font-weight: 600;" title="Click để edit">${btnText}</span>&nbsp;| `;
+        const btnHTML = `<span id="${btnId}" class="inline-button" contenteditable="true" data-url="${url}" data-background="${buttonSettings.background}" data-text-color="${buttonSettings.textColor}" data-padding="${buttonSettings.padding}" data-font-size="${buttonSettings.fontSize}" data-border-radius="${buttonSettings.borderRadius}" style="display: inline-block; background: ${buttonSettings.background}; color: ${buttonSettings.textColor}; padding: ${buttonSettings.padding}; border-radius: ${buttonSettings.borderRadius}; font-size: ${buttonSettings.fontSize}; font-weight: 600;" title="Click để edit, Shift+Enter hoặc mũi tên để thoát">${btnText}</span>`;
 
         document.execCommand('insertHTML', false, btnHTML);
 
@@ -1083,6 +893,11 @@ function formatText(command, value = null) {
             const btnEl = document.getElementById(btnId);
             if (btnEl) {
                 btnEl.focus();
+                const range = document.createRange();
+                range.selectNodeContents(btnEl);
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
             }
         }, 10);
 
@@ -1291,6 +1106,46 @@ function applyBlockType(type) {
 // ==========================================
 function setAlignment(align, targetBlock = null) {
     const selection = window.getSelection();
+
+    // If there's a text selection, apply inline alignment to just the selection
+    if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString().trim();
+
+        // Only apply inline alignment if there's actual selected text
+        if (selectedText.length > 0) {
+            console.log('Applying inline alignment to selected text:', align);
+
+            // Create a div with inline alignment (not span, to avoid p>div issues)
+            const div = document.createElement('div');
+            div.style.textAlign = align;
+            div.style.display = 'inline-block';
+            div.style.width = '100%';
+            div.className = 'inline-alignment';
+            div.contentEditable = 'true';
+
+            // Extract and wrap the selected content
+            try {
+                const extractedContent = range.extractContents();
+                div.appendChild(extractedContent);
+                range.insertNode(div);
+
+                // Clear selection and place cursor after the div
+                selection.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.setStartAfter(div);
+                newRange.collapse(true);
+                selection.addRange(newRange);
+
+                console.log('Inline alignment applied successfully');
+                return;
+            } catch (e) {
+                console.error('Error applying inline alignment:', e);
+            }
+        }
+    }
+
+    // If no selection or inline failed, apply to entire block (original behavior)
     let block = targetBlock;
 
     if (!block && selection.rangeCount > 0) {
@@ -1308,6 +1163,18 @@ function setAlignment(align, targetBlock = null) {
 
     const content = block.querySelector('.notion-block-content');
     if (content) {
+        // Check if content already has inline alignment elements
+        const existingInlineAlign = content.querySelector('.inline-alignment');
+        if (existingInlineAlign) {
+            // Update existing inline alignment instead of applying block-level
+            console.log('Updating existing inline alignment to:', align);
+            existingInlineAlign.style.textAlign = align;
+            // Update the style attribute to ensure it's preserved
+            existingInlineAlign.setAttribute('style', `text-align: ${align}; display: inline-block; width: 100%;`);
+            return;
+        }
+
+        // No inline alignment, apply to entire block
         content.classList.remove('text-left', 'text-center', 'text-right');
         content.classList.add(`text-${align}`);
         content.style.textAlign = align;
@@ -1362,55 +1229,7 @@ function duplicateBlock(blockId) {
 }
 
 // ==========================================
-// 10. DRAG & DROP
-// ==========================================
-function initBlockDragDrop() {
-    const editor = document.getElementById('notionEditor');
-    let dragSrcEl = null;
-
-    editor.addEventListener('dragstart', (e) => {
-        const handle = e.target.closest('.block-drag-handle');
-        if (!handle) return;
-        dragSrcEl = e.target.closest('.notion-block');
-        dragSrcEl.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-    });
-
-    editor.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const target = e.target.closest('.notion-block');
-        if (target && target !== dragSrcEl) {
-            target.classList.add('drag-over');
-        }
-    });
-
-    editor.addEventListener('dragleave', (e) => {
-        const target = e.target.closest('.notion-block');
-        if (target) target.classList.remove('drag-over');
-    });
-
-    editor.addEventListener('drop', (e) => {
-        e.preventDefault();
-        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-        const target = e.target.closest('.notion-block');
-
-        if (dragSrcEl && target && dragSrcEl !== target) {
-            const children = Array.from(editor.children);
-            const srcIndex = children.indexOf(dragSrcEl);
-            const targetIndex = children.indexOf(target);
-
-            if (srcIndex < targetIndex) {
-                target.after(dragSrcEl);
-            } else {
-                target.before(dragSrcEl);
-            }
-        }
-        dragSrcEl?.classList.remove('dragging');
-    });
-}
-
-// ==========================================
-// 11. TITLE & SLUG
+// 10. TITLE & SLUG
 // ==========================================
 function updateSlug() {
     const titleEl = document.getElementById('postTitle');

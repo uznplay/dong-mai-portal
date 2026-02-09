@@ -301,6 +301,11 @@ async function loadNewsList() {
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
+                        <button onclick="clonePost('${post.id}')"
+                            class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="Nhân bản">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
                         <a href="admin-news-edit.html?id=${post.id}" target="_blank"
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
@@ -319,6 +324,70 @@ async function loadNewsList() {
     } catch (err) {
         console.error('Load news error:', err);
         listContainer.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+    }
+}
+
+async function clonePost(id) {
+    try {
+        // 1. Get the original post
+        const { data: original, error: fetchError } = await supabase
+            .from('featured_news')
+            .select('*')
+            .eq('id', id)
+            .single();
+        
+        if (fetchError) throw fetchError;
+        if (!original) {
+            alert('Không tìm thấy bài viết gốc!');
+            return;
+        }
+
+        if (!confirm(`Nhân bản bài viết "${original.title}"?\n\nBài viết mới sẽ được tạo dưới dạng "Bản nháp".`)) {
+            return;
+        }
+
+        // 2. Prepare cloned data
+        const cloneData = {
+            title: original.title ? `${original.title} (Bản sao)` : 'Bài viết sao chép',
+            slug: original.slug ? `${original.slug}-copy-${Date.now()}` : `post-copy-${Date.now()}`,
+            summary: original.summary || '',
+            content: original.content || null, // JSON array
+            content_html: original.content_html || null, // Keep for backward compatibility
+            thumbnail_url: original.thumbnail_url || '',
+            category: original.category || 'tin-tuc',
+            tags: original.tags || [],
+            keyword_aliases: original.keyword_aliases || [],
+            status: 'draft', // Always save as draft
+            is_featured: false, // Reset featured
+            is_pinned: false, // Reset pinned
+            author_id: original.author_id,
+            created_at: new Date().toISOString(),
+            published_at: null // Reset publish date
+        };
+
+        // 3. Insert as new post
+        const { data: newPost, error: insertError } = await supabase
+            .from('featured_news')
+            .insert(cloneData)
+            .select()
+            .single();
+
+        if (insertError) throw insertError;
+
+        // 4. Success - reload list
+        loadNewsList();
+        
+        // Show success message
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+        notification.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> Đã nhân bản thành công!';
+        document.body.appendChild(notification);
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => notification.remove(), 3000);
+
+    } catch (err) {
+        console.error('Clone post error:', err);
+        alert('Lỗi nhân bản: ' + err.message);
     }
 }
 
@@ -377,6 +446,11 @@ async function loadGuidesList() {
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
+                        <button onclick="clonePost('${post.id}')"
+                            class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="Nhân bản">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
                         <a href="admin-news-edit.html?id=${post.id}" target="_blank"
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
@@ -404,10 +478,6 @@ async function loadUsersList() {
     const listContainer = document.getElementById('usersList');
     if (!listContainer) return;
     // ... (Implementation continues)
-}
-
-function loadLogs() {
-    // ...
 }
 
 // ==========================================

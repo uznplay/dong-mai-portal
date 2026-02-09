@@ -54,6 +54,59 @@
             color: #4b5563;
             font-style: italic;
         }
+
+        /* Link styling - gạch chân xanh (NHƯNG KHÔNG ẢNH HƯỞNG NÚT) */
+        .prose a:not(.inline-button) {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            text-underline-offset: 2px;
+        }
+        .prose a:not(.inline-button):hover {
+            color: #1d4ed8 !important;
+        }
+
+        /* Button styling - nút bấm có thể click - DÙNG ID ĐỂ CÓ SPECIFICITY CAO */
+        #rendered-button {
+            all: initial !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 10px 20px !important;
+            background: #ce7a58 !important;
+            color: white !important;
+            font-family: inherit !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            text-align: center !important;
+            white-space: pre-wrap !important;
+            border-radius: 8px !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            margin: 8px 4px !important;
+        }
+        #rendered-button:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        /* Code block styling */
+        .inline-code {
+            background: #1f2937 !important;
+            color: #10b981 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            font-family: monospace !important;
+            font-size: 0.9em !important;
+            white-space: pre-wrap !important;
+        }
+
+        /* Inline alignment styling */
+        .inline-alignment {
+            display: inline-block;
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -217,7 +270,66 @@
                 summaryEl.style.display = 'none';
             }
 
-            document.getElementById('body').innerHTML = post.content_html || 'Nội dung đang cập nhật...';
+            // Generate HTML from content (JSON array) OR use content_html (old format)
+            let htmlContent = '';
+            
+            if (post.content && Array.isArray(post.content) && post.content.length > 0) {
+                // New format: generate HTML from JSON content
+                htmlContent = generateHTMLFromContent(post.content);
+            } else if (post.content_html) {
+                // Old format: use content_html directly
+                htmlContent = post.content_html;
+            } else {
+                htmlContent = 'Nội dung đang cập nhật...';
+            }
+
+            document.getElementById('body').innerHTML = htmlContent;
+
+            // Clean up: remove &nbsp;| and trailing pipes from content
+            const bodyEl = document.getElementById('body');
+            bodyEl.innerHTML = bodyEl.innerHTML.replace(/&nbsp;\|/g, '').replace(/\|\s*$/g, '');
+
+            // Make buttons clickable with correct styling
+            const buttons = bodyEl.querySelectorAll('.inline-button');
+            buttons.forEach((btn, index) => {
+                const url = btn.dataset.url || '#';
+                const text = btn.textContent;
+                const bg = btn.dataset.background || '#ce7a58';
+                const textColor = btn.dataset.textColor || 'white';
+                const radius = btn.dataset.borderRadius || '8px';
+                const padding = btn.dataset.padding || '10px 20px';
+                const fontSize = btn.dataset.fontSize || '14px';
+                
+                // Create proper link with ID for higher specificity
+                const link = document.createElement('a');
+                link.id = 'rendered-button-' + index;
+                link.href = url;
+                link.textContent = text;
+                link.setAttribute('target', '_blank');
+                // Apply styles directly with !important
+                link.style.cssText = `
+                    all: initial !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: ${padding} !important;
+                    background: ${bg} !important;
+                    color: ${textColor} !important;
+                    font-family: inherit !important;
+                    font-size: ${fontSize} !important;
+                    font-weight: 600 !important;
+                    text-decoration: none !important;
+                    text-align: center !important;
+                    white-space: pre-wrap !important;
+                    border-radius: ${radius} !important;
+                    border: none !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s !important;
+                    margin: 8px 4px !important;
+                `;
+                
+                btn.parentNode.replaceChild(link, btn);
+            });
             document.getElementById('date').textContent = new Date(post.published_at || post.created_at).toLocaleDateString('vi-VN');
 
             const catMap = { 'tin-tuc': 'Tin tức', 'su-kien': 'Sự kiện', 'thong-bao': 'Thông báo' };
@@ -231,6 +343,74 @@
             } else {
                 tagsContainer.style.display = 'none';
             }
+        }
+
+        // ==========================================
+        // GENERATE HTML FROM CONTENT (JSON array)
+        // Converts blocks to HTML for display
+        // ==========================================
+        function generateHTMLFromContent(blocks) {
+            if (!blocks || !Array.isArray(blocks)) return '';
+
+            let html = '';
+
+            blocks.forEach(block => {
+                const text = block.text || '';
+                const content = block.content || '';
+                const align = block.align || '';
+
+                switch (block.type) {
+                    case 'h1':
+                        html += `<h1 class="${align ? 'text-' + align : ''}">${text}</h1>`;
+                        break;
+                    case 'h2':
+                        html += `<h2 class="${align ? 'text-' + align : ''}">${text}</h2>`;
+                        break;
+                    case 'h3':
+                        html += `<h3 class="${align ? 'text-' + align : ''}">${text}</h3>`;
+                        break;
+                    case 'paragraph':
+                        // Handle inline buttons and code
+                        let paraContent = content || text;
+                        // Convert button spans to links
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-button"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/span>/g,
+                            '<a href="$1" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; background: $2; color: $3; padding: $5; border-radius: $4; font-size: $6; font-weight: 600; text-decoration: none; margin: 4px;">$7</a>');
+                        // Convert code spans
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-code"[^>]*>([^<]*)<\/span>/g, '<code style="background: #f3f4f6; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>');
+                        // Convert inline alignment divs/spans to span with style
+                        paraContent = paraContent.replace(/<div[^>]*class="inline-alignment"[^>]*style="([^"]*)"[^>]*>([^<]*)<\/div>/g, '<span style="display: inline-block; width: 100%; $1;">$2</span>');
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-alignment"[^>]*style="([^"]*)"[^>]*>([^<]*)<\/span>/g, '<span style="display: inline-block; width: 100%; $1;">$2</span>');
+                        // Convert inline pasted images
+                        paraContent = paraContent.replace(/<img[^>]*class="inline-pasted-image"[^>]*src="([^"]*)"[^>]*>/g, '<img src="$1" style="max-width: 100%; height: auto; display: inline-block; margin: 4px 0; border-radius: 4px;">');
+                        html += `<p class="${align ? 'text-' + align : ''}">${paraContent}</p>`;
+                        break;
+                    case 'ul':
+                        html += `<ul>${content || ''}</ul>`;
+                        break;
+                    case 'ol':
+                        html += `<ol>${content || ''}</ol>`;
+                        break;
+                    case 'blockquote':
+                        html += `<blockquote>${text}</blockquote>`;
+                        break;
+                    case 'callout':
+                        html += `<div class="callout">${content || text}</div>`;
+                        break;
+                    case 'code':
+                        html += `<pre><code>${text}</code></pre>`;
+                        break;
+                    case 'divider':
+                        html += '<hr>';
+                        break;
+                    case 'image':
+                        if (content) {
+                            html += `<figure><img src="${content}" alt="Image"></figure>`;
+                        }
+                        break;
+                }
+            });
+
+            return html;
         }
 
         async function loadPopularNews(currentId) {

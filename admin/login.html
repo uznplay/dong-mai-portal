@@ -180,23 +180,6 @@
 
         checkAuth();
 
-        // Log admin activity (non-blocking)
-        async function logAdminActivity(adminId, action, entityType, entityId, details) {
-            try {
-                await supabase.from('admin_activity_logs').insert({
-                    admin_id: adminId,
-                    action: action,
-                    entity_type: entityType,
-                    entity_id: entityId,
-                    details: details,
-                    ip_address: 'unknown',
-                    user_agent: navigator.userAgent
-                });
-            } catch (e) {
-                console.error('Failed to log activity:', e);
-            }
-        }
-
         // Handle login
         async function handleLogin(event) {
             event.preventDefault();
@@ -249,11 +232,6 @@
                 localStorage.setItem('adminUser', JSON.stringify(adminUser));
                 localStorage.setItem('supabaseSession', JSON.stringify(data.session));
 
-                // 3. Log Activity (Non-blocking)
-                logAdminActivity(adminUser.id, 'login', 'auth', null, {
-                    timestamp: new Date().toISOString()
-                }).catch(console.error);
-
                 // Redirect
                 window.location.href = '/admin/';
 
@@ -277,4 +255,9 @@
 </body>
 
 </html>
+
+
+
+
+
 

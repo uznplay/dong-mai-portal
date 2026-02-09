@@ -199,11 +199,111 @@ body {
 /* Responsive utilities */
 @media (max-width: 768px) {
     .card {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .hero-section {
-        min-height: 400px;
+        min-height: 350px;
+        padding: 2rem 1rem;
+    }
+
+    /* Header mobile */
+    header .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    header h1 {
+        font-size: 1.25rem !important;
+    }
+
+    header p {
+        font-size: 0.75rem !important;
+    }
+
+    header img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    /* Utilities section */
+    #utilities {
+        padding: 3rem 1rem;
+    }
+
+    #utilities h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* News section */
+    #news {
+        padding: 3rem 1rem;
+    }
+
+    #news h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Officials section */
+    #officials {
+        padding: 3rem 1rem;
+    }
+
+    /* Contact section */
+    #contact {
+        padding: 3rem 1rem;
+    }
+
+    /* Utility cards */
+    .card {
+        padding: 1rem;
+    }
+
+    /* Bot section */
+    #bot-section {
+        padding: 2rem 1rem;
+    }
+
+    /* Footer */
+    footer {
+        padding: 2rem 1rem;
+    }
+
+    footer h3 {
+        font-size: 1rem !important;
+    }
+
+    footer p,
+    footer a {
+        font-size: 0.875rem !important;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .hero-section {
+        min-height: 300px;
+    }
+
+    .card {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem !important;
+    }
+
+    .text-3xl {
+        font-size: 1.5rem !important;
+    }
+
+    .text-4xl {
+        font-size: 2rem !important;
+    }
+
+    .text-5xl {
+        font-size: 2.5rem !important;
     }
 }
 

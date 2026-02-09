@@ -35,6 +35,12 @@
             padding-left: 72px;
         }
 
+        .notion-editor.drag-over-image {
+            background: rgba(35, 131, 226, 0.1);
+            border: 2px dashed #2383e2;
+            border-radius: 8px;
+        }
+
         .notion-block {
             position: relative;
             padding: 3px 2px;
@@ -65,25 +71,31 @@
             transition: opacity 0.15s ease-in-out;
         }
 
-        .block-drag-handle {
-            width: 18px;
-            height: 18px;
+        /* Move Block Buttons */
+        .block-move-up,
+        .block-move-down {
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 3px;
-            cursor: grab;
+            border-radius: 4px;
+            cursor: pointer;
             color: #9ca3af;
-            transition: all 0.1s;
+            transition: all 0.15s ease;
+            background: transparent;
+            border: none;
         }
 
-        .block-drag-handle:hover {
-            background: rgba(0, 0, 0, 0.06);
-            color: #4b5563;
+        .block-move-up:hover,
+        .block-move-down:hover {
+            background: #e5e7eb;
+            color: #2383e2;
         }
 
-        .block-drag-handle:active {
-            cursor: grabbing;
+        .block-move-up:active,
+        .block-move-down:active {
+            transform: scale(0.9);
         }
 
         .block-add-btn {
@@ -108,6 +120,41 @@
             min-height: 24px;
             flex: 1;
             padding: 3px 0;
+            margin: 0;
+            /* Make it behave like a paragraph */
+            display: block;
+            width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            -webkit-hyphens: auto;
+            hyphens: auto;
+            line-height: 1.6;
+        }
+
+        /* Inline pasted images */
+        .inline-pasted-image {
+            max-width: 100%;
+            height: auto;
+            display: inline-block;
+            vertical-align: baseline;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+
+        /* Make inline images behave well in contenteditable */
+        .notion-block-content .inline-pasted-image {
+            pointer-events: none;
+        }
+
+        .notion-block-content .inline-pasted-image:focus {
+            outline: 2px solid #2383e2;
+            outline-offset: 2px;
+        }
+
+        /* Inline alignment for selected text */
+        .inline-alignment {
+            display: inline-block;
+            width: 100%;
         }
 
         .notion-block-content:empty::before {
@@ -354,12 +401,52 @@
             background-color: rgba(35, 131, 226, 0.08) !important;
         }
 
-        .notion-block.dragging {
-            opacity: 0.5;
+        /* Block Move Buttons */
+        .block-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
-        .notion-block.drag-over {
-            border-top: 2px solid #2383e2;
+        .notion-block:hover .block-controls {
+            opacity: 1;
+        }
+        
+        .block-move-up,
+        .block-move-down {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: #6b7280;
+            transition: all 0.15s ease;
+        }
+        
+        .block-move-up:hover,
+        .block-move-down:hover {
+            background: #e5e7eb;
+            color: #2383e2;
+        }
+        
+        .block-move-up:active,
+        .block-move-down:active {
+            transform: scale(0.9);
+        }
+        
+        .block-add-btn,
+        .block-actions-btn {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+        }
+        
+        .block-add-btn:hover,
+        .block-actions-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
         }
 
         /* Block Context Menu */
@@ -471,22 +558,41 @@
 
         /* Inline Button & Code - Editable Nested Blocks */
         .inline-button {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: text;
             outline: 2px solid transparent;
-            transition: outline 0.2s;
+            transition: outline 0.2s, opacity 0.2s;
             text-align: center;
             line-height: 1.4;
             white-space: pre-wrap;
             word-wrap: break-word;
+            /* Default button styles */
+            background: #ce7a58;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 4px;
+            border: none;
+            min-height: 20px;
         }
 
         .inline-button:hover {
             outline: 2px solid #667eea;
+            opacity: 0.9;
         }
 
         .inline-button.editing {
             outline: 2px solid #2563eb !important;
+        }
+
+        /* Ensure inline-button doesn't inherit unwanted styles */
+        .inline-button * {
+            pointer-events: none;
         }
 
         .inline-code {
@@ -496,6 +602,13 @@
             transition: outline 0.2s;
             white-space: pre-wrap;
             word-wrap: break-word;
+            /* Default code styles */
+            background: #f3f4f6;
+            color: #dc2626;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         .inline-code:hover {
@@ -504,6 +617,8 @@
 
         .inline-code.editing {
             outline: 2px solid #dc2626 !important;
+            background: #1f2937;
+            color: #10b981;
         }
 
         /* Code Toolbar */
@@ -1442,17 +1557,49 @@
                     break;
                 case 'divider': content = `<hr class="notion-block-content" data-type="${type}">`;
                     break;
-                case 'image': content = `<div class="image-block-wrapper"><img src="" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+                case 'image': 
+                    // Handle both URL and base64 data URLs
+                    const imgSrc = (initialHTML && (initialHTML.startsWith('http') || initialHTML.startsWith('data:'))) ? initialHTML : '';
+                    content = `<div class="image-block-wrapper"><img src="${imgSrc}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
                     break;
-                default: content = `<p class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="Nhập nội dung hoặc gõ '/' để chọn block..."></p>`;
+                default: content = `<div class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="Nhập nội dung hoặc gõ '/' để chọn block..."></div>`;
             }
 
-            block.innerHTML = `<div class="block-controls" contenteditable="false"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" data-block-id="${id}" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content}`;
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
 
             // Add event listeners for this block
             const removeBtn = block.querySelector('.image-block-remove');
             const addBtn = block.querySelector('.block-add-btn');
             const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+            
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+            
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
             
             if (removeBtn) {
                 removeBtn.addEventListener('click', (e) => {
@@ -1585,6 +1732,230 @@
             });
         }
 
+        // Image paste handler - paste images at cursor position
+        function initImagePasteHandler() {
+            const editor = document.getElementById('notionEditor');
+            if (!editor) return;
+
+            editor.addEventListener('paste', async function(e) {
+                // Check if clipboard has image data
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                let imageItem = null;
+                let imageType = null;
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    // Check for image types
+                    if (item.type.startsWith('image/') ||
+                        item.type === 'image' ||
+                        item.type.includes('png') ||
+                        item.type.includes('jpeg') ||
+                        item.type.includes('jpg') ||
+                        item.type.includes('gif') ||
+                        item.type.includes('webp')) {
+                        imageItem = item;
+                        imageType = item.type;
+                        break;
+                    }
+                }
+
+                // If no image in clipboard, return and let default behavior handle
+                if (!imageItem) {
+                    console.log('No image found in clipboard. Item types:', Array.from(items).map(i => i.type));
+                    return;
+                }
+
+                console.log('Image paste detected. Type:', imageType);
+
+                // Prevent default paste behavior
+                e.preventDefault();
+
+                // Get the image file from clipboard
+                const blob = imageItem.getAsFile();
+                if (!blob) {
+                    console.error('Could not get image file from clipboard');
+                    return;
+                }
+
+                try {
+                    // Read the image as base64
+                    const reader = new FileReader();
+                    reader.onload = async function(event) {
+                        const base64Data = event.target.result;
+                        console.log('Image converted to base64. Length:', base64Data.length);
+
+                        // Insert image at cursor position
+                        insertImageAtCursor(base64Data);
+                    };
+                    reader.onerror = function(error) {
+                        console.error('Error reading image:', error);
+                        showToast('Lỗi khi đọc ảnh từ clipboard');
+                    };
+                    reader.readAsDataURL(blob);
+                } catch (error) {
+                    console.error('Error processing pasted image:', error);
+                    showToast('Lỗi khi xử lý ảnh: ' + error.message);
+                }
+            });
+        }
+
+        function insertImageAtCursor(base64Data) {
+            console.log('=== insertImageAtCursor called ===');
+            console.log('Base64 data length:', base64Data ? base64Data.length : 'undefined');
+
+            const selection = window.getSelection();
+            console.log('Selection exists:', !!selection);
+            console.log('Range count:', selection?.rangeCount);
+
+            if (!selection || selection.rangeCount === 0) {
+                console.log('No selection - using fallback append');
+                // If no selection, append to editor
+                addImageBlockWithUrl(base64Data);
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            console.log('Common ancestor:', range.commonAncestorContainer);
+            console.log('Common ancestor type:', range.commonAncestorContainer.nodeType);
+            console.log('Common ancestor node name:', range.commonAncestorContainer.nodeName);
+
+            // Check if we're inside a contenteditable element in the editor
+            const editor = document.getElementById('notionEditor');
+            console.log('Editor exists:', !!editor);
+            console.log('Editor contains commonAncestor:', editor.contains(range.commonAncestorContainer));
+
+            if (!editor.contains(range.commonAncestorContainer)) {
+                console.log('Not in editor - using fallback append');
+                // If not in editor, append to editor
+                addImageBlockWithUrl(base64Data);
+                return;
+            }
+
+            // Find the notion-block ancestor using closest (proven method in this codebase)
+            let container = range.commonAncestorContainer;
+
+            // If text node, get parent element first
+            if (container.nodeType === Node.TEXT_NODE) {
+                console.log('Container is TEXT_NODE, getting parent');
+                container = container.parentNode;
+            }
+
+            console.log('Container before closest:', container);
+            const block = container.closest('.notion-block');
+            console.log('Found block:', !!block);
+            console.log('Block type:', block?.dataset?.type);
+
+            if (block && block.dataset.type !== 'image') {
+                // INSERT IMAGE DIRECTLY AT CURSOR POSITION (inline)
+                console.log('Inserting image INLINE at cursor position...');
+
+                // Create image element
+                const img = document.createElement('img');
+                img.src = base64Data;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.display = 'inline-block';
+                img.style.verticalAlign = 'baseline';
+                img.style.margin = '4px 0';
+                img.contentEditable = 'false';
+                img.className = 'inline-pasted-image';
+
+                // Insert at cursor position
+                try {
+                    range.deleteContents();
+                    range.insertNode(img);
+
+                    // Move cursor to after the image
+                    range.setStartAfter(img);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    console.log('Image inserted inline at cursor!');
+                    console.log('=== insertImageAtCursor completed ===');
+                    return;
+                } catch (e) {
+                    console.error('Error inserting inline image:', e);
+                }
+            }
+
+            // Fallback: append to editor as new block
+            console.log('Using fallback: addImageBlockWithUrl');
+            addImageBlockWithUrl(base64Data);
+        }
+
+        function createImageBlock(url) {
+            const id = 'block-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+            const block = document.createElement('div');
+            block.className = 'notion-block';
+            block.id = id;
+            block.dataset.type = 'image';
+
+            const content = `<div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
+
+            // Add event listeners
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
+
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
+
+            return block;
+        }
+
         // Image upload
         async function uploadImage(event) {
             const files = event.target.files;
@@ -1667,12 +2038,41 @@
 
             const content = `<div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
 
-            block.innerHTML = `<div class="block-controls" contenteditable="false"><div class="block-drag-handle" draggable="true" title="Kéo để di chuyển"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></div><div class="block-add-btn" data-block-id="${id}" title="Thêm block"><i data-lucide="plus" class="w-3.5 h-3.5"></i></div><div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></div></div>${content}`;
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
 
             // Add event listeners
             const removeBtn = block.querySelector('.image-block-remove');
             const addBtn = block.querySelector('.block-add-btn');
             const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+            
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+            
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
             
             if (removeBtn) {
                 removeBtn.addEventListener('click', (e) => {
@@ -1837,7 +2237,7 @@
                 slug: uniqueSlug,
                 summary: document.getElementById('postSummary').value,
                 content: blocks,
-                content_html: generateHTML(),
+                // content_html: generateHTML(), // ✅ REMOVED - Now generated on-demand from content
                 thumbnail_url: thumbnailUrl,
                 category: document.getElementById('postCategory').value,
                 tags: document.getElementById('postTags').value.split(',').map(t => t.trim()).filter(t => t),
@@ -1900,11 +2300,34 @@
                     case 'h1': html += `<h1 class="${alignClass}" ${style}>${block.text}</h1>`; break;
                     case 'h2': html += `<h2 class="${alignClass}" ${style}>${block.text}</h2>`; break;
                     case 'h3': html += `<h3 class="${alignClass}" ${style}>${block.text}</h3>`; break;
-                    case 'paragraph': html += `<p class="${alignClass}" ${style}>${block.content || block.text}</p>`; break;
+                    case 'paragraph':
+                        // Process content to preserve inline button and code data attributes
+                        let paraContent = block.content || block.text || '';
+                        // Convert any display buttons back to editor spans with data attributes
+                        paraContent = paraContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        // Convert any display code back to editor spans
+                        paraContent = paraContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<p class="${alignClass}" ${style}>${paraContent}</p>`;
+                        break;
                     case 'ul': html += `<ul class="${alignClass}" ${style}>${block.content || '<li></li>'}</ul>`; break;
                     case 'ol': html += `<ol class="${alignClass}" ${style}>${block.content || '<li></li>'}</ol>`; break;
-                    case 'blockquote': html += `<blockquote class="${alignClass}" ${style}>${block.text}</blockquote>`; break;
-                    case 'callout': html += `<div class="callout ${alignClass}" ${style}>${block.content || block.text}</div>`; break;
+                    case 'blockquote':
+                        // Process content to preserve inline button and code data attributes
+                        let quoteContent = block.content || block.text || '';
+                        quoteContent = quoteContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        quoteContent = quoteContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<blockquote class="${alignClass}" ${style}>${quoteContent}</blockquote>`;
+                        break;
+                    case 'callout':
+                        // Process content to preserve inline button and code data attributes
+                        let calloutContent = block.content || block.text || '';
+                        calloutContent = calloutContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        calloutContent = calloutContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<div class="callout ${alignClass}" ${style}>${calloutContent}</div>`;
+                        break;
                     case 'code': html += `<pre class="${alignClass}" ${style}><code>${block.text}</code></pre>`; break;
                     case 'divider': html += '<hr>'; break;
                     case 'image':
@@ -1948,12 +2371,23 @@
                 updateStatusBadge(post.status);
 
                 // Load blocks
-                if (post.content && Array.isArray(post.content) && post.content.length > 0) {
+                // Check if content is an array (new format) or HTML string (old format)
                     const editor = document.getElementById('notionEditor');
                     editor.innerHTML = '';
 
+                try {
+                    if (post.content && Array.isArray(post.content) && post.content.length > 0) {
+                        // New format: content is JSON array of blocks
+                        console.log('✅ Loading from JSON array format...');
+
                     post.content.forEach((block) => {
-                        const content = block.content || block.text || '';
+                            let content = block.content || block.text || '';
+                            
+                            // Clean up display styles before loading to editor
+                            if (['paragraph', 'blockquote', 'callout', 'ul', 'ol'].includes(block.type)) {
+                                content = cleanContentForEditor(content);
+                            }
+
                         addBlock(block.type, false, -1, content);
 
                         // Apply Alignment
@@ -1963,8 +2397,60 @@
                         }
                     });
 
-                    if (window.lucide) lucide.createIcons();
+                    } else if (typeof post.content === 'string' && post.content.trim().startsWith('<')) {
+                        // Old format: content is HTML string - parse it into blocks
+                        console.log('📝 Old format detected: content is HTML string...');
+                        parseHTMLToBlocks(post.content);
+
+                    } else if (typeof post.content === 'string') {
+                        // Try parsing as JSON first
+                        try {
+                            const parsed = JSON.parse(post.content);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                // It's JSON string of array
+                                console.log('✅ Content is JSON string array, parsing...');
+                                parsed.forEach((block, idx) => {
+                                    let content = block.content || block.text || '';
+                                    if (['paragraph', 'blockquote', 'callout', 'ul', 'ol'].includes(block.type)) {
+                                        content = cleanContentForEditor(content);
+                                    }
+                                    addBlock(block.type, idx === 0, -1, content);
+                                });
+                            } else {
+                                // It's HTML in JSON string format
+                                console.log('📝 Content is HTML in JSON string...');
+                                parseHTMLToBlocks(parsed);
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Not valid JSON, treating as HTML...');
+                            parseHTMLToBlocks(post.content);
+                        }
+
+                    } else if (typeof post.content_html === 'string' && post.content_html.trim().startsWith('<')) {
+                        // Fallback: try content_html
+                        console.log('📝 Using content_html as fallback...');
+                        parseHTMLToBlocks(post.content_html);
+
+                    } else {
+                        // Empty content - add a paragraph
+                        console.log('➕ No content found, adding empty paragraph...');
+                        addBlock('paragraph', true);
+                    }
+                } catch (err) {
+                    console.error('❌ Error loading content:', err);
+                    // Fallback: try content_html or add empty paragraph
+                    if (typeof post.content_html === 'string') {
+                        console.log('📝 Emergency fallback to content_html...');
+                        parseHTMLToBlocks(post.content_html);
+                    } else {
+                        addBlock('paragraph', true);
+                    }
                 }
+
+                // Apply button styles from data attributes after loading
+                applyButtonStylesFromData(editor);
+
+                    if (window.lucide) lucide.createIcons();
 
                 // ✅ Load keyword aliases (NEW)
                 if (window.loadAliasesFromPost) {
@@ -1986,8 +2472,21 @@
 
                 if (content) {
                     let align = '';
+
+                    // Check alignment on the content element itself
                     if (content.classList.contains('text-center') || content.style.textAlign === 'center') align = 'center';
                     if (content.classList.contains('text-right') || content.style.textAlign === 'right') align = 'right';
+
+                    // Also check for inline alignment elements inside content
+                    if (!align) {
+                        const inlineAlign = content.querySelector('.inline-alignment');
+                        if (inlineAlign) {
+                            const inlineStyle = inlineAlign.getAttribute('style') || '';
+                            if (inlineStyle.includes('text-align: center') || inlineStyle.includes('center')) align = 'center';
+                            if (inlineStyle.includes('text-align: right') || inlineStyle.includes('right')) align = 'right';
+                            if (inlineStyle.includes('text-align: left') || inlineStyle.includes('left')) align = 'left';
+                        }
+                    }
 
                     blocks.push({
                         id: block.id,
@@ -2092,10 +2591,69 @@
             }
         });
 
+        // ==========================================
+        // APPLY BUTTON STYLES FROM DATA ATTRIBUTES
+        // Ensures buttons display correctly after loading
+        // ==========================================
+        function applyButtonStylesFromData(container) {
+            if (!container) container = document.getElementById('notionEditor');
+            if (!container) return;
+
+            const buttons = container.querySelectorAll('.inline-button');
+            buttons.forEach(btn => {
+                // Get styles from data attributes
+                const bg = btn.getAttribute('data-background') || '#ce7a58';
+                const textColor = btn.getAttribute('data-text-color') || 'white';
+                const radius = btn.getAttribute('data-border-radius') || '8px';
+                const padding = btn.getAttribute('data-padding') || '10px 20px';
+                const fontSize = btn.getAttribute('data-font-size') || '14px';
+
+                // Apply inline styles
+                btn.style.cssText = `
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    background: ${bg} !important;
+                    color: ${textColor} !important;
+                    padding: ${padding} !important;
+                    border-radius: ${radius} !important;
+                    font-size: ${fontSize} !important;
+                    font-weight: 600 !important;
+                    margin: 4px !important;
+                    border: none !important;
+                    min-height: 20px !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    text-align: center !important;
+                    line-height: 1.4 !important;
+                `;
+            });
+
+            // Also apply styles to inline code
+            const codeBlocks = container.querySelectorAll('.inline-code');
+            codeBlocks.forEach(code => {
+                code.style.cssText = `
+                    display: inline !important;
+                    background: #f3f4f6 !important;
+                    color: #dc2626 !important;
+                    font-family: 'Courier New', monospace !important;
+                    font-size: 14px !important;
+                    padding: 2px 6px !important;
+                    border-radius: 4px !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                `;
+            });
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             await checkAuth();
             initEditorFeatures();
+            initImagePasteHandler(); // Initialize paste handler for images
+
+            // Apply button styles to any existing buttons
+            setTimeout(() => applyButtonStylesFromData(), 100);
 
             // Check for existing post
             const urlParams = new URLSearchParams(window.location.search);
@@ -2110,6 +2668,251 @@
                 currentPostId = null;
             }
         });
+
+        // ==========================================
+        // PARSE HTML TO BLOCKS (For old format)
+        // Converts HTML content into editor blocks
+        // ==========================================
+        function parseHTMLToBlocks(htmlContent) {
+            if (!htmlContent || typeof htmlContent !== 'string') {
+                console.log('⚠️ Invalid HTML content, adding empty paragraph...');
+                addBlock('paragraph', true);
+                return;
+            }
+
+            try {
+                const temp = document.createElement('div');
+                
+                // Clean up content first
+                const cleanContent = cleanContentForEditor(htmlContent);
+                temp.innerHTML = cleanContent;
+
+                // Get all child elements
+                const children = Array.from(temp.children);
+
+                if (children.length === 0) {
+                    // If no elements, try to split by newlines
+                    const textContent = temp.textContent.trim();
+                    if (textContent) {
+                        // Split by <br> or newlines
+                        const parts = textContent.split(/<br\s*\/?>|\n/);
+                        parts.forEach((part, idx) => {
+                            if (part.trim()) {
+                                addBlock('paragraph', idx === 0, -1, part.trim());
+                            }
+                        });
+                        if (parts.length === 0) {
+                            addBlock('paragraph', true);
+                        }
+                    } else {
+                        addBlock('paragraph', true);
+                    }
+                    return;
+                }
+
+                children.forEach((child, index) => {
+                    let type = 'paragraph';
+                    let content = '';
+
+                    // Skip script and style tags
+                    if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE') {
+                        return;
+                    }
+
+                    // Determine block type based on tag
+                    switch (child.tagName.toLowerCase()) {
+                        case 'h1':
+                            type = 'h1';
+                            content = child.innerHTML;
+                            break;
+                        case 'h2':
+                            type = 'h2';
+                            content = child.innerHTML;
+                            break;
+                        case 'h3':
+                            type = 'h3';
+                            content = child.innerHTML;
+                            break;
+                        case 'p':
+                            type = 'paragraph';
+                            content = child.innerHTML;
+                            break;
+                        case 'ul':
+                            type = 'ul';
+                            content = child.innerHTML;
+                            break;
+                        case 'ol':
+                            type = 'ol';
+                            content = child.innerHTML;
+                            break;
+                        case 'blockquote':
+                            type = 'blockquote';
+                            content = child.innerHTML;
+                            break;
+                        case 'hr':
+                            type = 'divider';
+                            content = '';
+                            break;
+                        case 'pre':
+                            type = 'code';
+                            content = child.textContent;
+                            break;
+                        case 'figure':
+                            // Check if it's an image
+                            const img = child.querySelector('img');
+                            if (img) {
+                                type = 'image';
+                                content = img.src;
+                            } else {
+                                type = 'paragraph';
+                                content = child.innerHTML;
+                            }
+                            break;
+                        case 'div':
+                            // Check if it's a callout
+                            if (child.classList && child.classList.contains('callout')) {
+                                type = 'callout';
+                                content = child.innerHTML;
+                            } else {
+                                type = 'paragraph';
+                                content = child.innerHTML;
+                            }
+                            break;
+                        default:
+                            type = 'paragraph';
+                            content = child.innerHTML || child.textContent;
+                    }
+
+                    // Add block (focus on first block only)
+                    addBlock(type, index === 0, -1, content);
+                });
+            } catch (err) {
+                console.error('❌ Error parsing HTML:', err);
+                // Fallback: add empty paragraph
+                addBlock('paragraph', true);
+            }
+        }
+
+        // ==========================================
+        // CLEAN CONTENT FOR EDITOR
+        // Removes display styles when loading post to edit
+        // ==========================================
+        function cleanContentForEditor(html) {
+            if (!html) return '';
+
+            // Create temporary element
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            // 1. Remove inline styles, BUT preserve alignment styles for inline-alignment elements
+            const allElements = temp.querySelectorAll('*');
+            allElements.forEach(el => {
+                // Preserve inline alignment styles
+                if (el.classList && el.classList.contains('inline-alignment')) {
+                    const textAlign = el.style.textAlign;
+                    if (textAlign) {
+                        el.setAttribute('data-preserved-align', textAlign);
+                    }
+                }
+
+                // Remove style attribute
+                el.removeAttribute('style');
+
+                // Restore preserved alignment
+                const preservedAlign = el.getAttribute('data-preserved-align');
+                if (preservedAlign) {
+                    el.style.textAlign = preservedAlign;
+                    el.removeAttribute('data-preserved-align');
+                }
+
+                // Remove id attributes (except those we need)
+                if (el.id && !el.id.startsWith('img-') && !el.id.startsWith('block-')) {
+                    el.removeAttribute('id');
+                }
+                // Remove data-backgroundstyle if exists (from news-detail conversion)
+                if (el.getAttribute('data-backgroundstyle')) {
+                    el.removeAttribute('data-backgroundstyle');
+                }
+            });
+
+            // 2. Convert display button (<a id="rendered-button-...">) back to editor span
+            // Use TreeWalker to handle nested structures
+            const walker = document.createTreeWalker(temp, NodeFilter.SHOW_ELEMENT, null, false);
+            const buttonsToConvert = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.tagName === 'A' && node.id && node.id.startsWith('rendered-button')) {
+                    buttonsToConvert.push(node);
+                }
+            }
+
+            buttonsToConvert.forEach(btn => {
+                const url = btn.getAttribute('data-url') || btn.href || '#';
+                const text = btn.textContent;
+
+                // Get original styles from data attributes or use defaults
+                const bg = btn.getAttribute('data-background') || '#ce7a58';
+                const textColor = btn.getAttribute('data-text-color') || 'white';
+                const radius = btn.getAttribute('data-border-radius') || '8px';
+                const padding = btn.getAttribute('data-padding') || '10px 20px';
+                const fontSize = btn.getAttribute('data-font-size') || '14px';
+
+                // Create editor span
+                const span = document.createElement('span');
+                span.className = 'inline-button';
+                span.setAttribute('contenteditable', 'true');
+                span.setAttribute('data-url', url);
+                span.setAttribute('data-background', bg);
+                span.setAttribute('data-text-color', textColor);
+                span.setAttribute('data-border-radius', radius);
+                span.setAttribute('data-padding', padding);
+                span.setAttribute('data-font-size', fontSize);
+                span.textContent = text;
+
+                btn.parentNode.replaceChild(span, btn);
+            });
+
+            // 3. Convert display code (<code>) back to editor span
+            // Only convert <code> tags that are NOT inside <pre>
+            const codeElements = temp.querySelectorAll('code');
+            const codesToConvert = [];
+            codeElements.forEach(code => {
+                if (!code.closest('pre')) {
+                    codesToConvert.push(code);
+                }
+            });
+
+            codesToConvert.forEach(code => {
+                const text = code.textContent;
+                const span = document.createElement('span');
+                span.className = 'inline-code';
+                span.setAttribute('contenteditable', 'true');
+                span.textContent = text;
+                code.parentNode.replaceChild(span, code);
+            });
+
+            // 4. Remove | and &nbsp;| characters from the cleaned HTML
+            // Use multiple passes to catch all variations
+            let cleanHtml = temp.innerHTML;
+
+            // Remove &nbsp;|
+            cleanHtml = cleanHtml.replace(/&nbsp;\|/g, '');
+
+            // Remove | at the end of elements or followed by whitespace/end
+            cleanHtml = cleanHtml.replace(/\|\s*(<\/p>|<br>|<\/li>|<\/blockquote>|<\/div>)/g, '$1');
+
+            // Remove standalone | with optional surrounding whitespace
+            cleanHtml = cleanHtml.replace(/>\s*\|\s*</g, '><');
+            cleanHtml = cleanHtml.replace(/>\s*\|\s*$/gm, '>');
+
+            // Remove empty span wrappers around |
+            cleanHtml = cleanHtml.replace(/<span[^>]*>\s*\|\s*<\/span>/gi, '');
+
+            // Clean up any double spacing created by removals
+            cleanHtml = cleanHtml.replace(/\s{2,}/g, ' ');
+
+            return cleanHtml;
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config.js"></script>

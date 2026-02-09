@@ -1,5 +1,58 @@
 /* Shared styles for Mini Apps */
 
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .miniapp-card {
+        padding: 1.5rem;
+        margin: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .miniapp-header .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .miniapp-header h1 {
+        font-size: 1rem;
+    }
+
+    .miniapp-header p {
+        font-size: 0.75rem;
+    }
+
+    .miniapp-header img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .btn-secondary {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 0.75rem;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        justify-content: center;
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
 .miniapp-container {
     min-height: 100vh;
     background: #f5f5f5;

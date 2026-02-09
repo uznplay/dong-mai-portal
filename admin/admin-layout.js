@@ -8,8 +8,7 @@ const ADMIN_NAV_ITEMS = [
     { id: 'news', label: 'Tin nổi bật', icon: 'newspaper', href: 'admin-news.html' },
     { id: 'users', label: 'Quản lý Admin', icon: 'users', href: 'admin-users.html' },
     { id: 'media', label: 'Thư viện Media', icon: 'image', href: 'admin-media.html' },
-    { id: 'settings', label: 'Cài đặt', icon: 'settings', href: 'admin-settings.html' },
-    { id: 'logs', label: 'Nhật ký hoạt động', icon: 'activity', href: 'admin-logs.html' }
+    { id: 'settings', label: 'Cài đặt', icon: 'settings', href: 'admin-settings.html' }
 ];
 
 function renderSidebar(activePageId) {
