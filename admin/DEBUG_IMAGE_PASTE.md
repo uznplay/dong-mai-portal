@@ -52,3 +52,4 @@ Look for these log messages:
 - The cursor might not be inside a `.notion-block` element
 - This could happen if the editor structure is different than expected
 
+

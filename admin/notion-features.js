@@ -190,6 +190,8 @@ function initEditorFeatures() {
     const editor = document.getElementById('notionEditor');
     if (editor) {
         editor.addEventListener('input', autoSaveDraft);
+        // Save when clicking outside (blur) - ensures link/content is saved before leaving
+        editor.addEventListener('blur', autoSaveDraft);
     }
     const title = document.getElementById('postTitle');
     if (title) {
@@ -197,6 +199,25 @@ function initEditorFeatures() {
             updateSlug();
             autoSaveDraft();
         });
+        // Save when clicking outside (blur)
+        title.addEventListener('blur', autoSaveDraft);
+    }
+
+    // Add blur handlers to all form fields to save when clicking outside
+    const formFields = ['postSummary', 'postCategory', 'postTags', 'thumbnailUrlInput'];
+    formFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('blur', autoSaveDraft);
+            // Also trigger on change for select elements
+            el.addEventListener('change', autoSaveDraft);
+        }
+    });
+
+    // Add blur handler for thumbnail file input
+    const thumbnailInput = document.getElementById('thumbnailInput');
+    if (thumbnailInput) {
+        thumbnailInput.addEventListener('change', autoSaveDraft);
     }
 
     document.addEventListener('click', (e) => {
@@ -421,6 +442,12 @@ function hideButtonToolbar() {
 }
 
 function showButtonEditor(btn) {
+    // Ensure button has an ID
+    if (!btn.id) {
+        btn.id = 'btn-' + Date.now() + Math.floor(Math.random() * 1000);
+        console.log('Generated new btn.id:', btn.id);
+    }
+
     hideButtonEditor();
 
     buttonEditorEl = document.createElement('div');
@@ -472,6 +499,9 @@ function showButtonEditor(btn) {
             </select>
         </div>
         <div class="editor-section">
+            <button class="save-btn" onclick="saveButtonAndClose('${btn.id}')">💾 Lưu & Đóng</button>
+        </div>
+        <div class="editor-section">
             <button class="delete-btn" onclick="deleteButton('${btn.id}')">🗑️ Xóa nút</button>
         </div>
     `;
@@ -506,6 +536,53 @@ function hideButtonEditor() {
     if (buttonEditorEl) {
         buttonEditorEl.remove();
         buttonEditorEl = null;
+    }
+}
+
+// Save button changes and close editor
+async function saveButtonAndClose(buttonId) {
+    hideButtonEditor();
+
+    // Debug log button
+    const btn = document.getElementById(buttonId);
+    console.log('Button ID:', buttonId);
+    console.log('Button found:', !!btn);
+    console.log('Button data-url BEFORE:', btn ? btn.dataset.url : 'N/A');
+
+    // Force update blocks to capture button changes
+    updateBlocks();
+    console.log('Blocks count:', blocks.length);
+    console.log('First block content:', blocks[0] ? blocks[0].content : 'N/A');
+
+    // Get current post data and update only content
+    if (currentPostId) {
+        try {
+            const { error } = await supabase
+                .from('featured_news')
+                .update({ content: blocks })
+                .eq('id', currentPostId);
+
+            if (error) throw error;
+
+            console.log('Saved successfully!');
+
+            // Show success
+            const saveStatus = document.getElementById('saveStatus');
+            if (saveStatus) {
+                saveStatus.textContent = 'Đã lưu liên kết!';
+                saveStatus.classList.add('text-green-600');
+                setTimeout(() => {
+                    saveStatus.textContent = 'Đã lưu';
+                    saveStatus.classList.remove('text-green-600');
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Error saving button:', err);
+            alert('Lỗi lưu: ' + err.message);
+        }
+    } else {
+        console.log('No currentPostId - cannot save');
+        alert('Vui lưu tiêu đề trước khi lưu liên kết!');
     }
 }
 
@@ -742,11 +819,23 @@ function initKeyboardShortcuts() {
 
         const index = Array.from(editor.children).indexOf(activeBlock);
 
-        // ENTER = Line break within current block (NOT new block)
+        // ENTER = Line break within current block
         if (e.key === 'Enter' && !e.shiftKey) {
             if (document.getElementById('blockTypeSelector').classList.contains('active')) return;
             e.preventDefault();
-            document.execCommand('insertHTML', false, '<br>');
+            document.execCommand('insertLineBreak', false, null);
+            return;
+        }
+
+        // SHIFT + ENTER = Create new block
+        if (e.key === 'Enter' && e.shiftKey) {
+            e.preventDefault();
+            const currentType = activeBlock.dataset.type;
+            if (currentType === 'ul' || currentType === 'ol') {
+                addBlock(currentType, true, index + 1);
+            } else {
+                addBlock('paragraph', true, index + 1);
+            }
             return;
         }
 
@@ -1278,6 +1367,27 @@ function autoSaveDraft() {
     }, 1000);
 }
 window.autoSaveDraft = autoSaveDraft;
+
+// ==========================================
+// 12b. SAVE ON PAGE CLOSE (beforeunload)
+// ==========================================
+window.addEventListener('beforeunload', function(e) {
+    // Force save draft before page closes
+    const titleEl = document.getElementById('postTitle');
+    const editor = document.getElementById('notionEditor');
+    if (titleEl && editor) {
+        const title = titleEl.tagName === 'INPUT' ? titleEl.value : titleEl.innerText;
+        const content = editor.innerHTML;
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id') || 'new';
+        localStorage.setItem('draft_post_' + id, JSON.stringify({
+            title,
+            content,
+            lastSaved: Date.now()
+        }));
+    }
+});
 
 // ==========================================
 // 13. LINK HOVER TOOLTIP

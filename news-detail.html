@@ -372,6 +372,10 @@
                     case 'paragraph':
                         // Handle inline buttons and code
                         let paraContent = content || text;
+                        // Strip contenteditable attributes from all elements
+                        paraContent = paraContent.replace(/\s*contenteditable="false"/g, '');
+                        paraContent = paraContent.replace(/\s*contenteditable="true"/g, '');
+                        paraContent = paraContent.replace(/\s*data-placeholder="[^"]*"/g, '');
                         // Convert button spans to links
                         paraContent = paraContent.replace(/<span[^>]*class="inline-button"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/span>/g,
                             '<a href="$1" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; background: $2; color: $3; padding: $5; border-radius: $4; font-size: $6; font-weight: 600; text-decoration: none; margin: 4px;">$7</a>');
@@ -385,16 +389,16 @@
                         html += `<p class="${align ? 'text-' + align : ''}">${paraContent}</p>`;
                         break;
                     case 'ul':
-                        html += `<ul>${content || ''}</ul>`;
+                        html += `<ul>${(content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</ul>`;
                         break;
                     case 'ol':
-                        html += `<ol>${content || ''}</ol>`;
+                        html += `<ol>${(content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</ol>`;
                         break;
                     case 'blockquote':
                         html += `<blockquote>${text}</blockquote>`;
                         break;
                     case 'callout':
-                        html += `<div class="callout">${content || text}</div>`;
+                        html += `<div class="callout">${(content || text || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>`;
                         break;
                     case 'code':
                         html += `<pre><code>${text}</code></pre>`;

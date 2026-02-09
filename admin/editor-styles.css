@@ -4,6 +4,27 @@
     padding-left: 72px;
 }
 
+/* Fix br tag for proper single line break */
+.notion-block-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.notion-block-content br {
+    display: block;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    content: "";
+    clear: both;
+}
+
+/* Remove extra spacing when br is followed by br */
+.notion-block-content br + br {
+    display: none;
+}
+
 .notion-editor.drag-over-image {
     background: rgba(35, 131, 226, 0.1);
     border: 2px dashed #2383e2;

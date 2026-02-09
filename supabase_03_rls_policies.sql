@@ -111,3 +111,4 @@ CREATE POLICY "Admins can create activity logs" ON admin_activity_logs FOR INSER
 
 
 
+
