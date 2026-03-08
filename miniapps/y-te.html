@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Khám sức khỏe - Phường Đông Mai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Y tế cơ sở</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl mb-4">
+                    <i data-lucide="stethoscope" class="text-white" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Đặt lịch khám</h2>
+                <p class="text-gray-600">Đặt lịch tiêm chủng, khám bệnh tại trạm y tế phường</p>
+            </div>
+            <form id="healthForm">
+                <div class="form-group">
+                    <label class="form-label">Chọn dịch vụ</label>
+                    <select class="form-select">
+                        <option>Tiêm chủng mở rộng (Trẻ em)</option>
+                        <option>Tiêm vắc xin dịch vụ</option>
+                        <option>Khám sức khỏe định kỳ</option>
+                        <option>Khám sơ cấp cứu</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày đặt hẹn</label>
+                    <input type="date" class="form-input">
+                </div>
+                <button class="btn-submit w-full justify-center">Đặt lịch ngay</button>
+            </form>
+        </div>
+    </div>
+    <script src="common.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đóng phí dịch vụ - Phường Đông Mai</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="common.css">
+</head>
+
+<body class="miniapp-container">
+    <div class="miniapp-header">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="HCC Logo" class="w-12 h-12 object-contain">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Thanh toán trực tuyến</h1>
+                        <p class="text-sm text-gray-600">Phường Đông Mai</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="btn-secondary no-print">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                    Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="miniapp-card">
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-4">
+                    <i data-lucide="wallet" class="text-white" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Đóng phí dịch vụ</h2>
+                <p class="text-gray-600">Thanh toán lệ phí hành chính công nhanh chóng, tiện lợi</p>
+            </div>
+
+            <!-- Search Bill Section -->
+            <div id="searchBill">
+                <div class="form-group max-w-lg mx-auto">
+                    <label class="form-label required">Nhập mã hồ sơ / Mã thanh toán</label>
+                    <div class="flex gap-2">
+                        <input type="text" class="form-input" placeholder="VD: HS2026..." id="billCode">
+                        <button onclick="searchBill()" class="btn-submit px-6" style="width: auto;">
+                            <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <p class="text-sm text-gray-500">Hỗ trợ thanh toán qua:</p>
+                    <div class="flex justify-center gap-4 mt-3 grayscale opacity-60">
+                        <div class="h-8 w-12 bg-gray-300 rounded"></div>
+                        <div class="h-8 w-12 bg-gray-300 rounded"></div>
+                        <div class="h-8 w-12 bg-gray-300 rounded"></div>
+                        <div class="h-8 w-12 bg-gray-300 rounded"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Details Section -->
+            <div id="billDetails" style="display: none;">
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 mb-6">
+                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                        <i data-lucide="receipt" class="text-gray-600"></i>
+                        Thông tin thanh toán
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Mã hồ sơ:</span>
+                            <span class="font-bold">HS-2026-9982</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Nội dung:</span>
+                            <span>Lệ phí cấp bản sao trích lục hộ tịch</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Người nộp:</span>
+                            <span>Nguyễn Văn A</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-2 flex justify-between items-center mt-2">
+                            <span class="font-bold text-gray-900">Tổng tiền:</span>
+                            <span class="text-2xl font-bold text-red-600">8.000 đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="font-bold mb-3">Chọn phương thức thanh toán</h4>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <label
+                        class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-all flex flex-col items-center gap-2">
+                        <input type="radio" name="payment" class="hidden" checked>
+                        <i data-lucide="qr-code" class="w-8 h-8 text-blue-600"></i>
+                        <span class="font-medium text-sm">Quét mã QR</span>
+                    </label>
+                    <label
+                        class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-all flex flex-col items-center gap-2">
+                        <input type="radio" name="payment" class="hidden">
+                        <i data-lucide="credit-card" class="w-8 h-8 text-blue-600"></i>
+                        <span class="font-medium text-sm">Thẻ ATM/Visa</span>
+                    </label>
+                </div>
+
+                <button onclick="processPayment()" class="btn-submit w-full justify-center">
+                    Thanh toán ngay
+                </button>
+            </div>
+
+            <!-- Payment Success -->
+            <div id="paymentSuccess" style="display: none;" class="text-center">
+                <div
+                    class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4 animate-bounce">
+                    <i data-lucide="check" class="text-green-600 w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-green-600 mb-2">Thanh toán thành công!</h3>
+                <p class="text-gray-600 mb-6">Biên lai điện tử đã được gửi về email của bạn.</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="goBack()" class="btn-secondary">Về trang chủ</button>
+                    <button class="btn-secondary text-blue-600 border-blue-200">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i> Tải biên lai
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        function searchBill() {
+            const code = document.getElementById('billCode').value;
+            if (!code) return showNotification('Vui lòng nhập mã hồ sơ', 'error');
+
+            // Simulating loading
+            const btn = event.currentTarget;
+            const hideLoading = showLoading(btn);
+
+            setTimeout(() => {
+                hideLoading();
+                document.getElementById('searchBill').style.display = 'none';
+                document.getElementById('billDetails').style.display = 'block';
+                lucide.createIcons();
+            }, 1000);
+        }
+
+        function processPayment() {
+            const btn = event.target;
+            const hideLoading = showLoading(btn);
+
+            setTimeout(() => {
+                hideLoading();
+                document.getElementById('billDetails').style.display = 'none';
+                document.getElementById('paymentSuccess').style.display = 'block';
+                lucide.createIcons();
+            }, 2000);
+        }
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
