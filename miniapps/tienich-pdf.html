@@ -14,6 +14,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://dongmaiportal.github.io/styles.css">
     <style>
+        /* Global SVG icon fix - stroke-based (Feather style) */
+        svg:not([fill]) {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         :root {
             --bg: #0f0f0f;
             --surface: #1a1a1a;
@@ -147,6 +156,7 @@
             width: 28px;
             height: 28px;
             fill: white;
+            stroke: none;
         }
 
         h1 {
@@ -405,6 +415,7 @@
             width: 24px;
             height: 24px;
             fill: white;
+            stroke: none;
         }
 
         .file-details {
@@ -828,7 +839,12 @@
         .btn svg {
             width: 18px;
             height: 18px;
-            fill: currentColor;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
         }
 
         /* Pages Grid */
@@ -1024,6 +1040,7 @@
             width: 14px;
             height: 14px;
             fill: white;
+            stroke: none;
         }
 
         /* Responsive */
@@ -1192,7 +1209,8 @@
                 <div class="pages-header">
                     <h2 class="pages-title">Kết quả phân tích AI</h2>
                     <button class="btn btn-ai" id="downloadAllAI">
-                        <svg viewBox="0 0 24 24">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -1205,7 +1223,8 @@
 
             <div class="actions" id="actions">
                 <button class="btn btn-primary" id="downloadAll">
-                    <svg viewBox="0 0 24 24">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -1246,7 +1265,8 @@
                     <button class="btn btn-secondary" onclick="clearGopFiles()"
                         style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
                         <svg viewBox="0 0 24 24"
-                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
@@ -1255,7 +1275,8 @@
                     <button class="btn btn-primary" onclick="gopPdfFiles()"
                         style="padding: 12px 24px; background: var(--primary); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: 500;">
                         <svg viewBox="0 0 24 24"
-                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
