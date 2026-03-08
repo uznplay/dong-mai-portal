@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết tin tức - Đông Mai Số</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .prose img {
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            width: 100%;
+        }
+
+        .prose h1 {
+            font-size: 2em;
+            font-weight: 700;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .prose h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .prose p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+            color: #374151;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1em;
+        }
+
+        .prose blockquote {
+            border-left: 4px solid #ef4444;
+            padding-left: 1rem;
+            color: #4b5563;
+            font-style: italic;
+        }
+
+        /* Link styling - gạch chân xanh (NHƯNG KHÔNG ẢNH HƯỞNG NÚT) */
+        .prose a:not(.inline-button) {
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            text-underline-offset: 2px;
+        }
+        .prose a:not(.inline-button):hover {
+            color: #1d4ed8 !important;
+        }
+
+        /* Button styling - nút bấm có thể click - DÙNG ID ĐỂ CÓ SPECIFICITY CAO */
+        #rendered-button {
+            all: initial !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 10px 20px !important;
+            background: #ce7a58 !important;
+            color: white !important;
+            font-family: inherit !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            text-align: center !important;
+            white-space: pre-wrap !important;
+            border-radius: 8px !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            margin: 8px 4px !important;
+        }
+        #rendered-button:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        /* Code block styling */
+        .inline-code {
+            background: #1f2937 !important;
+            color: #10b981 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            font-family: monospace !important;
+            font-size: 0.9em !important;
+            white-space: pre-wrap !important;
+        }
+
+        /* Inline alignment styling */
+        .inline-alignment {
+            display: inline-block;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+        <div class="container mx-auto px-4 h-16 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div
+                    class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform border border-gray-100">
+                    <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain">
+                </div>
+                <div class="flex flex-col">
+                    <span
+                        class="font-bold text-xl text-gray-900 group-hover:text-red-600 transition-colors uppercase">ĐÔNG
+                        MAI
+                        SỐ</span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Hành chính phục vụ</span>
+                </div>
+            </a>
+            <a href="tin-noi-bat.html"
+                class="text-sm font-medium text-gray-600 hover:text-red-600 flex items-center gap-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Trở về danh sách
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-20 px-4 flex-1">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Main Content (Left) -->
+                <article class="lg:col-span-2">
+                    <!-- Loading -->
+                    <div id="loading" class="text-center py-20">
+                        <i data-lucide="loader" class="w-10 h-10 text-red-600 animate-spin mx-auto mb-4"></i>
+                        <p class="text-gray-500">Đang tải...</p>
+                    </div>
+
+                    <div id="content"
+                        class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 md:p-8">
+                            <!-- Breadcrumb -->
+                            <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                                <a href="index.html" class="hover:text-red-600">Trang chủ</a>
+                                <span>/</span>
+                                <a href="tin-noi-bat.html" class="hover:text-red-600">Tin tức</a>
+                                <span>/</span>
+                                <span id="categoryLabel" class="text-gray-900 font-medium">Chi tiết</span>
+                            </div>
+
+                            <h1 id="title"
+                                class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                            </h1>
+
+                            <div
+                                class="flex items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
+                                <span class="flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    <span id="date"></span>
+                                </span>
+                            </div>
+
+                            <div id="summary"
+                                class="text-lg font-medium text-gray-700 italic mb-8 bg-gray-50 p-4 rounded-xl border-l-4 border-red-500"
+                                style="display: none;">
+                            </div>
+
+                            <!-- Body Content -->
+                            <div id="body" class="prose prose-lg max-w-none text-gray-800"></div>
+
+                            <div id="tagsContainer" class="mt-8 pt-6 border-t border-gray-100" style="display: none;">
+                                <span class="text-sm font-bold text-gray-900 mr-2">Tags:</span>
+                                <div id="tags" class="inline-flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Sidebar (Right) -->
+                <aside class="space-y-6">
+                    <!-- Tin nổi bật / Xem nhiều -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                        <h3
+                            class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                            <span class="w-1 h-6 bg-red-600 rounded-full"></span>
+                            Tin Mới Nhất
+                        </h3>
+                        <div id="popularNews" class="space-y-4">
+                            <!-- Injected by JS -->
+                            <div class="animate-pulse space-y-3">
+                                <div class="h-20 bg-gray-100 rounded-lg"></div>
+                                <div class="h-20 bg-gray-100 rounded-lg"></div>
+                                <div class="h-20 bg-gray-100 rounded-lg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2026 UBND Phường Đông Mai. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        lucide.createIcons();
+        window.supabase = window.supabaseClient || supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+
+        async function initPage() {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+            const id = params.get('id');
+
+            if (!slug && !id) {
+                window.location.href = 'tin-noi-bat.html';
+                return;
+            }
+
+            try {
+                let query = supabase.from('featured_news').select('*').eq('status', 'published');
+                if (slug) query = query.eq('slug', slug);
+                else query = query.eq('id', id);
+
+                const { data: post, error } = await query.single();
+                if (error || !post) throw error;
+
+                // Render Main Post
+                renderPost(post);
+
+                // View count removed per user request
+
+                // Load Popular News (Sidebar)
+                loadPopularNews(post.id);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500">Không tìm thấy bài viết</p>';
+            }
+        }
+
+        function renderPost(post) {
+            document.title = `${post.title} - Đông Mai Số`;
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+
+            document.getElementById('title').textContent = post.title;
+
+            // Show summary only if exists
+            const summaryEl = document.getElementById('summary');
+            if (post.summary && post.summary.trim()) {
+                summaryEl.textContent = post.summary;
+                summaryEl.style.display = 'block';
+            } else {
+                summaryEl.style.display = 'none';
+            }
+
+            // Generate HTML from content (JSON array) OR use content_html (old format)
+            let htmlContent = '';
+            
+            if (post.content && Array.isArray(post.content) && post.content.length > 0) {
+                // New format: generate HTML from JSON content
+                htmlContent = generateHTMLFromContent(post.content);
+            } else if (post.content_html) {
+                // Old format: use content_html directly
+                htmlContent = post.content_html;
+            } else {
+                htmlContent = 'Nội dung đang cập nhật...';
+            }
+
+            document.getElementById('body').innerHTML = htmlContent;
+
+            // Clean up: remove &nbsp;| and trailing pipes from content
+            const bodyEl = document.getElementById('body');
+            bodyEl.innerHTML = bodyEl.innerHTML.replace(/&nbsp;\|/g, '').replace(/\|\s*$/g, '');
+
+            // Make buttons clickable with correct styling
+            const buttons = bodyEl.querySelectorAll('.inline-button');
+            buttons.forEach((btn, index) => {
+                const url = btn.dataset.url || '#';
+                const text = btn.textContent;
+                const bg = btn.dataset.background || '#ce7a58';
+                const textColor = btn.dataset.textColor || 'white';
+                const radius = btn.dataset.borderRadius || '8px';
+                const padding = btn.dataset.padding || '10px 20px';
+                const fontSize = btn.dataset.fontSize || '14px';
+                
+                // Create proper link with ID for higher specificity
+                const link = document.createElement('a');
+                link.id = 'rendered-button-' + index;
+                link.href = url;
+                link.textContent = text;
+                link.setAttribute('target', '_blank');
+                // Apply styles directly with !important
+                link.style.cssText = `
+                    all: initial !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: ${padding} !important;
+                    background: ${bg} !important;
+                    color: ${textColor} !important;
+                    font-family: inherit !important;
+                    font-size: ${fontSize} !important;
+                    font-weight: 600 !important;
+                    text-decoration: none !important;
+                    text-align: center !important;
+                    white-space: pre-wrap !important;
+                    border-radius: ${radius} !important;
+                    border: none !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s !important;
+                    margin: 8px 4px !important;
+                `;
+                
+                btn.parentNode.replaceChild(link, btn);
+            });
+            document.getElementById('date').textContent = new Date(post.published_at || post.created_at).toLocaleDateString('vi-VN');
+
+            const catMap = { 'tin-tuc': 'Tin tức', 'su-kien': 'Sự kiện', 'thong-bao': 'Thông báo' };
+            document.getElementById('categoryLabel').textContent = catMap[post.category] || 'Tin tức';
+
+            // Show tags only if exist
+            const tagsContainer = document.getElementById('tagsContainer');
+            if (post.tags && post.tags.length) {
+                document.getElementById('tags').innerHTML = post.tags.map(t => `<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200">#${t}</span>`).join('');
+                tagsContainer.style.display = 'block';
+            } else {
+                tagsContainer.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // GENERATE HTML FROM CONTENT (JSON array)
+        // Converts blocks to HTML for display
+        // ==========================================
+        function generateHTMLFromContent(blocks) {
+            if (!blocks || !Array.isArray(blocks)) return '';
+
+            let html = '';
+
+            blocks.forEach(block => {
+                const text = block.text || '';
+                const content = block.content || '';
+                const align = block.align || '';
+
+                switch (block.type) {
+                    case 'h1':
+                        html += `<h1 class="${align ? 'text-' + align : ''}">${text}</h1>`;
+                        break;
+                    case 'h2':
+                        html += `<h2 class="${align ? 'text-' + align : ''}">${text}</h2>`;
+                        break;
+                    case 'h3':
+                        html += `<h3 class="${align ? 'text-' + align : ''}">${text}</h3>`;
+                        break;
+                    case 'paragraph':
+                        // Handle inline buttons and code
+                        let paraContent = content || text;
+                        // Strip contenteditable attributes from all elements
+                        paraContent = paraContent.replace(/\s*contenteditable="false"/g, '');
+                        paraContent = paraContent.replace(/\s*contenteditable="true"/g, '');
+                        paraContent = paraContent.replace(/\s*data-placeholder="[^"]*"/g, '');
+                        // Convert button spans to links
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-button"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/span>/g,
+                            '<a href="$1" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; background: $2; color: $3; padding: $5; border-radius: $4; font-size: $6; font-weight: 600; text-decoration: none; margin: 4px;">$7</a>');
+                        // Convert code spans
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-code"[^>]*>([^<]*)<\/span>/g, '<code style="background: #f3f4f6; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>');
+                        // Convert inline alignment divs/spans to span with style
+                        paraContent = paraContent.replace(/<div[^>]*class="inline-alignment"[^>]*style="([^"]*)"[^>]*>([^<]*)<\/div>/g, '<span style="display: inline-block; width: 100%; $1;">$2</span>');
+                        paraContent = paraContent.replace(/<span[^>]*class="inline-alignment"[^>]*style="([^"]*)"[^>]*>([^<]*)<\/span>/g, '<span style="display: inline-block; width: 100%; $1;">$2</span>');
+                        // Convert inline pasted images
+                        paraContent = paraContent.replace(/<img[^>]*class="inline-pasted-image"[^>]*src="([^"]*)"[^>]*>/g, '<img src="$1" style="max-width: 100%; height: auto; display: inline-block; margin: 4px 0; border-radius: 4px;">');
+                        html += `<p class="${align ? 'text-' + align : ''}">${paraContent}</p>`;
+                        break;
+                    case 'ul':
+                        html += `<ul>${(content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</ul>`;
+                        break;
+                    case 'ol':
+                        html += `<ol>${(content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</ol>`;
+                        break;
+                    case 'blockquote':
+                        html += `<blockquote>${text}</blockquote>`;
+                        break;
+                    case 'callout':
+                        html += `<div class="callout">${(content || text || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>`;
+                        break;
+                    case 'code':
+                        html += `<pre><code>${text}</code></pre>`;
+                        break;
+                    case 'divider':
+                        html += '<hr>';
+                        break;
+                    case 'image':
+                        if (content) {
+                            html += `<figure><img src="${content}" alt="Image"></figure>`;
+                        }
+                        break;
+                }
+            });
+
+            return html;
+        }
+
+        async function loadPopularNews(currentId) {
+            const { data, error } = await supabase.from('featured_news')
+                .select('slug, title, thumbnail_url, published_at')
+                .eq('status', 'published')
+                .neq('id', currentId)
+                .order('published_at', { ascending: false })
+                .limit(5);
+
+            const container = document.getElementById('popularNews');
+            if (error) {
+                console.error("Error loading popular news:", error);
+                container.innerHTML = '<p class="text-sm text-gray-500">Không thể tải tin khác.</p>';
+                return;
+            }
+
+            if (data && data.length) {
+                container.innerHTML = data.map(news => `
+                    <div class="flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                        onclick="window.location.href='news-detail.html?slug=${news.slug}'">
+                        <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <img src="${news.thumbnail_url || 'logo.png'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-semibold text-gray-800 group-hover:text-red-600 line-clamp-2 mb-1">${news.title}</h4>
+                            <div class="text-xs text-gray-500 flex items-center gap-2">
+                                <span><i data-lucide="calendar" class="w-3 h-3 inline"></i> ${new Date(news.published_at).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+                lucide.createIcons();
+            } else {
+                container.innerHTML = '<p class="text-sm text-gray-500">Chưa có tin khác.</p>';
+            }
+        }
+
+        initPage();
+    </script>
+</body>
+
+</html>

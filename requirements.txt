@@ -1,0 +1,11 @@
+ddgs
+requests
+fastapi
+uvicorn
+beautifulsoup4
+supabase
+fake-useragent
+python-dotenv
+opencv-python
+numpy
+Pillow

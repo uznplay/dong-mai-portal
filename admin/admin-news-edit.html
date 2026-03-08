@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Force browser to reload fresh content -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Tin nổi bật - Admin Portal Đông Mai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(211, 47, 47, 0.1);
+        }
+
+        .sidebar-link.active {
+            background-color: #D32F2F;
+            color: white;
+        }
+
+        /* Notion-like Editor Styles */
+        .notion-editor {
+            min-height: 400px;
+            padding-left: 72px;
+        }
+
+        .notion-editor.drag-over-image {
+            background: rgba(35, 131, 226, 0.1);
+            border: 2px dashed #2383e2;
+            border-radius: 8px;
+        }
+
+        .notion-block {
+            position: relative;
+            padding: 3px 2px;
+            margin: 1px 0;
+            border-radius: 3px;
+            transition: background-color 0.1s ease-in-out;
+            min-height: 28px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .notion-block:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .notion-block:hover .block-controls {
+            opacity: 1;
+        }
+
+        .block-controls {
+            position: absolute;
+            left: -66px;
+            top: 2px;
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+        }
+
+        /* Move Block Buttons */
+        .block-move-up,
+        .block-move-down {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .block-move-up:hover,
+        .block-move-down:hover {
+            background: #e5e7eb;
+            color: #2383e2;
+        }
+
+        .block-move-up:active,
+        .block-move-down:active {
+            transform: scale(0.9);
+        }
+
+        .block-add-btn {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: all 0.1s;
+        }
+
+        .block-add-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            color: #4b5563;
+        }
+
+        .notion-block-content {
+            outline: none;
+            min-height: 24px;
+            flex: 1;
+            padding: 3px 0;
+            margin: 0;
+            /* Make it behave like a paragraph */
+            display: block;
+            width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            -webkit-hyphens: auto;
+            hyphens: auto;
+            line-height: 1.6;
+        }
+
+        /* Inline pasted images */
+        .inline-pasted-image {
+            max-width: 100%;
+            height: auto;
+            display: inline-block;
+            vertical-align: baseline;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+
+        /* Make inline images behave well in contenteditable */
+        .notion-block-content .inline-pasted-image {
+            pointer-events: none;
+        }
+
+        .notion-block-content .inline-pasted-image:focus {
+            outline: 2px solid #2383e2;
+            outline-offset: 2px;
+        }
+
+        /* Inline alignment for selected text */
+        .inline-alignment {
+            display: inline-block;
+            width: 100%;
+        }
+
+        .notion-block-content:empty::before {
+            content: attr(data-placeholder);
+            color: #d1d5db;
+            pointer-events: none;
+        }
+
+        .notion-block-content[data-type="h1"] {
+            font-size: 1.875em;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 2px 0;
+        }
+
+        .notion-block-content[data-type="h2"] {
+            font-size: 1.5em;
+            font-weight: 700;
+            line-height: 1.3;
+            margin: 1px 0;
+        }
+
+        .notion-block-content[data-type="h3"] {
+            font-size: 1.25em;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 1px 0;
+        }
+
+        .notion-block-content[data-type="blockquote"] {
+            border-left: 4px solid #D32F2F;
+            padding-left: 16px;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .notion-block-content[data-type="code"],
+        pre.notion-block-content[data-type="code"] {
+            background: #1e293b !important;
+            color: #f1f5f9 !important;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            border: 1px solid #334155;
+        }
+
+        /* Code block caret color for visibility */
+        .notion-block-content[data-type="code"]:focus,
+        pre.notion-block-content[data-type="code"]:focus {
+            caret-color: #60a5fa;
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Callout & Divider */
+        .notion-block-content.callout {
+            background-color: #F1F1F0;
+            border-radius: 4px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            border: 1px solid #e5e5e5;
+        }
+
+        .notion-block-content[data-type="divider"] {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            height: 1px;
+            width: 100%;
+        }
+
+        /* List styles */
+        .notion-block-content ul,
+        .notion-block-content ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .notion-block-content ul li,
+        .notion-block-content ol li {
+            margin: 2px 0;
+            line-height: 1.6;
+        }
+
+        .notion-block-content ul {
+            list-style-type: disc;
+        }
+
+        .notion-block-content ol {
+            list-style-type: decimal;
+        }
+
+        /* Remove list styling when empty */
+        .notion-block-content ul:empty,
+        .notion-block-content ol:empty {
+            display: none;
+        }
+
+        /* Link styles */
+        .notion-block-content a,
+        #postTitle a {
+            color: #2563EB;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notion-block-content a:hover,
+        #postTitle a:hover {
+            color: #1d4ed8;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        /* Link tooltip on hover */
+        .notion-block-content a[href]:hover::after,
+        #postTitle a[href]:hover::after {
+            content: attr(href);
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 1000;
+            margin-top: -30px;
+        }
+
+        /* Code tag style (inline code) */
+        .notion-block-content code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #dc2626;
+        }
+
+
+
+
+        .block-type-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .block-type-item:hover {
+            background: #f3f4f6;
+        }
+
+        .block-type-item i {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+        }
+
+        .image-block-preview {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .image-block-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-block-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .image-block-wrapper:hover .image-block-remove {
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 40;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-overlay {
+            transition: visibility 0s linear 0.3s, opacity 0.3s linear;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+            transition-delay: 0s;
+        }
+
+        #settingsPanel {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active #settingsPanel {
+            transform: translateX(0);
+        }
+
+        /* Clean Editor Styles */
+        notion-block-content {
+            padding: 2px 0;
+            line-height: 1.6;
+        }
+
+        .notion-block-content:focus {
+            background-color: transparent;
+        }
+
+        /* Selection States */
+        .notion-block.selected {
+            background-color: rgba(35, 131, 226, 0.08) !important;
+        }
+
+        /* Block Move Buttons */
+        .block-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .notion-block:hover .block-controls {
+            opacity: 1;
+        }
+        
+        .block-move-up,
+        .block-move-down {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: #6b7280;
+            transition: all 0.15s ease;
+        }
+        
+        .block-move-up:hover,
+        .block-move-down:hover {
+            background: #e5e7eb;
+            color: #2383e2;
+        }
+        
+        .block-move-up:active,
+        .block-move-down:active {
+            transform: scale(0.9);
+        }
+        
+        .block-add-btn,
+        .block-actions-btn {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+        }
+        
+        .block-add-btn:hover,
+        .block-actions-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Block Context Menu */
+        .block-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            z-index: 1000;
+            display: none;
+            min-width: 200px;
+        }
+
+        .block-menu.active {
+            display: block;
+        }
+
+        .block-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .block-menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .block-menu-item.danger {
+            color: #dc2626;
+        }
+
+        .block-menu-item.danger:hover {
+            background: #fee2e2;
+        }
+
+        .block-menu-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 4px 0;
+        }
+
+        /* Button Toolbar */
+        .button-toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            z-index: 10000;
+            display: none;
+            gap: 2px;
+        }
+
+        .button-toolbar.active {
+            display: flex;
+        }
+
+        .btn-toolbar-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #374151;
+            transition: background 0.1s;
+        }
+
+        .btn-toolbar-btn:hover {
+            background: #f3f4f6;
+        }
+
+        /* Color Picker Menu */
+        .color-picker-menu {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            z-index: 10001;
+        }
+
+        .color-picker-menu .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 40px);
+            gap: 6px;
+        }
+
+        .color-picker-menu .color-grid div {
+            width: 40px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .color-picker-menu .color-grid div:hover {
+            transform: scale(1.1);
+        }
+
+        /* Inline Button & Code - Editable Nested Blocks */
+        .inline-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: text;
+            outline: 2px solid transparent;
+            transition: outline 0.2s, opacity 0.2s;
+            text-align: center;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            /* Default button styles */
+            background: #ce7a58;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 4px;
+            border: none;
+            min-height: 20px;
+        }
+
+        .inline-button:hover {
+            outline: 2px solid #667eea;
+            opacity: 0.9;
+        }
+
+        .inline-button.editing {
+            outline: 2px solid #2563eb !important;
+        }
+
+        /* Ensure inline-button doesn't inherit unwanted styles */
+        .inline-button * {
+            pointer-events: none;
+        }
+
+        .inline-code {
+            display: inline;
+            cursor: text;
+            outline: 2px solid transparent;
+            transition: outline 0.2s;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            /* Default code styles */
+            background: #f3f4f6;
+            color: #dc2626;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .inline-code:hover {
+            outline: 2px solid #667eea;
+        }
+
+        .inline-code.editing {
+            outline: 2px solid #dc2626 !important;
+            background: #1f2937;
+            color: #10b981;
+        }
+
+        /* Code Toolbar */
+        .code-toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            z-index: 10000;
+            display: flex;
+            gap: 2px;
+        }
+
+        .code-toolbar-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #dc2626;
+            transition: background 0.1s;
+        }
+
+        .code-toolbar-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Button Editor Panel */
+        .button-editor {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            z-index: 10001;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .button-editor .editor-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .button-editor .editor-section label {
+            font-size: 13px;
+            color: #374151;
+            font-weight: 500;
+            min-width: 70px;
+        }
+
+        .button-editor input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .button-editor input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        .button-editor select {
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .button-editor select:focus {
+            border-color: #667eea;
+        }
+
+        .button-editor .color-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #e5e5e5;
+            cursor: pointer;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+
+        .button-editor .color-btn:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+
+        .button-editor .delete-btn {
+            width: 100%;
+            padding: 10px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .button-editor .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .button-editor .save-btn {
+            width: 100%;
+            padding: 10px;
+            background: #dcfce7;
+            color: #16a34a;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .button-editor .save-btn:hover {
+            background: #bbf7d0;
+        }
+
+        .button-editor input[type="color"] {
+            width: 100%;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Color option styles */
+        .color-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .color-option.solid {
+            color: #333;
+            text-shadow: none;
+        }
+
+        /* Block action button (3 dots) */
+        .block-actions-btn {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: all 0.1s;
+        }
+
+        .block-actions-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            color: #4b5563;
+        }
+
+        /* Block selector - HIDDEN by default, use NEW slash menu instead */
+        .block-type-selector {
+            display: none !important;
+            /* Force hide old selector */
+        }
+
+        /* Block selector scrollbar */
+        .block-type-selector::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .block-type-selector::-webkit-scrollbar-thumb {
+            background-color: #e5e5e5;
+            border-radius: 4px;
+        }
+
+
+        /* Floating Toolbar V2 */
+        .text-toolbar {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 4px;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 2px;
+            font-size: 14px;
+        }
+
+        .text-toolbar.active {
+            display: flex;
+            animation: fadeIn 0.1s ease-out;
+        }
+
+        .toolbar-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #374151;
+            transition: background 0.1s;
+            border: none;
+            background: transparent;
+        }
+
+        .toolbar-btn:hover {
+            background: #f3f4f6;
+            color: black;
+        }
+
+        .toolbar-dropdown-trigger {
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .toolbar-dropdown-trigger:hover {
+            background: #f3f4f6;
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 20px;
+            background: #e5e5e5;
+            margin: 0 6px;
+        }
+
+        /* Dropdown Menu */
+        .toolbar-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 4px;
+            min-width: 160px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .toolbar-dropdown-menu.active {
+            display: block;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .color-item:hover {
+            background: #f3f4f6;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- SIDEBAR (matching admin portal) -->
+        <aside class="w-64 bg-white shadow-xl z-30 flex flex-col h-full border-r border-gray-100">
+            <!-- Logo area matching index.html -->
+            <div class="p-6 border-b">
+                <div class="flex items-center gap-3">
+                    <img src="../logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <div>
+                        <h1 class="font-bold text-gray-900 leading-none">ĐÔNG MAI SỐ</h1>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">HÀNH CHÍNH PHỤC VỤ</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <a href="index.html"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-gray-700 hover:bg-red-50">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    Quay lại
+                </a>
+                <div class="h-px bg-gray-100 my-4 mx-2"></div>
+                <div class="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trình soạn thảo
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <i data-lucide="user" class="w-5 h-5 text-red-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="currentAdminName" class="font-medium text-gray-900 truncate">Admin</p>
+                        <p id="currentAdminRole" class="text-xs text-gray-500 capitalize">...</p>
+                    </div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Đăng xuất
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-white">
+            <header
+                class="bg-white sticky top-0 z-20 border-b border-transparent hover:border-gray-100 transition-colors">
+                <div class="flex items-center justify-between px-8 py-4 max-w-4xl mx-auto">
+                    <div class="flex items-center gap-4"><a href="index.html"
+                            class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"><i
+                                data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                        <h2 id="pageTitle" class="text-lg font-bold text-gray-800">Soạn thảo</h2>
+                        <div class="flex items-center gap-2 text-sm text-gray-400"><span id="postStatus"
+                                class="px-2 py-0.5 rounded text-xs">Bản nháp</span><span>•</span><span
+                                id="saveStatus">Đã lưu</span></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="toggleSettingsBtn" onclick="toggleSettings()"
+                            class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 group relative"
+                            title="Cài đặt bài viết">
+                            <i data-lucide="settings"
+                                class="w-5 h-5 group-hover:rotate-45 transition-transform duration-300"></i>
+                            <span
+                                class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">Cài
+                                đặt</span>
+                        </button>
+                        <div class="h-4 w-px bg-gray-200 mx-2"></div><button onclick="publishPost()"
+                            class="text-sm font-medium px-3 py-1.5 bg-gray-900 text-white rounded hover:bg-black transition-colors">Đăng
+                            bài </button>
+                    </div>
+                </div>
+            </header>
+            <div class="p-8 pb-32">
+                <div class="max-w-3xl mx-auto">
+                    <!-- Title Input -->
+                    <!-- Title Input as Block -->
+                    <div class="mb-6 group">
+                        <h1 id="postTitle" contenteditable="true"
+                            class="w-full text-5xl font-bold text-gray-900 border-none outline-none placeholder-gray-300 bg-transparent py-2 leading-tight"
+                            data-placeholder="Tiêu đề bài viết..." oninput="updateSlug();"></h1>
+                        <style>
+                            #postTitle:empty:before {
+                                content: attr(data-placeholder);
+                                color: #d1d5db;
+                                /* gray-300 */
+                                pointer-events: none;
+                            }
+                        </style>
+                    </div>
+                    <!-- Notion-like Editor -->
+                    <div class="mb-6">
+                        <div id="notionEditor" class="notion-editor min-h-[500px] outline-none pb-20">
+                            <!-- Blocks will be rendered here -->
+                        </div>
+                        <p class="text-sm text-gray-300 mt-4 select-none">
+                            Nhấn <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Enter</kbd> xuống dòng ·
+                            <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Shift+Enter</kbd> tạo block mới ·
+                            <kbd class="font-mono bg-gray-50 px-1 rounded text-gray-900">Shift+Enter</kbd> thoát code/button
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Article Settings Modal -->
+    <div id="settingsModal" class="modal-overlay z-40" onclick="if(event.target === this) toggleSettings()">
+        <div class="bg-white w-96 h-full fixed right-0 top-0 shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-full"
+            id="settingsPanel">
+            <div class="p-6 border-b flex items-center justify-between bg-gray-50">
+                <h3 class="font-bold text-gray-900">Cài đặt bài viết</h3><button onclick="toggleSettings()"
+                    class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Slug -->
+                <div><label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Đường
+                        dẫn (Slug)</label>
+                    <div
+                        class="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">
+                        <span class="text-gray-400">/tin-noi-bat/</span><span id="postSlug"
+                            class="truncate font-medium">bai-viet-moi</span>
+                    </div>
+                </div>
+                <!-- Thumbnail -->
+                <div><label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Ảnh
+                        bìa</label>
+                    <div id="thumbnailArea"
+                        class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-black hover:bg-gray-50 transition-all cursor-pointer bg-white aspect-video flex flex-col items-center justify-center relative group"
+                        onclick="document.getElementById('thumbnailInput').click()">
+                        <input type="file" id="thumbnailInput" accept="image/*" class="hidden"
+                            onchange="uploadThumbnail(event)">
+
+                        <!-- Preview (Hidden by default) -->
+                        <div id="thumbnailPreview" class="hidden w-full h-full absolute inset-0 z-10">
+                            <img id="thumbnailImg" src="" alt="Thumbnail"
+                                class="w-full h-full object-cover rounded-lg shadow-sm">
+                            <div
+                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <button
+                                    onclick="event.stopPropagation(); document.getElementById('thumbnailInput').click()"
+                                    class="text-white bg-white/20 backdrop-blur hover:bg-white/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                                    Đổi ảnh
+                                </button>
+                                <button onclick="removeThumbnail(event)"
+                                    class="text-white bg-red-500/80 hover:bg-red-600 p-2 rounded-lg transition-colors"
+                                    title="Xóa ảnh">
+                                    <i data-lucide="trash" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Placeholder -->
+                        <div id="thumbnailUpload" class="flex flex-col items-center">
+                            <div
+                                class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600 transition-colors">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Tải ảnh lên</span>
+                            <span class="text-xs text-gray-400 mt-1">PNG, JPG, GIF (Max 5MB)</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex items-center gap-3">
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                        <span class="text-xs text-gray-400 font-medium">HOẶC</span>
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                    </div>
+
+                    <div class="mt-2 relative">
+                        <i data-lucide="link"
+                            class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="thumbnailUrlInput" placeholder="Dán đường dẫn ảnh (URL)..."
+                            class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                            onchange="if(this.value){ document.getElementById('thumbnailImg').src = this.value; document.getElementById('thumbnailUpload').classList.add('hidden'); document.getElementById('thumbnailPreview').classList.remove('hidden'); }">
+                    </div>
+                </div>
+                <!-- Category -->
+                <div><label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Danh
+                        mục</label><select id="postCategory"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black text-sm">
+                        <option value="">Chọn danh mục</option>
+                        <option value="tin-tuc">Tin tức</option>
+                        <option value="su-kien">Sự kiện</option>
+                        <option value="thong-bao">Thông báo</option>
+                        <option value="huong-dan">Hướng dẫn</option>
+                        <option value="chinh-sach">Chính sách</option>
+                    </select></div>
+                <!-- Tags -->
+                <div><label
+                        class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tags</label><input
+                        type="text" id="postTags" placeholder="tag1, tag2..."
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black text-sm">
+                </div>
+
+                <!-- Keyword Aliases -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        Từ khóa liên kết (Search Aliases)
+                    </label>
+                    <div class="space-y-2">
+                        <div id="aliasesContainer"
+                            class="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                            <!-- Alias chips will be inserted here -->
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="aliasInput" placeholder="VD: công chứng cccd, xác nhận bản sao..."
+                                class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-black text-sm"
+                                onkeypress="if(event.key==='Enter'){event.preventDefault();addAlias();}" />
+                            <button type="button" onclick="addAlias()"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
+                                Thêm
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            💡 Nhập các từ khóa khác để người dùng dễ tìm thấy bài viết (VD: "công chứng", "xác nhận bản
+                            sao")
+                        </p>
+                    </div>
+                </div>
+                <!-- Summary -->
+                <div><label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tóm
+                        tắt</label><textarea id="postSummary" rows="3"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black text-sm resize-none"></textarea>
+                </div>
+                <!-- Options -->
+                <div class="space-y-3 pt-4 border-t border-gray-100">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-medium text-gray-700">Bài viết nổi bật</span>
+                        <input type="checkbox" id="isFeatured"
+                            class="w-4 h-4 text-black rounded border-gray-300 focus:ring-black">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-medium text-gray-700">Ghim bài viết</span>
+                        <input type="checkbox" id="isPinned"
+                            class="w-4 h-4 text-black rounded border-gray-300 focus:ring-black">
+                    </label>
+                </div>
+
+                <!-- Schedule -->
+                <div class="space-y-3 pt-4 border-t border-gray-100">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-sm font-medium text-gray-700">Hẹn giờ đăng</span>
+                        <input type="checkbox" id="enableSchedule"
+                            class="w-4 h-4 text-black rounded border-gray-300 focus:ring-black"
+                            onchange="toggleSchedule()">
+                    </label>
+                    <div id="scheduleDate" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Thời
+                            gian</label>
+                        <input type="datetime-local" id="scheduledAt"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black text-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- Block Type Selector -->
+    <div id="blockTypeSelector" class="block-type-selector">
+        <div class="block-type-item" onclick="addBlock('paragraph')"><i data-lucide="type" class="w-5 h-5"></i><span>Văn
+                bản</span></div>
+        <div class="block-type-item" onclick="addBlock('h1')"><i data-lucide="heading-1" class="w-5 h-5"></i><span>Tiêu
+                đề 1</span></div>
+        <div class="block-type-item" onclick="addBlock('h2')"><i data-lucide="heading-2" class="w-5 h-5"></i><span>Tiêu
+                đề 2</span></div>
+        <div class="block-type-item" onclick="addBlock('h3')"><i data-lucide="heading-3" class="w-5 h-5"></i><span>Tiêu
+                đề 3</span></div>
+        <div class="block-type-item" onclick="addBlock('ul')"><i data-lucide="list" class="w-5 h-5"></i><span>Danh sách
+                không thứ tự</span></div>
+        <div class="block-type-item" onclick="addBlock('ol')"><i data-lucide="list-ordered"
+                class="w-5 h-5"></i><span>Danh sách có thứ tự</span></div>
+        <div class="block-type-item" onclick="addBlock('blockquote')"><i data-lucide="quote"
+                class="w-5 h-5"></i><span>Trích dẫn</span></div>
+        <div class="block-type-item" onclick="addBlock('callout')"><i data-lucide="message-square"
+                class="w-5 h-5"></i><span>Hộp thông báo</span></div>
+        <div class="block-type-item" onclick="addBlock('code')"><i data-lucide="code" class="w-5 h-5"></i><span>Đoạn
+                code</span></div>
+        <div class="block-type-item" onclick="addBlock('divider')"><i data-lucide="minus" class="w-5 h-5"></i><span>Dấu
+                phân cách</span></div>
+        <div class="block-type-item" onclick="document.getElementById('imageUpload').click()"><i data-lucide="image"
+                class="w-5 h-5"></i><span>Hình ảnh</span></div>
+    </div>
+    <!-- Floating Text Toolbar -->
+
+    <!-- Floating Text Toolbar V2 -->
+    <div id="textToolbar" class="text-toolbar">
+        <!-- Block Type Dropdown -->
+        <div class="relative">
+            <div class="toolbar-dropdown-trigger" onclick="toggleDropdown('blockTypeDropdown')">
+                <span>Text</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </div>
+            <div id="blockTypeDropdown" class="toolbar-dropdown-menu">
+                <div class="color-item" onclick="setBlockType('paragraph')"><i data-lucide="type" class="w-4 h-4"></i>
+                    Text</div>
+                <div class="color-item" onclick="setBlockType('h1')"><i data-lucide="heading-1" class="w-4 h-4"></i>
+                    Heading 1</div>
+                <div class="color-item" onclick="setBlockType('h2')"><i data-lucide="heading-2" class="w-4 h-4"></i>
+                    Heading 2</div>
+                <div class="color-item" onclick="setBlockType('ul')"><i data-lucide="list" class="w-4 h-4"></i> Bullet
+                    List</div>
+                <div class="color-item" onclick="setBlockType('ol')"><i data-lucide="list-ordered" class="w-4 h-4"></i>
+                    Numbered List</div>
+                <div class="color-item" onclick="setBlockType('quote')"><i data-lucide="quote" class="w-4 h-4"></i>
+                    Quote</div>
+                <div class="color-item" onclick="setBlockType('code')"><i data-lucide="code" class="w-4 h-4"></i> Code
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <button class="toolbar-btn" onclick="formatText('bold')" title="Bold"><i data-lucide="bold"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('italic')" title="Italic"><i data-lucide="italic"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('underline')" title="Underline"><i data-lucide="underline"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('strikethrough')" title="Strike"><i data-lucide="strikethrough"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('code')" title="Code"><i data-lucide="code"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('createLink')" title="Link"><i data-lucide="link"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="formatText('buttonLink')" title="Button Link" style="color: #8B5CF6;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="8" width="18" height="6" rx="2"/>
+                <path d="M12 8V5"/>
+                <path d="M9 5h6"/>
+            </svg>
+        </button>
+
+        <div class="toolbar-separator"></div>
+
+        <button class="toolbar-btn" onclick="setAlignment('left')" title="Align Left"><i data-lucide="align-left"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="setAlignment('center')" title="Align Center"><i data-lucide="align-center"
+                class="w-4 h-4"></i></button>
+        <button class="toolbar-btn" onclick="setAlignment('right')" title="Align Right"><i data-lucide="align-right"
+                class="w-4 h-4"></i></button>
+
+        <div class="toolbar-separator"></div>
+
+        <!-- Color Dropdown -->
+        <div class="relative">
+            <div class="toolbar-dropdown-trigger" onclick="toggleDropdown('colorDropdown')">
+                <span class="text-lg">A</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </div>
+
+            <!-- Color Dropdown Menu (Inside Toolbar) -->
+            <div id="colorDropdown" class="toolbar-dropdown-menu"
+                style="width: 200px; max-height: 300px; overflow-y: auto;">
+                <div class="p-2 text-xs font-bold text-gray-500">COLOR</div>
+                <div class="color-item" onclick="setColor('foreColor', 'black')">
+                    <div class="w-4 h-4 border rounded bg-black"></div> Default
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#9CA3AF')">
+                    <div class="w-4 h-4 border rounded bg-gray-400"></div> Gray
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#B45309')">
+                    <div class="w-4 h-4 border rounded bg-yellow-700"></div> Brown
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#EA580C')">
+                    <div class="w-4 h-4 border rounded bg-orange-600"></div> Orange
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#D97706')">
+                    <div class="w-4 h-4 border rounded bg-yellow-500"></div> Yellow
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#16A34A')">
+                    <div class="w-4 h-4 border rounded bg-green-600"></div> Green
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#2563EB')">
+                    <div class="w-4 h-4 border rounded bg-blue-600"></div> Blue
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#9333EA')">
+                    <div class="w-4 h-4 border rounded bg-purple-600"></div> Purple
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#DB2777')">
+                    <div class="w-4 h-4 border rounded bg-pink-600"></div> Pink
+                </div>
+                <div class="color-item" onclick="setColor('foreColor', '#DC2626')">
+                    <div class="w-4 h-4 border rounded bg-red-600"></div> Red
+                </div>
+
+                <div class="p-2 text-xs font-bold text-gray-500 border-t mt-1">BACKGROUND</div>
+                <div class="color-item" onclick="setColor('hiliteColor', 'white')">
+                    <div class="w-4 h-4 border rounded bg-white"></div> Default
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#F3F4F6')">
+                    <div class="w-4 h-4 border rounded bg-gray-100"></div> Gray background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#FEF3C7')">
+                    <div class="w-4 h-4 border rounded bg-yellow-100"></div> Yellow background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#DCFCE7')">
+                    <div class="w-4 h-4 border rounded bg-green-100"></div> Green background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#DBEAFE')">
+                    <div class="w-4 h-4 border rounded bg-blue-100"></div> Blue background
+                </div>
+                <div class="color-item" onclick="setColor('hiliteColor', '#FEE2E2')">
+                    <div class="w-4 h-4 border rounded bg-red-100"></div> Red background
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ... (rest of body) ... -->
+
+    </div>
+    </div>
+
+    <!-- Image Upload (hidden) --><input type="file" id="imageUpload" accept="image/*" multiple class="hidden"
+        onchange="uploadImage(event)">
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <p id="toastMessage">Thông báo</p>
+    </div>
+    <script>
+        lucide.createIcons();
+
+        let currentAdmin = null;
+        let currentPostId = null;
+        let blocks = [];
+        let currentBlockIndex = -1;
+        let blockSelectorPosition = null;
+
+        // Text Formatting Functions removed - now handled by notion-features.js
+        // See window.formatText in notion-features.js
+
+        // Make publish globally accessible
+        window.publishPost = async function() {
+            await savePost('published');
+        };
+
+        // Make saveDraft globally accessible
+        window.saveDraftPost = async function() {
+            await savePost('draft');
+        };
+
+        // Check auth
+        async function checkAuth() {
+            const adminUser = localStorage.getItem('adminUser');
+            const sessionStr = localStorage.getItem('supabaseSession');
+
+            if (!adminUser || !sessionStr) {
+                window.location.href = '/admin/login.html';
+                return null;
+            }
+
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.expires_at && new Date().getTime() > session.expires_at * 1000) {
+                    localStorage.removeItem('adminUser');
+                    localStorage.removeItem('supabaseSession');
+                    window.location.href = '/admin/login.html';
+                    return null;
+                }
+            } catch (e) {
+                window.location.href = '/admin/login.html';
+                return null;
+            }
+
+            currentAdmin = JSON.parse(adminUser);
+            document.getElementById('currentAdminName').textContent = currentAdmin.full_name;
+            document.getElementById('currentAdminRole').textContent = getRoleLabel(currentAdmin.role);
+            return currentAdmin;
+        }
+
+        function getRoleLabel(role) {
+            const labels = {
+                'super_admin': 'Super Admin',
+                'admin': 'Admin',
+                'editor': 'Editor',
+                'viewer': 'Viewer'
+            };
+            return labels[role] || role;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        // Initialize editor (Legacy - kept for reference)
+        // Keyboard handling now done in notion-features.js
+        function initEditor_Legacy() {
+            const editor = document.getElementById('notionEditor');
+
+            // Add first paragraph block
+            addBlock('paragraph', true);
+
+            // Keyboard handling moved to notion-features.js
+            // editor.addEventListener('keydown', handleEditorKeydown);
+            editor.addEventListener('click', hideBlockSelector);
+        }
+
+        function handleEditorKeydown_Legacy(e) {
+            const editor = document.getElementById('notionEditor');
+            const activeBlock = document.activeElement.closest('.notion-block');
+
+            if (!activeBlock) return;
+
+            const index = Array.from(editor.children).indexOf(activeBlock);
+
+            // Handle / command
+            if (e.key === '/' && document.activeElement.textContent === '') {
+                e.preventDefault();
+                showBlockSelector(activeBlock);
+                return;
+            }
+
+            // Handle Enter
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (activeBlock.querySelector('.block-type-selector.active')) {
+                    e.preventDefault();
+                    return;
+                }
+
+                e.preventDefault();
+                const currentType = activeBlock.dataset.type;
+
+                if (currentType === 'ul' || currentType === 'ol') {
+                    // Add new list item
+                    addBlock(currentType, true, index + 1);
+                }
+
+                else {
+                    // Add new paragraph
+                    addBlock('paragraph', true, index + 1);
+                }
+            }
+
+            // Handle Backspace on empty block
+            if (e.key === 'Backspace' && document.activeElement.textContent === '') {
+                if (blocks.length > 1) {
+                    e.preventDefault();
+                    removeBlock(index);
+
+                    // Focus previous block
+                    const prevIndex = Math.max(0, index - 1);
+                    const prevBlock = editor.children[prevIndex];
+
+                    if (prevBlock) {
+                        const content = prevBlock.querySelector('.notion-block-content');
+
+                        if (content) {
+                            content.focus();
+                            // Move cursor to end
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.selectNodeContents(content);
+                            range.collapse(false);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    }
+                }
+            }
+
+            // Handle Up/Down arrows
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                const sel = window.getSelection();
+
+                if (sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+
+                    if (range.collapsed) {
+                        const rect = range.getBoundingClientRect();
+                        const editorRect = editor.getBoundingClientRect();
+
+                        if ((e.key === 'ArrowUp' && rect.top <= editorRect.top + 50) || (e.key === 'ArrowDown' && rect.bottom >= editorRect.bottom - 50)) {
+                            e.preventDefault();
+                            const newIndex = e.key === 'ArrowUp' ? Math.max(0, index - 1) : Math.min(blocks.length - 1, index + 1);
+                            const targetBlock = editor.children[newIndex];
+
+                            if (targetBlock) {
+                                const content = targetBlock.querySelector('.notion-block-content');
+                                if (content) content.focus();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function showBlockSelector(block) {
+            const selector = document.getElementById('blockTypeSelector');
+            const rect = block.getBoundingClientRect();
+
+            blockSelectorPosition = {
+                block: block,
+                index: Array.from(block.parentElement.children).indexOf(block)
+            }
+
+                ;
+
+            selector.style.left = rect.left - 200 + 'px';
+            selector.style.top = rect.top + rect.height + 'px';
+            selector.classList.add('active');
+            lucide.createIcons();
+        }
+
+        function hideBlockSelector() {
+            document.getElementById('blockTypeSelector').classList.remove('active');
+        }
+
+        function showBlockMenuFor_Legacy(blockId) {
+            const block = document.getElementById(blockId);
+            if (!block) return;
+            showBlockSelector(block);
+        }
+
+        function addBlock_Legacy(type, focus = false, index = -1) {
+            const editor = document.getElementById('notionEditor');
+            const id = 'block-' + Date.now();
+
+            const block = document.createElement('div');
+            block.className = 'notion-block';
+            block.id = id;
+            block.dataset.type = type;
+
+            let content = '';
+
+            switch (type) {
+                case 'h1': case 'h2': case 'h3': content = `<h${type.charAt(1)
+                    }
+
+                class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="Tiêu đề..."></h${type.charAt(1)
+                    }
+
+                >`;
+                    break;
+
+                case 'ul': case 'ol': content = `<${type
+                    }
+
+                class="notion-block-content pl-6" contenteditable="true" data-type="${type}" data-placeholder="Danh sách..."></${type
+                    }
+
+                >`;
+                    break;
+                case 'blockquote': content = `<blockquote class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="Trích dẫn..."></blockquote>`;
+                    break;
+                case 'callout': content = `<div class="notion-block-content callout" contenteditable="true" data-type="${type}" data-placeholder="Thông báo..."><span class="text-2xl mr-2">💡</span><span contenteditable="true" class="flex-1"></span></div>`;
+                    break;
+                case 'code': content = `<pre class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="Code here..."></pre>`;
+                    break;
+                case 'divider': content = `<hr class="notion-block-content" data-type="${type}">`;
+                    break;
+                case 'image': 
+                    // Handle both URL and base64 data URLs
+                    const imgSrc = (initialHTML && (initialHTML.startsWith('http') || initialHTML.startsWith('data:'))) ? initialHTML : '';
+                    content = `<div class="image-block-wrapper"><img src="${imgSrc}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+                    break;
+                default: content = `<div class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="Nhập nội dung hoặc gõ '/' để chọn block..."></div>`;
+            }
+
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
+
+            // Add event listeners for this block
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+            
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+            
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+            
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+            
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
+
+            if (index >= 0) {
+                const children = editor.children;
+
+                if (index < children.length) {
+                    editor.insertBefore(block, children[index]);
+                }
+
+                else {
+                    editor.appendChild(block);
+                }
+            }
+
+            else {
+                editor.appendChild(block);
+            }
+
+            lucide.createIcons();
+
+            if (focus) {
+                const contentEl = block.querySelector('.notion-block-content');
+
+                if (contentEl) {
+                    contentEl.focus();
+                }
+            }
+
+            hideBlockSelector();
+            updateBlocks();
+        }
+
+        function removeBlock(id) {
+            const block = document.getElementById(id);
+            if (!block) return;
+
+            const index = Array.from(block.parentElement.children).indexOf(block);
+            block.remove();
+            updateBlocks();
+
+            // Focus adjacent block
+            const editor = document.getElementById('notionEditor');
+            const children = editor.children;
+            const newIndex = Math.min(index, children.length - 1);
+
+            if (children[newIndex]) {
+                const content = children[newIndex].querySelector('.notion-block-content');
+                if (content) content.focus();
+            }
+        }
+
+        function moveBlock(id, direction) {
+            const block = document.getElementById(id);
+            if (!block) return;
+
+            const editor = document.getElementById('notionEditor');
+            const index = Array.from(editor.children).indexOf(block);
+            const newIndex = index + direction;
+
+            if (newIndex >= 0 && newIndex < editor.children.length) {
+                const targetBlock = editor.children[newIndex];
+
+                if (direction === -1) {
+                    editor.insertBefore(block, targetBlock);
+                }
+
+                else {
+                    editor.insertBefore(targetBlock, block);
+                }
+            }
+
+            updateBlocks();
+        }
+
+        function updateBlocks() {
+            blocks = [];
+            const editor = document.getElementById('notionEditor');
+
+            Array.from(editor.children).forEach(block => {
+                const content = block.querySelector('.notion-block-content');
+
+                if (content) {
+                    blocks.push({
+                        id: block.id,
+                        type: block.dataset.type,
+                        content: content.innerHTML,
+                        text: content.textContent
+                    });
+                }
+
+                else if (block.dataset.type === 'image') {
+                    const img = block.querySelector('img');
+
+                    blocks.push({
+                        id: block.id,
+                        type: 'image',
+                        content: img ? img.src : '',
+                        text: ''
+                    });
+                }
+
+                else if (block.dataset.type === 'divider') {
+                    blocks.push({
+                        id: block.id,
+                        type: 'divider',
+                        content: '',
+                        text: ''
+                    });
+                }
+            });
+        }
+
+        // Image paste handler - paste images at cursor position
+        function initImagePasteHandler() {
+            const editor = document.getElementById('notionEditor');
+            if (!editor) return;
+
+            editor.addEventListener('paste', async function(e) {
+                // Check if clipboard has image data
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                let imageItem = null;
+                let imageType = null;
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    // Check for image types
+                    if (item.type.startsWith('image/') ||
+                        item.type === 'image' ||
+                        item.type.includes('png') ||
+                        item.type.includes('jpeg') ||
+                        item.type.includes('jpg') ||
+                        item.type.includes('gif') ||
+                        item.type.includes('webp')) {
+                        imageItem = item;
+                        imageType = item.type;
+                        break;
+                    }
+                }
+
+                // If no image in clipboard, return and let default behavior handle
+                if (!imageItem) {
+                    console.log('No image found in clipboard. Item types:', Array.from(items).map(i => i.type));
+                    return;
+                }
+
+                console.log('Image paste detected. Type:', imageType);
+
+                // Prevent default paste behavior
+                e.preventDefault();
+
+                // Get the image file from clipboard
+                const blob = imageItem.getAsFile();
+                if (!blob) {
+                    console.error('Could not get image file from clipboard');
+                    return;
+                }
+
+                try {
+                    // Read the image as base64
+                    const reader = new FileReader();
+                    reader.onload = async function(event) {
+                        const base64Data = event.target.result;
+                        console.log('Image converted to base64. Length:', base64Data.length);
+
+                        // Insert image at cursor position
+                        insertImageAtCursor(base64Data);
+                    };
+                    reader.onerror = function(error) {
+                        console.error('Error reading image:', error);
+                        showToast('Lỗi khi đọc ảnh từ clipboard');
+                    };
+                    reader.readAsDataURL(blob);
+                } catch (error) {
+                    console.error('Error processing pasted image:', error);
+                    showToast('Lỗi khi xử lý ảnh: ' + error.message);
+                }
+            });
+        }
+
+        function insertImageAtCursor(base64Data) {
+            console.log('=== insertImageAtCursor called ===');
+            console.log('Base64 data length:', base64Data ? base64Data.length : 'undefined');
+
+            const selection = window.getSelection();
+            console.log('Selection exists:', !!selection);
+            console.log('Range count:', selection?.rangeCount);
+
+            if (!selection || selection.rangeCount === 0) {
+                console.log('No selection - using fallback append');
+                // If no selection, append to editor
+                addImageBlockWithUrl(base64Data);
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            console.log('Common ancestor:', range.commonAncestorContainer);
+            console.log('Common ancestor type:', range.commonAncestorContainer.nodeType);
+            console.log('Common ancestor node name:', range.commonAncestorContainer.nodeName);
+
+            // Check if we're inside a contenteditable element in the editor
+            const editor = document.getElementById('notionEditor');
+            console.log('Editor exists:', !!editor);
+            console.log('Editor contains commonAncestor:', editor.contains(range.commonAncestorContainer));
+
+            if (!editor.contains(range.commonAncestorContainer)) {
+                console.log('Not in editor - using fallback append');
+                // If not in editor, append to editor
+                addImageBlockWithUrl(base64Data);
+                return;
+            }
+
+            // Find the notion-block ancestor using closest (proven method in this codebase)
+            let container = range.commonAncestorContainer;
+
+            // If text node, get parent element first
+            if (container.nodeType === Node.TEXT_NODE) {
+                console.log('Container is TEXT_NODE, getting parent');
+                container = container.parentNode;
+            }
+
+            console.log('Container before closest:', container);
+            const block = container.closest('.notion-block');
+            console.log('Found block:', !!block);
+            console.log('Block type:', block?.dataset?.type);
+
+            if (block && block.dataset.type !== 'image') {
+                // INSERT IMAGE DIRECTLY AT CURSOR POSITION (inline)
+                console.log('Inserting image INLINE at cursor position...');
+
+                // Create image element
+                const img = document.createElement('img');
+                img.src = base64Data;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.display = 'inline-block';
+                img.style.verticalAlign = 'baseline';
+                img.style.margin = '4px 0';
+                img.contentEditable = 'false';
+                img.className = 'inline-pasted-image';
+
+                // Insert at cursor position
+                try {
+                    range.deleteContents();
+                    range.insertNode(img);
+
+                    // Move cursor to after the image
+                    range.setStartAfter(img);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    console.log('Image inserted inline at cursor!');
+                    console.log('=== insertImageAtCursor completed ===');
+                    return;
+                } catch (e) {
+                    console.error('Error inserting inline image:', e);
+                }
+            }
+
+            // Fallback: append to editor as new block
+            console.log('Using fallback: addImageBlockWithUrl');
+            addImageBlockWithUrl(base64Data);
+        }
+
+        function createImageBlock(url) {
+            const id = 'block-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+            const block = document.createElement('div');
+            block.className = 'notion-block';
+            block.id = id;
+            block.dataset.type = 'image';
+
+            const content = `<div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
+
+            // Add event listeners
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
+
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
+
+            return block;
+        }
+
+        // Image upload
+        async function uploadImage(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast(`Ảnh ${file.name
+                        }
+
+                        quá lớn (>10MB)`);
+                    continue;
+                }
+
+                try {
+                    showToast(`Đang tải ảnh ${i + 1
+                        }
+
+                        /${files.length
+                        }
+
+                        ...`);
+
+                    const fileName = `news/${Date.now()
+                        }
+
+                    -${file.name
+                        }
+
+                    `;
+
+                    const {
+                        data,
+                        error
+                    }
+
+                        = await supabase.storage.from('media').upload(fileName, file);
+
+                    if (error) throw error;
+
+                    const {
+                        data: urlData
+                    }
+
+                        = supabase.storage.from('media').getPublicUrl(fileName);
+
+                    // Add image block
+                    // Generate unique ID for this specific block to avoid conflict in loop
+                    const id = 'block-' + Date.now() + '-' + i;
+
+                    // Manually calling addBlock logic here to ensure correct ID or just call addBlock and update src
+                    // Let's use addBlock but we need to wait for DOM update if we want to set SRC immediately
+                    // Or construct the block HTML manually with SRC
+
+                    addImageBlockWithUrl(urlData.publicUrl);
+
+                }
+
+                catch (error) {
+                    console.error('Error uploading image:', error);
+                    showToast('Lỗi tải ảnh: ' + error.message);
+                }
+            }
+
+            showToast('Hoàn tất tải ảnh');
+            // Reset input
+            event.target.value = '';
+        }
+
+        function addImageBlockWithUrl(url) {
+            const editor = document.getElementById('notionEditor');
+            const id = 'block-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+            const block = document.createElement('div');
+            block.className = 'notion-block';
+            block.id = id;
+            block.dataset.type = 'image';
+
+            const content = `<div class="image-block-wrapper"><img src="${url}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+
+            block.innerHTML = `<div class="block-controls" contenteditable="false">
+                <div class="block-move-up" data-block-id="${id}" title="Di chuyển lên (Alt+↑)">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-move-down" data-block-id="${id}" title="Di chuyển xuống (Alt+↓)">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-add-btn" data-block-id="${id}" title="Thêm block">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="block-actions-btn" data-block-id="${id}" title="Tùy chọn">
+                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>${content}`;
+
+            // Add event listeners
+            const removeBtn = block.querySelector('.image-block-remove');
+            const addBtn = block.querySelector('.block-add-btn');
+            const actionsBtn = block.querySelector('.block-actions-btn');
+            const moveUpBtn = block.querySelector('.block-move-up');
+            const moveDownBtn = block.querySelector('.block-move-down');
+            
+            if (moveUpBtn) {
+                moveUpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id);
+                });
+            }
+            
+            if (moveDownBtn) {
+                moveDownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveBlock(id, 'down');
+                });
+            }
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeBlock(id);
+                });
+            }
+            
+            if (addBtn) {
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockMenuFor(id);
+                });
+            }
+            
+            if (actionsBtn) {
+                actionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBlockActions(e, id);
+                });
+            }
+
+            editor.appendChild(block);
+            lucide.createIcons();
+            updateBlocks();
+            hideBlockSelector();
+        }
+
+        // Thumbnail upload
+        async function uploadThumbnail(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Kích thước ảnh không được vượt quá 5MB');
+                return;
+            }
+
+            try {
+                showToast('Đang tải thumbnail...');
+
+                const fileName = `thumbnails/${Date.now()
+                    }
+
+                -${file.name
+                    }
+
+                `;
+
+                const {
+                    data,
+                    error
+                }
+
+                    = await supabase.storage.from('media').upload(fileName, file);
+
+                if (error) throw error;
+
+                const {
+                    data: urlData
+                }
+
+                    = supabase.storage.from('media').getPublicUrl(fileName);
+
+                document.getElementById('thumbnailImg').src = urlData.publicUrl;
+                document.getElementById('thumbnailUpload').classList.add('hidden');
+                document.getElementById('thumbnailPreview').classList.remove('hidden');
+
+                showToast('Tải thumbnail thành công');
+            }
+
+            catch (error) {
+                console.error('Error uploading thumbnail:', error);
+                showToast('Lỗi tải thumbnail: ' + error.message);
+            }
+        }
+
+        function removeThumbnail(event) {
+            event.stopPropagation();
+            document.getElementById('thumbnailInput').value = '';
+            document.getElementById('thumbnailPreview').classList.add('hidden');
+            document.getElementById('thumbnailUpload').classList.remove('hidden');
+        }
+
+        // Slug generation
+        function updateSlug() {
+            const titleEl = document.getElementById('postTitle');
+            const title = titleEl.tagName === 'INPUT' ? titleEl.value : titleEl.innerText;
+            let slug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 80);
+
+            // Add timestamp for new posts to ensure uniqueness
+            if (!currentPostId) {
+                const timestamp = Date.now().toString(36).slice(-6); // Last 6 chars of base36 timestamp
+                slug = slug ? `${slug}-${timestamp}` : `bai-viet-${timestamp}`;
+            }
+
+            document.getElementById('postSlug').textContent = '/tin-noi-bat/' + (slug || 'bai-viet-moi');
+        }
+
+        // Schedule toggle
+        function toggleSchedule() {
+            const enabled = document.getElementById('enableSchedule').checked;
+            const scheduleDate = document.getElementById('scheduleDate');
+            if (enabled) {
+                scheduleDate.classList.remove('hidden');
+            } else {
+                scheduleDate.classList.add('hidden');
+            }
+        }
+
+        // Save draft
+        async function saveDraft() {
+            await savePost('draft');
+        }
+
+        // Publish
+        async function publish() {
+            await savePost('published');
+        }
+
+        async function savePost(status) {
+            const titleEl = document.getElementById('postTitle');
+            // Support both input and contenteditable div
+            const title = titleEl.tagName === 'INPUT' ? titleEl.value.trim() : titleEl.innerText.trim();
+
+            if (!title) {
+                showToast('Vui lòng nhập tiêu đề bài viết');
+                return;
+            }
+
+            updateBlocks();
+
+            // Thumbnail Logic
+            const urlInput = document.getElementById('thumbnailUrlInput');
+            const thumbnailImg = document.getElementById('thumbnailImg');
+
+            let thumbnailUrl = urlInput && urlInput.value.trim() ? urlInput.value.trim() : null;
+
+            // Fallback to img src if input empty (e.g. file upload or existing)
+            if (!thumbnailUrl && thumbnailImg && thumbnailImg.src && thumbnailImg.src !== window.location.href) {
+                // Check if it's a real URL/Base64, not just current page URL (empty src behavior)
+                if (thumbnailImg.getAttribute('src')) thumbnailUrl = thumbnailImg.src;
+            }
+
+            // Generate unique slug from title with timestamp
+            const baseSlug = title.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-');
+
+            // Add timestamp to make slug unique (avoid 409 conflicts)
+            const timestamp = Date.now().toString().slice(-6); // Last 6 digits
+            const uniqueSlug = `${baseSlug}-${timestamp}`;
+
+            // Update the slug display
+            document.getElementById('postSlug').textContent = uniqueSlug;
+
+            const postData = {
+                title: title,
+                slug: uniqueSlug,
+                summary: document.getElementById('postSummary').value,
+                content: blocks,
+                // content_html: generateHTML(), // ✅ REMOVED - Now generated on-demand from content
+                thumbnail_url: thumbnailUrl,
+                category: document.getElementById('postCategory').value,
+                tags: document.getElementById('postTags').value.split(',').map(t => t.trim()).filter(t => t),
+                keyword_aliases: currentAliases, // ✅ NEW
+                status: status,
+                is_featured: document.getElementById('isFeatured').checked,
+                is_pinned: document.getElementById('isPinned').checked,
+                author_id: currentAdmin.id
+            };
+
+            if (status === 'scheduled' || (document.getElementById('enableSchedule').checked && status === 'published')) {
+                const scheduledAt = document.getElementById('scheduledAt').value;
+                if (!scheduledAt) {
+                    showToast('Vui lòng chọn thời gian đăng');
+                    return;
+                }
+                postData.scheduled_at = new Date(scheduledAt).toISOString();
+                postData.status = 'scheduled';
+            }
+
+            if (status === 'published' && !document.getElementById('enableSchedule').checked) {
+                postData.published_at = new Date().toISOString();
+            }
+
+            try {
+                if (currentPostId) {
+                    const { data, error } = await supabase.from('featured_news').update(postData).eq('id', currentPostId).select().single();
+                    if (error) throw error;
+                    showToast('Cập nhật bài viết thành công');
+                } else {
+                    const { data, error } = await supabase.from('featured_news').insert(postData).select().single();
+                    if (error) throw error;
+                    currentPostId = data.id;
+                    showToast('Tạo bài viết thành công');
+                }
+
+                if (!currentPostId && status !== 'draft') {
+                    const url = new URL(window.location);
+                    url.searchParams.set('id', currentPostId);
+                    window.history.pushState({}, '', url);
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('409')) {
+                    showToast('Lỗi: Slug bị trùng. Vui lòng thử lại (hệ thống sẽ tạo slug mới).');
+                } else {
+                    showToast('Lỗi lưu bài viết: ' + (error.message || 'Unknown error'));
+                }
+            }
+        }
+
+        function generateHTML() {
+            let html = '';
+            blocks.forEach(block => {
+                // Handle Alignment
+                const alignClass = block.align ? `text-${block.align}` : '';
+                const style = block.align ? `style="text-align: ${block.align}"` : '';
+
+                switch (block.type) {
+                    case 'h1': html += `<h1 class="${alignClass}" ${style}>${block.text}</h1>`; break;
+                    case 'h2': html += `<h2 class="${alignClass}" ${style}>${block.text}</h2>`; break;
+                    case 'h3': html += `<h3 class="${alignClass}" ${style}>${block.text}</h3>`; break;
+                    case 'paragraph':
+                        // Process content to preserve inline button and code data attributes
+                        let paraContent = block.content || block.text || '';
+                        // Convert any display buttons back to editor spans with data attributes
+                        paraContent = paraContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        // Convert any display code back to editor spans
+                        paraContent = paraContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<p class="${alignClass}" ${style}>${paraContent}</p>`;
+                        break;
+                    case 'ul': html += `<ul class="${alignClass}" ${style}>${block.content || '<li></li>'}</ul>`; break;
+                    case 'ol': html += `<ol class="${alignClass}" ${style}>${block.content || '<li></li>'}</ol>`; break;
+                    case 'blockquote':
+                        // Process content to preserve inline button and code data attributes
+                        let quoteContent = block.content || block.text || '';
+                        quoteContent = quoteContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        quoteContent = quoteContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<blockquote class="${alignClass}" ${style}>${quoteContent}</blockquote>`;
+                        break;
+                    case 'callout':
+                        // Process content to preserve inline button and code data attributes
+                        let calloutContent = block.content || block.text || '';
+                        calloutContent = calloutContent.replace(/<a[^>]*id="rendered-button-[^"]*"[^>]*data-url="([^"]*)"[^>]*data-background="([^"]*)"[^>]*data-text-color="([^"]*)"[^>]*data-border-radius="([^"]*)"[^>]*data-padding="([^"]*)"[^>]*data-font-size="([^"]*)"[^>]*>([^<]*)<\/a>/g,
+                            '<span class="inline-button" contenteditable="true" data-url="$1" data-background="$2" data-text-color="$3" data-border-radius="$4" data-padding="$5" data-font-size="$6">$7</span>');
+                        calloutContent = calloutContent.replace(/<code[^>]*>([^<]*)<\/code>/g, '<span class="inline-code" contenteditable="true">$1</span>');
+                        html += `<div class="callout ${alignClass}" ${style}>${calloutContent}</div>`;
+                        break;
+                    case 'code': html += `<pre class="${alignClass}" ${style}><code>${block.text}</code></pre>`; break;
+                    case 'divider': html += '<hr>'; break;
+                    case 'image':
+                        if (block.content) {
+                            html += `<figure class="${alignClass}" ${style}><img src="${block.content}" alt="Image"></figure>`;
+                        }
+                        break;
+                }
+            });
+            return html;
+        }
+
+        async function loadPost(id) {
+            try {
+                const { data: post, error } = await supabase.from('featured_news').select('*').eq('id', id).single();
+                if (error) throw error;
+
+                currentPostId = post.id;
+                document.getElementById('pageTitle').textContent = 'Chỉnh sửa bài viết';
+
+                // Fix postTitle
+                const titleEl = document.getElementById('postTitle');
+                if (titleEl.tagName === 'INPUT') titleEl.value = post.title;
+                else titleEl.innerText = post.title;
+
+                updateSlug();
+                document.getElementById('postSlug').textContent = '/tin-noi-bat/' + post.slug;
+
+                if (post.thumbnail_url) {
+                    document.getElementById('thumbnailImg').src = post.thumbnail_url;
+                    document.getElementById('thumbnailUpload').classList.add('hidden');
+                    document.getElementById('thumbnailPreview').classList.remove('hidden');
+                }
+
+                document.getElementById('postCategory').value = post.category || '';
+                document.getElementById('postTags').value = (post.tags || []).join(', ');
+                document.getElementById('postSummary').value = post.summary || '';
+                document.getElementById('isFeatured').checked = post.is_featured;
+                document.getElementById('isPinned').checked = post.is_pinned;
+
+                updateStatusBadge(post.status);
+
+                // Load blocks
+                // Check if content is an array (new format) or HTML string (old format)
+                    const editor = document.getElementById('notionEditor');
+                    editor.innerHTML = '';
+
+                try {
+                    if (post.content && Array.isArray(post.content) && post.content.length > 0) {
+                        // New format: content is JSON array of blocks
+                        console.log('✅ Loading from JSON array format...');
+
+                    post.content.forEach((block) => {
+                            let content = block.content || block.text || '';
+                            
+                            // Clean up display styles before loading to editor
+                            if (['paragraph', 'blockquote', 'callout', 'ul', 'ol'].includes(block.type)) {
+                                content = cleanContentForEditor(content);
+                            }
+
+                        addBlock(block.type, false, -1, content);
+
+                        // Apply Alignment
+                        const lastBlock = editor.lastElementChild;
+                        if (lastBlock && block.align) {
+                            setAlignment(block.align, lastBlock);
+                        }
+                    });
+
+                    } else if (typeof post.content === 'string' && post.content.trim().startsWith('<')) {
+                        // Old format: content is HTML string - parse it into blocks
+                        console.log('📝 Old format detected: content is HTML string...');
+                        parseHTMLToBlocks(post.content);
+
+                    } else if (typeof post.content === 'string') {
+                        // Try parsing as JSON first
+                        try {
+                            const parsed = JSON.parse(post.content);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                // It's JSON string of array
+                                console.log('✅ Content is JSON string array, parsing...');
+                                parsed.forEach((block, idx) => {
+                                    let content = block.content || block.text || '';
+                                    if (['paragraph', 'blockquote', 'callout', 'ul', 'ol'].includes(block.type)) {
+                                        content = cleanContentForEditor(content);
+                                    }
+                                    addBlock(block.type, idx === 0, -1, content);
+                                });
+                            } else {
+                                // It's HTML in JSON string format
+                                console.log('📝 Content is HTML in JSON string...');
+                                parseHTMLToBlocks(parsed);
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Not valid JSON, treating as HTML...');
+                            parseHTMLToBlocks(post.content);
+                        }
+
+                    } else if (typeof post.content_html === 'string' && post.content_html.trim().startsWith('<')) {
+                        // Fallback: try content_html
+                        console.log('📝 Using content_html as fallback...');
+                        parseHTMLToBlocks(post.content_html);
+
+                    } else {
+                        // Empty content - add a paragraph
+                        console.log('➕ No content found, adding empty paragraph...');
+                        addBlock('paragraph', true);
+                    }
+                } catch (err) {
+                    console.error('❌ Error loading content:', err);
+                    // Fallback: try content_html or add empty paragraph
+                    if (typeof post.content_html === 'string') {
+                        console.log('📝 Emergency fallback to content_html...');
+                        parseHTMLToBlocks(post.content_html);
+                    } else {
+                        addBlock('paragraph', true);
+                    }
+                }
+
+                // Apply button styles from data attributes after loading
+                applyButtonStylesFromData(editor);
+
+                    if (window.lucide) lucide.createIcons();
+
+                // ✅ Load keyword aliases (NEW)
+                if (window.loadAliasesFromPost) {
+                    window.loadAliasesFromPost(post);
+                }
+
+            } catch (error) {
+                console.error('Error loading post:', error);
+                showToast('Lỗi tải bài viết');
+            }
+        }
+
+        function updateBlocks() {
+            blocks = [];
+            const editor = document.getElementById('notionEditor');
+
+            Array.from(editor.children).forEach(block => {
+                const content = block.querySelector('.notion-block-content');
+
+                if (content) {
+                    let align = '';
+
+                    // Check alignment on the content element itself
+                    if (content.classList.contains('text-center') || content.style.textAlign === 'center') align = 'center';
+                    if (content.classList.contains('text-right') || content.style.textAlign === 'right') align = 'right';
+
+                    // Also check for inline alignment elements inside content
+                    if (!align) {
+                        const inlineAlign = content.querySelector('.inline-alignment');
+                        if (inlineAlign) {
+                            const inlineStyle = inlineAlign.getAttribute('style') || '';
+                            if (inlineStyle.includes('text-align: center') || inlineStyle.includes('center')) align = 'center';
+                            if (inlineStyle.includes('text-align: right') || inlineStyle.includes('right')) align = 'right';
+                            if (inlineStyle.includes('text-align: left') || inlineStyle.includes('left')) align = 'left';
+                        }
+                    }
+
+                    blocks.push({
+                        id: block.id,
+                        type: block.dataset.type,
+                        content: content.innerHTML,
+                        text: content.textContent,
+                        align: align
+                    });
+                } else if (block.dataset.type === 'image') {
+                    const img = block.querySelector('img');
+                    const wrapper = block.querySelector('.image-block-wrapper');
+                    let align = '';
+                    if (wrapper && (wrapper.classList.contains('text-center') || wrapper.style.textAlign === 'center')) align = 'center';
+                    if (wrapper && (wrapper.classList.contains('text-right') || wrapper.style.textAlign === 'right')) align = 'right';
+
+                    blocks.push({
+                        id: block.id,
+                        type: 'image',
+                        content: img ? img.src : '',
+                        text: '',
+                        align: align
+                    });
+                } else if (block.dataset.type === 'divider') {
+                    blocks.push({ id: block.id, type: 'divider', content: '', text: '' });
+                }
+            });
+        }
+
+
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('postStatus');
+
+            const badges = {
+                'published': '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full">Đã đăng</span>',
+                'draft': '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full">Bản nháp</span>',
+                'scheduled': '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">Hẹn giờ</span>',
+                'archived': '<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full">Lưu trữ</span>'
+            }
+
+                ;
+            badge.innerHTML = badges[status] || badges['draft'];
+        }
+
+        function logout() {
+            localStorage.removeItem('adminUser');
+            localStorage.removeItem('supabaseSession');
+            window.location.href = '/admin/login.html';
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) {
+                console.error("Modal settingsModal not found");
+                return;
+            }
+            const isActive = modal.classList.contains('active');
+
+            if (isActive) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            } else {
+                modal.style.display = 'flex';
+                // Trigger reflow
+                modal.offsetHeight;
+                modal.classList.add('active');
+                // Ensure icons are loaded in the modal
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function autoSaveDraft() {
+            // Simple debounce could be added here
+        }
+
+        // Drag and drop for thumbnail
+        const thumbnailArea = document.getElementById('thumbnailArea');
+
+        thumbnailArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            thumbnailArea.classList.add('border-red-400', 'bg-red-50');
+        });
+
+        thumbnailArea.addEventListener('dragleave', () => {
+            thumbnailArea.classList.remove('border-red-400', 'bg-red-50');
+        });
+
+        thumbnailArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            thumbnailArea.classList.remove('border-red-400', 'bg-red-50');
+            const file = e.dataTransfer.files[0];
+
+            if (file && file.type.startsWith('image/')) {
+                document.getElementById('thumbnailInput').files = e.dataTransfer.files;
+
+                uploadThumbnail({
+                    target: {
+                        files: [file]
+                    }
+                });
+            }
+        });
+
+        // ==========================================
+        // APPLY BUTTON STYLES FROM DATA ATTRIBUTES
+        // Ensures buttons display correctly after loading
+        // ==========================================
+        function applyButtonStylesFromData(container) {
+            if (!container) container = document.getElementById('notionEditor');
+            if (!container) return;
+
+            const buttons = container.querySelectorAll('.inline-button');
+            buttons.forEach(btn => {
+                // Get styles from data attributes
+                const bg = btn.getAttribute('data-background') || '#ce7a58';
+                const textColor = btn.getAttribute('data-text-color') || 'white';
+                const radius = btn.getAttribute('data-border-radius') || '8px';
+                const padding = btn.getAttribute('data-padding') || '10px 20px';
+                const fontSize = btn.getAttribute('data-font-size') || '14px';
+
+                // Apply inline styles
+                btn.style.cssText = `
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    background: ${bg} !important;
+                    color: ${textColor} !important;
+                    padding: ${padding} !important;
+                    border-radius: ${radius} !important;
+                    font-size: ${fontSize} !important;
+                    font-weight: 600 !important;
+                    margin: 4px !important;
+                    border: none !important;
+                    min-height: 20px !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    text-align: center !important;
+                    line-height: 1.4 !important;
+                `;
+            });
+
+            // Also apply styles to inline code
+            const codeBlocks = container.querySelectorAll('.inline-code');
+            codeBlocks.forEach(code => {
+                code.style.cssText = `
+                    display: inline !important;
+                    background: #f3f4f6 !important;
+                    color: #dc2626 !important;
+                    font-family: 'Courier New', monospace !important;
+                    font-size: 14px !important;
+                    padding: 2px 6px !important;
+                    border-radius: 4px !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                `;
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            initEditorFeatures();
+            initImagePasteHandler(); // Initialize paste handler for images
+
+            // Apply button styles to any existing buttons
+            setTimeout(() => applyButtonStylesFromData(), 100);
+
+            // Check for existing post
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            const action = urlParams.get('action');
+
+            if (postId) {
+                await loadPost(postId);
+            }
+
+            else if (action === 'new') {
+                currentPostId = null;
+            }
+        });
+
+        // ==========================================
+        // PARSE HTML TO BLOCKS (For old format)
+        // Converts HTML content into editor blocks
+        // ==========================================
+        function parseHTMLToBlocks(htmlContent) {
+            if (!htmlContent || typeof htmlContent !== 'string') {
+                console.log('⚠️ Invalid HTML content, adding empty paragraph...');
+                addBlock('paragraph', true);
+                return;
+            }
+
+            try {
+                const temp = document.createElement('div');
+                
+                // Clean up content first
+                const cleanContent = cleanContentForEditor(htmlContent);
+                temp.innerHTML = cleanContent;
+
+                // Get all child elements
+                const children = Array.from(temp.children);
+
+                if (children.length === 0) {
+                    // If no elements, try to split by newlines
+                    const textContent = temp.textContent.trim();
+                    if (textContent) {
+                        // Split by <br> or newlines
+                        const parts = textContent.split(/<br\s*\/?>|\n/);
+                        parts.forEach((part, idx) => {
+                            if (part.trim()) {
+                                addBlock('paragraph', idx === 0, -1, part.trim());
+                            }
+                        });
+                        if (parts.length === 0) {
+                            addBlock('paragraph', true);
+                        }
+                    } else {
+                        addBlock('paragraph', true);
+                    }
+                    return;
+                }
+
+                children.forEach((child, index) => {
+                    let type = 'paragraph';
+                    let content = '';
+
+                    // Skip script and style tags
+                    if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE') {
+                        return;
+                    }
+
+                    // Determine block type based on tag
+                    switch (child.tagName.toLowerCase()) {
+                        case 'h1':
+                            type = 'h1';
+                            content = child.innerHTML;
+                            break;
+                        case 'h2':
+                            type = 'h2';
+                            content = child.innerHTML;
+                            break;
+                        case 'h3':
+                            type = 'h3';
+                            content = child.innerHTML;
+                            break;
+                        case 'p':
+                            type = 'paragraph';
+                            content = child.innerHTML;
+                            break;
+                        case 'ul':
+                            type = 'ul';
+                            content = child.innerHTML;
+                            break;
+                        case 'ol':
+                            type = 'ol';
+                            content = child.innerHTML;
+                            break;
+                        case 'blockquote':
+                            type = 'blockquote';
+                            content = child.innerHTML;
+                            break;
+                        case 'hr':
+                            type = 'divider';
+                            content = '';
+                            break;
+                        case 'pre':
+                            type = 'code';
+                            content = child.textContent;
+                            break;
+                        case 'figure':
+                            // Check if it's an image
+                            const img = child.querySelector('img');
+                            if (img) {
+                                type = 'image';
+                                content = img.src;
+                            } else {
+                                type = 'paragraph';
+                                content = child.innerHTML;
+                            }
+                            break;
+                        case 'div':
+                            // Check if it's a callout
+                            if (child.classList && child.classList.contains('callout')) {
+                                type = 'callout';
+                                content = child.innerHTML;
+                            } else {
+                                type = 'paragraph';
+                                content = child.innerHTML;
+                            }
+                            break;
+                        default:
+                            type = 'paragraph';
+                            content = child.innerHTML || child.textContent;
+                    }
+
+                    // Add block (focus on first block only)
+                    addBlock(type, index === 0, -1, content);
+                });
+            } catch (err) {
+                console.error('❌ Error parsing HTML:', err);
+                // Fallback: add empty paragraph
+                addBlock('paragraph', true);
+            }
+        }
+
+        // ==========================================
+        // CLEAN CONTENT FOR EDITOR
+        // Removes display styles when loading post to edit
+        // ==========================================
+        function cleanContentForEditor(html) {
+            if (!html) return '';
+
+            // Create temporary element
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            // 1. Remove inline styles, BUT preserve alignment styles for inline-alignment elements
+            const allElements = temp.querySelectorAll('*');
+            allElements.forEach(el => {
+                // Preserve inline alignment styles
+                if (el.classList && el.classList.contains('inline-alignment')) {
+                    const textAlign = el.style.textAlign;
+                    if (textAlign) {
+                        el.setAttribute('data-preserved-align', textAlign);
+                    }
+                }
+
+                // Remove style attribute
+                el.removeAttribute('style');
+
+                // Restore preserved alignment
+                const preservedAlign = el.getAttribute('data-preserved-align');
+                if (preservedAlign) {
+                    el.style.textAlign = preservedAlign;
+                    el.removeAttribute('data-preserved-align');
+                }
+
+                // Remove id attributes (except those we need)
+                if (el.id && !el.id.startsWith('img-') && !el.id.startsWith('block-')) {
+                    el.removeAttribute('id');
+                }
+                // Remove data-backgroundstyle if exists (from news-detail conversion)
+                if (el.getAttribute('data-backgroundstyle')) {
+                    el.removeAttribute('data-backgroundstyle');
+                }
+            });
+
+            // 2. Convert display button (<a id="rendered-button-...">) back to editor span
+            // Use TreeWalker to handle nested structures
+            const walker = document.createTreeWalker(temp, NodeFilter.SHOW_ELEMENT, null, false);
+            const buttonsToConvert = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.tagName === 'A' && node.id && node.id.startsWith('rendered-button')) {
+                    buttonsToConvert.push(node);
+                }
+            }
+
+            buttonsToConvert.forEach(btn => {
+                const url = btn.getAttribute('data-url') || btn.href || '#';
+                const text = btn.textContent;
+
+                // Get original styles from data attributes or use defaults
+                const bg = btn.getAttribute('data-background') || '#ce7a58';
+                const textColor = btn.getAttribute('data-text-color') || 'white';
+                const radius = btn.getAttribute('data-border-radius') || '8px';
+                const padding = btn.getAttribute('data-padding') || '10px 20px';
+                const fontSize = btn.getAttribute('data-font-size') || '14px';
+
+                // Create editor span
+                const span = document.createElement('span');
+                span.className = 'inline-button';
+                span.setAttribute('contenteditable', 'true');
+                span.setAttribute('data-url', url);
+                span.setAttribute('data-background', bg);
+                span.setAttribute('data-text-color', textColor);
+                span.setAttribute('data-border-radius', radius);
+                span.setAttribute('data-padding', padding);
+                span.setAttribute('data-font-size', fontSize);
+                span.textContent = text;
+
+                btn.parentNode.replaceChild(span, btn);
+            });
+
+            // 3. Convert display code (<code>) back to editor span
+            // Only convert <code> tags that are NOT inside <pre>
+            const codeElements = temp.querySelectorAll('code');
+            const codesToConvert = [];
+            codeElements.forEach(code => {
+                if (!code.closest('pre')) {
+                    codesToConvert.push(code);
+                }
+            });
+
+            codesToConvert.forEach(code => {
+                const text = code.textContent;
+                const span = document.createElement('span');
+                span.className = 'inline-code';
+                span.setAttribute('contenteditable', 'true');
+                span.textContent = text;
+                code.parentNode.replaceChild(span, code);
+            });
+
+            // 4. Remove | and &nbsp;| characters from the cleaned HTML
+            // Use multiple passes to catch all variations
+            let cleanHtml = temp.innerHTML;
+
+            // Remove &nbsp;|
+            cleanHtml = cleanHtml.replace(/&nbsp;\|/g, '');
+
+            // Remove | at the end of elements or followed by whitespace/end
+            cleanHtml = cleanHtml.replace(/\|\s*(<\/p>|<br>|<\/li>|<\/blockquote>|<\/div>)/g, '$1');
+
+            // Remove standalone | with optional surrounding whitespace
+            cleanHtml = cleanHtml.replace(/>\s*\|\s*</g, '><');
+            cleanHtml = cleanHtml.replace(/>\s*\|\s*$/gm, '>');
+
+            // Remove empty span wrappers around |
+            cleanHtml = cleanHtml.replace(/<span[^>]*>\s*\|\s*<\/span>/gi, '');
+
+            // Clean up any double spacing created by removals
+            cleanHtml = cleanHtml.replace(/\s{2,}/g, ' ');
+
+            return cleanHtml;
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script>window.supabase = window.supabaseClient || supabase.createClient(window.SUPABASE_CONFIG.url,
+            window.SUPABASE_CONFIG.key);
+
+        // Fix for image upload function relying on global supabase
+    </script>
+    <script src="notion-features.js"></script>
+    <script src="alias-manager.js"></script>
+    <parameter name="StartLine">1736
+        <script src="admin-layout.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // initAdminLayout('news'); // REMOVED to prevent overwriting the custom editor sidebar
+            });
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Force browser to reload fresh content -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <!-- Security: Disable DevTools as early as possible -->
+  <!-- TEMPORARILY DISABLED FOR TESTING -->
+  <!-- <script src='https://cdn.jsdelivr.net/npm/disable-devtool@0.3.7' disable-devtool-auto url='about:blank'
+    disable-menu='true' disable-select='true' disable-copy='true' disable-cut='true' disable-paste='true'
+    clear-log='true'></script> -->
+  <script src="lunar.js"></script>
+  <title>Đông Mai Số - Hành chính phục vụ</title>
+
+  <!-- SEO & Social Media Meta Tags -->
+  <meta name="description"
+    content="Cổng thông tin hành chính công phường Đông Mai, tỉnh Quảng Ninh. Hỗ trợ tra cứu thủ tục và tư vấn trực tuyến 24/7.">
+  <meta property="og:title" content="Đông Mai Số - Hành chính phục vụ">
+  <meta property="og:description"
+    content="Hệ thống chuyển đổi số hành chính công phường Đông Mai, Quảng Ninh. Lấy sự hài lòng của người dân làm mục tiêu phục vụ.">
+  <meta property="og:image" content="https://i.postimg.cc/JhTgWjhr/yellow.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://i.postimg.cc/JhTgWjhr/yellow.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/JhTgWjhr/yellow.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/JhTgWjhr/yellow.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@1,700&display=swap"
+    rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl flex items-center justify-center shadow-lg border border-gray-100">
+            <img src="./logo.png" alt="Logo" class="w-10 h-10 sm:w-14 sm:h-14 object-contain">
+          </div>
+          <div class="hidden sm:block">
+            <h1 class="text-lg sm:text-2xl font-bold text-gray-900">ĐÔNG MAI SỐ</h1>
+            <p class="text-xs sm:text-sm text-gray-600 uppercase tracking-wide">Hành chính phục vụ</p>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          onclick="toggleMobileMenu()">
+          <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+        </button>
+
+        <!-- Navigation & Clock -->
+        <div class="hidden md:flex items-center gap-6">
+          <!-- Digital Clock Badge -->
+          <div class="bg-gray-100 rounded-lg px-3 py-1 border border-gray-200 flex flex-col items-center min-w-[110px]">
+            <div id="digital-clock" class="text-xl font-bold text-red-primary font-mono leading-none">00:00:00</div>
+            <div id="current-date"
+              class="text-[10px] text-gray-500 font-medium uppercase tracking-wide mt-0.5 whitespace-nowrap">Đang tải...
+            </div>
+            <div id="lunar-date" class="text-[9px] text-red-600 font-bold uppercase tracking-tight">Âm lịch: ...</div>
+          </div>
+
+          <nav class="flex items-center space-x-6">
+            <a href="#home" class="text-gray-600 hover:text-red-primary font-medium transition-colors">Trang chủ</a>
+            <a href="tin-noi-bat.html" class="text-gray-600 hover:text-red-primary font-medium transition-colors">Tin
+              nổi bật</a>
+            <a href="huong-dan.html" class="text-gray-600 hover:text-red-primary font-medium transition-colors">Hướng
+              dẫn DVC</a>
+            <a href="#utilities" class="text-gray-600 hover:text-red-primary font-medium transition-colors">Dịch vụ &
+              Tiện ích</a>
+            <a href="https://dichvucong.gov.vn/p/home/dvc-tra-cuu-ho-so.html" target="_blank"
+              class="text-gray-600 hover:text-red-primary font-medium transition-colors">Tra cứu hồ sơ</a>
+            <a href="#contact" class="text-gray-600 hover:text-red-primary font-medium transition-colors">Liên hệ</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/50 z-50 hidden" onclick="toggleMobileMenu()">
+      <div class="absolute right-0 top-0 h-full w-80 bg-white shadow-xl p-6 transform transition-transform duration-300"
+        onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-gray-900">Menu</h2>
+          <button onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-gray-100">
+            <i data-lucide="x" class="w-6 h-6 text-gray-700"></i>
+          </button>
+        </div>
+
+        <!-- Digital Clock for Mobile -->
+        <div class="bg-gray-100 rounded-lg px-4 py-3 mb-6 flex flex-col items-center">
+          <div id="mobile-digital-clock" class="text-2xl font-bold text-red-primary font-mono">00:00:00</div>
+          <div id="mobile-current-date" class="text-xs text-gray-500">Đang tải...</div>
+          <div id="mobile-lunar-date" class="text-xs text-red-600 font-bold">Âm lịch: ...</div>
+        </div>
+
+        <nav class="space-y-2">
+          <a href="#home" onclick="toggleMobileMenu()"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="home" class="w-5 h-5"></i> Trang chủ
+          </a>
+          <a href="tin-noi-bat.html" onclick="toggleMobileMenu()"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="newspaper" class="w-5 h-5"></i> Tin nổi bật
+          </a>
+          <a href="huong-dan.html" onclick="toggleMobileMenu()"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="book-open" class="w-5 h-5"></i> Hướng dẫn DVC
+          </a>
+          <a href="#utilities" onclick="toggleMobileMenu()"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="grid" class="w-5 h-5"></i> Dịch vụ & Tiện ích
+          </a>
+          <a href="https://dichvucong.gov.vn/p/home/dvc-tra-cuu-ho-so.html" target="_blank"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="search" class="w-5 h-5"></i> Tra cứu hồ sơ
+          </a>
+          <a href="#contact" onclick="toggleMobileMenu()"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+            <i data-lucide="phone" class="w-5 h-5"></i> Liên hệ
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section relative" id="home">
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="flex flex-col items-center justify-center animate-fade-in-up">
+
+        <!-- Bot Avatar -->
+        <div class="relative mb-6 group cursor-pointer" onclick="toggleChat()">
+          <div
+            class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-yellow-400 relative z-10 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+            <!-- Dùng icon bot đẹp -->
+            <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" alt="AI Bot"
+              class="w-24 h-24 object-contain">
+          </div>
+          <div
+            class="absolute -bottom-2 -right-2 bg-red-primary text-white p-3 rounded-full border-4 border-gray-100 z-20 shadow-lg animate-bounce-slow">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+          </div>
+          <!-- Pulse effect -->
+          <div class="absolute inset-0 bg-yellow-400 rounded-full animate-ping opacity-20"></div>
+        </div>
+
+        <!-- Welcome Message Box -->
+        <div
+          class="bg-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-6 md:p-8 max-w-3xl text-center mb-8 shadow-2xl relative">
+          <!-- Quote icon decorations -->
+          <i data-lucide="quote" class="absolute top-4 left-4 text-white/20 w-8 h-8 -scale-x-100"></i>
+
+          <h2 class="text-2xl md:text-3xl font-bold text-white leading-relaxed font-soft">
+            "Chào mừng ông/bà! Tôi là Trợ lý ảo <span class="text-yellow-400">Đông Mai Số</span>.<br>Tôi ở đây để hỗ trợ
+            ông/bà."
+          </h2>
+
+          <i data-lucide="quote" class="absolute bottom-4 right-4 text-white/20 w-8 h-8"></i>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md">
+          <button onclick="toggleChat()"
+            class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg hover-lift shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto transition-all border-2 border-white/20">
+            <i data-lucide="message-square" class="w-6 h-6"></i>
+            Hỏi trợ lý ngay
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decorative elements -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+          fill="rgb(249, 250, 251)" />
+      </svg>
+    </div>
+  </section>
+
+
+
+
+
+  <!-- Dịch vụ & Tiện ích Section -->
+  <section class="py-20 bg-white" id="utilities">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 animate-fade-in-up">
+        <h2 class="text-3xl md:text-4xl font-bold text-black mb-4 font-soft">
+          Dịch Vụ & Tiện Ích
+        </h2>
+        <div class="w-20 h-1 bg-red-primary mx-auto"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+        <!-- Tra cứu hồ sơ (DVC) -->
+        <a href="https://dichvucong.gov.vn/p/home/dvc-tra-cuu-ho-so.html" target="_blank"
+          class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="search"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Tra cứu hồ sơ</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Tra cứu tình trạng giải quyết hồ sơ qua mã hồ sơ hoặc mã vạch.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Truy cập Cổng DVCQG <i data-lucide="external-link" class="w-4 h-4"></i>
+          </span>
+        </a>
+
+        <!-- Đăng ký tạm trú (DVC) -->
+        <a href="https://dichvucong.gov.vn/p/home/dvc-chi-tiet-thu-tuc-nganh-doc.html?ma_thu_tuc=1.004194"
+          target="_blank" class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="home"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Đăng ký tạm trú</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Nộp hồ sơ trực tuyến đăng ký tạm trú, thông báo lưu trú.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Nộp hồ sơ ngay <i data-lucide="external-link" class="w-4 h-4"></i>
+          </span>
+        </a>
+
+        <!-- Dịch vụ công nổi bật (DVC) -->
+        <a href="https://dichvucong.gov.vn/p/home/dvc-dich-vu-cong-noi-bat.html" target="_blank"
+          class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="star"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">DVC Nổi bật</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Danh sách các dịch vụ công được người dân sử dụng nhiều nhất.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Xem danh sách <i data-lucide="external-link" class="w-4 h-4"></i>
+          </span>
+        </a>
+
+        <!-- Phản ánh kiến nghị (Local) -->
+        <a href="miniapps/phan-anh.html"
+          class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="megaphone"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Phản ánh kiến nghị</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Gửi ý kiến đóng góp, phản ánh về ANTT, đô thị tới phường.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Gửi phản ánh <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </span>
+        </a>
+
+        <!-- Trợ lý ảo AI -->
+        <div class="card hover-lift group cursor-pointer bg-white border border-gray-200" onclick="toggleChat()">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="bot"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Trợ lý ảo AI</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Giải đáp thắc mắc tự động 24/7 về mọi vấn đề hành chính.</p>
+          <button
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Chat ngay <i data-lucide="message-square" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- PDF Tools -->
+        <a href="miniapps/tienich-pdf.html"
+          class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="file-spreadsheet"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">PDF Tools</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Tách, gộp, chuyển đổi PDF và scan tài liệu.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Sử dụng ngay <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </span>
+        </a>
+
+        <!-- Tổng đài hỗ trợ -->
+        <div class="card hover-lift group cursor-pointer bg-white border border-gray-200" onclick="showPhone()">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="phone"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Tổng đài hỗ trợ</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Hỗ trợ qua điện thoại 24/7 cho các trường hợp khẩn cấp.</p>
+          <button onclick="showPhone()"
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Gọi ngay <i data-lucide="phone-call" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Tin nổi bật Section -->
+  <section class="py-20 bg-gray-50" id="featured-news">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 animate-fade-in-up">
+        <h2 class="text-3xl md:text-4xl font-bold text-black mb-4 font-soft">
+          Tin Nổi Bật
+        </h2>
+        <div class="w-20 h-1 bg-red-primary mx-auto"></div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="news-loading" class="flex justify-center items-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- News Grid -->
+      <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto hidden">
+        <!-- News items will be loaded here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="news-empty" class="hidden text-center py-12">
+        <i data-lucide="newspaper" class="w-16 h-16 mx-auto text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Chưa có tin nổi bật</h3>
+        <p class="text-gray-500">Nội dung sẽ được cập nhật sớm nhất</p>
+      </div>
+
+      <!-- View All Link -->
+      <div class="text-center mt-8">
+        <a href="tin-noi-bat.html"
+          class="inline-flex items-center gap-2 text-red-primary font-semibold hover:gap-3 transition-all">
+          Xem tất cả tin tức
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="py-20 bg-gray-50" id="contact">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 animate-fade-in-up">
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-soft">
+          Liên hệ với chúng tôi
+        </h2>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Chúng tôi luôn sẵn sàng hỗ trợ và giải đáp mọi thắc mắc của bạn
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div class="card text-center hover-lift animate-fade-in-up">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-red-primary/10 rounded-full mb-4">
+            <i data-lucide="map-pin" class="text-red-primary" style="width: 28px; height: 28px;"></i>
+          </div>
+
+
+          <h3 class="font-bold text-gray-900 mb-2">Địa chỉ</h3>
+          <p class="text-gray-600">Số 15, phố Nghi Tân, khu Tân Mai, phường Đông Mai, tỉnh Quảng Ninh</p>
+        </div>
+
+        <div class="card text-center hover-lift animate-fade-in-up" style="animation-delay: 0.1s">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-red-primary/10 rounded-full mb-4">
+            <i data-lucide="phone" class="text-red-primary" style="width: 28px; height: 28px;"></i>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Điện thoại</h3>
+          <p class="text-gray-600">02033.580.007</p>
+        </div>
+
+
+
+        <div class="card text-center hover-lift animate-fade-in-up" style="animation-delay: 0.3s">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-red-primary/10 rounded-full mb-4">
+            <i data-lucide="clock" class="text-red-primary" style="width: 28px; height: 28px;"></i>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Giờ làm việc</h3>
+          <p class="text-gray-600">Thứ 2 - Thứ 6: 7:30 - 16:30</p>
+        </div>
+      </div>
+
+      <!-- Officials Section Summary -->
+      <div class="mt-16 animate-fade-in-up" style="animation-delay: 0.4s">
+        <h3 class="text-2xl font-bold text-center text-gray-900 mb-8 font-soft">Lãnh đạo & Cán bộ Phụ trách</h3>
+
+        <div class="text-center max-w-2xl mx-auto mb-8 text-gray-600">
+          <p>Thông tin liên hệ trực tiếp của Lãnh đạo UBND, bộ phận Hành chính công và các chuyên viên phụ trách giải
+            quyết thủ
+            tục hành chính.</p>
+        </div>
+
+        <div class="flex justify-center">
+          <a href="officials.html"
+            class="inline-flex items-center gap-3 bg-red-primary hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+            Xem Danh bạ Cán bộ đầy đủ <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+        </div>
+
+        </a>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- Unified Footer -->
+  <footer class="bg-gray-900 text-white py-12 mt-auto border-t border-gray-800">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <!-- Column 1: Info -->
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <img src="./logo.png" alt="Logo" class="w-12 h-12 object-contain">
+            <h3 class="text-xl font-bold">Phường Đông Mai</h3>
+          </div>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Hệ thống chuyển đổi số hành chính công. Lấy sự hài lòng của người dân làm mục tiêu phục vụ.
+          </p>
+          <p class="text-gray-600 text-xs">© 2026 Dong Mai Portal.</p>
+        </div>
+
+        <!-- Column 2: Quick Links -->
+        <div>
+          <h4 class="font-bold text-lg mb-4 text-red-500">Liên kết nhanh</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#home" class="hover:text-white transition-colors">Trang chủ</a></li>
+            <li><a href="#utilities" class="hover:text-white transition-colors">Dịch vụ & Tiện ích</a></li>
+            <li><a href="https://dichvucong.gov.vn/p/home/dvc-tra-cuu-ho-so.html" target="_blank"
+                class="hover:text-white transition-colors">Tra cứu hồ sơ</a></li>
+            <li><a href="#contact" class="hover:text-white transition-colors">Liên hệ</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Social Connections -->
+        <div>
+          <h4 class="font-bold text-lg mb-4 text-red-500">Kết nối</h4>
+          <p class="text-gray-400 text-sm mb-4">Theo dõi để cập nhật tin tức mới nhất.</p>
+          <div class="flex flex-col gap-3">
+            <a href="https://www.facebook.com/profile.php?id=61578099921000" target="_blank"
+              class="bg-[#1877F2] hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium">
+              <i data-lucide="facebook" class="w-4 h-4"></i> Fanpage Chính thức
+            </a>
+            <a href="https://quangninh.gov.vn/donvi/dongmai/Trang/Default.aspx" target="_blank"
+              class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium">
+              <i data-lucide="globe" class="w-4 h-4"></i> Cổng TTĐT Phường
+            </a>
+          </div>
+        </div>
+
+        <!-- Column 4: Map -->
+        <div class="flex flex-col gap-2">
+          <h4 class="font-bold text-lg mb-2 text-red-500">Bản đồ</h4>
+          <div
+            class="w-full h-32 rounded-xl overflow-hidden shadow-lg border border-gray-700 hover:border-red-500 transition-colors">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.597626993954!2d106.87785737599763!3d20.96866698983949!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314a5dc33e6b5289%3A0x6762394537243c33!2sUBND%20ph%C6%B0%E1%BB%9Dng%20%C4%90%C3%B4ng%20Mai!5e0!3m2!1svi!2s!4v1706500000000!5m2!1svi!2s"
+              width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+          <a href="https://maps.app.goo.gl/4D1f67Yav2NsqXQA6" target="_blank"
+            class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+            <i data-lucide="map-pin" class="w-3 h-3"></i> Mở Google Maps
+          </a>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-xs">
+        <p>&copy; 2026 UBND Phường Đông Mai. Bản quyền đã được bảo hộ.</p>
+      </div>
+    </div>
+  </footer>
+
+
+
+  <!-- Chatbot UI -->
+  <div id="chatbot-ui" class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+    <!-- Chat Suggestion Tooltip -->
+    <div id="chat-hint"
+      class="mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 animate-fade-in-up border border-red-100 max-w-[280px]">
+      <div class="bg-red-500 rounded-xl p-2 flex-shrink-0">
+        <i data-lucide="message-square" class="text-white w-6 h-6"></i>
+      </div>
+      <div class="flex-1">
+        <h4 class="font-extrabold text-gray-900 text-sm leading-tight">Trợ lý ảo Đông Mai Số <span
+            class="inline-block w-2 h-2 bg-green-500 rounded-full ml-1 animate-pulse"></span></h4>
+        <p class="text-red-500 font-bold text-xs mt-0.5">HỖ TRỢ TTHC 24/7</p>
+      </div>
+      <button onclick="document.getElementById('chat-hint').style.display='none'"
+        class="text-gray-400 hover:text-gray-600">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Chat Button with Avatar -->
+    <button onclick="toggleChat()"
+      class="bg-white p-1 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-red-500 w-16 h-16 relative group">
+      <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="w-full h-full object-cover rounded-full"
+        alt="Chatbot">
+      <!-- Status dot -->
+      <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+
+      <!-- Close icon (hidden by default, shown when chat open) -->
+      <div id="chat-icon-close"
+        class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        <i data-lucide="x" class="w-8 h-8"></i>
+      </div>
+    </button>
+
+    <!-- Chat Drawer -->
+    <div id="chat-drawer"
+      class="hidden w-[350px] md:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden border border-gray-100">
+      <div class="bg-red-primary p-4 text-white flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bot"></i>
+          <span class="font-bold">Trợ lý ảo Phường Đông Mai</span>
+        </div>
+        <button id="chat-reset" onclick="resetChat()" class="hover:bg-white/20 p-1.5 rounded-full transition-colors"
+          title="Tạo hội thoại mới">
+          <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 max-w-[85%] self-start">
+          Xin chào! Tôi có thể giúp gì cho bạn về các thủ tục hành chính tại phường Đông Mai?
+        </div>
+      </div>
+
+      <div class="p-4 bg-white border-t">
+        <div class="flex gap-2">
+          <input type="text" id="chat-input" placeholder="Nhập câu hỏi..."
+            class="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:border-red-primary text-sm">
+          <button onclick="sendMessage()" class="bg-red-primary text-white p-2 rounded-full hover:bg-red-700">
+            <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="chatbot.js"></script>
+
+  <!-- Phone Popup Modal -->
+  <div id="phone-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="hidePhone()"></div>
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full relative z-10 shadow-2xl animate-fade-in-up">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="phone-call" class="text-red-primary w-10 h-10"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">Tổng đài hỗ trợ</h3>
+        <p class="text-gray-500 mb-6">Vui lòng nhấn để thực hiện cuộc gọi hoặc lưu số điện thoại</p>
+
+        <a href="tel:02033580007"
+          class="block w-full bg-red-primary hover:bg-red-700 text-white font-bold py-4 rounded-2xl text-xl shadow-lg transition-all mb-4">
+          02033.580.007
+        </a>
+
+        <button onclick="hidePhone()" class="text-gray-400 hover:text-gray-600 font-medium text-sm">
+          Đóng cửa sổ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    // Initialize Supabase (already done in config.js but ensuring global assignment)
+    window.supabase = window.supabaseClient || supabase.createClient(
+      window.SUPABASE_CONFIG.url,
+      window.SUPABASE_CONFIG.key
+    );
+  </script>
+
+  <!-- Main Scripts with Phone Modal and Featured News -->
+  <script>
+    // Phone Modal Functions
+    function showPhone() {
+      const modal = document.getElementById('phone-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function hidePhone() {
+      const modal = document.getElementById('phone-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Clock Script (GMT+7)
+    function updateClock() {
+      const now = new Date();
+      // Convert to GMT+7 (Vietnam Time)
+      // Note: new Date() gets local time. Assuming user is in VN or we want to force VN time display.
+      // Better to force UTC+7 calculation
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const vnTime = new Date(utc + (3600000 * 7));
+
+      const hours = String(vnTime.getHours()).padStart(2, '0');
+      const minutes = String(vnTime.getMinutes()).padStart(2, '0');
+      const seconds = String(vnTime.getSeconds()).padStart(2, '0');
+
+      document.getElementById('digital-clock').textContent = `${hours}:${minutes}:${seconds}`;
+      // Also update mobile clock if visible
+      const mobileClock = document.getElementById('mobile-digital-clock');
+      if (mobileClock) mobileClock.textContent = `${hours}:${minutes}:${seconds}`;
+
+      const day = String(vnTime.getDate()).padStart(2, '0');
+      const month = String(vnTime.getMonth() + 1).padStart(2, '0');
+      const year = vnTime.getFullYear();
+      document.getElementById('current-date').textContent = `Ngày ${day}/${month}/${year}`;
+      const mobileDate = document.getElementById('mobile-current-date');
+      if (mobileDate) mobileDate.textContent = `Ngày ${day}/${month}/${year}`;
+
+      // Update Lunar Date
+      if (typeof getLunarDateString === 'function') {
+        document.getElementById('lunar-date').textContent = `Âm lịch: ${getLunarDateString(vnTime)}`;
+        const mobileLunar = document.getElementById('mobile-lunar-date');
+        if (mobileLunar) mobileLunar.textContent = `Âm lịch: ${getLunarDateString(vnTime)}`;
+      }
+    }
+
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const btn = document.getElementById('mobile-menu-btn');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        lucide.createIcons();
+      } else {
+        menu.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock(); // Run immediately
+
+    // Helper to extract plain text from HTML content
+    function extractTextFromHTML(html) {
+      if (!html) return '';
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      const text = div.textContent || div.innerText || '';
+      return text.trim().substring(0, 150) + (text.length > 150 ? '...' : '');
+    }
+
+    // Featured News Loader
+    async function loadFeaturedNews() {
+      const loadingEl = document.getElementById('news-loading');
+      const gridEl = document.getElementById('news-grid');
+      const emptyEl = document.getElementById('news-empty');
+
+      try {
+        // Try to fetch from Supabase (exclude guides)
+        const { data, error } = await supabase
+          .from('featured_news')
+          .select('*')
+          .eq('status', 'published')
+          .not('tags', 'cs', '{"hướng dẫn"}')
+          .neq('category', 'huong-dan')
+          .order('published_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+
+        loadingEl.classList.add('hidden');
+
+        if (!data || data.length === 0) {
+          emptyEl.classList.remove('hidden');
+          lucide.createIcons();
+          return;
+        }
+
+        gridEl.classList.remove('hidden');
+
+        // Unhide View All Button if exists
+        const staticBtn = document.getElementById('staticViewAllBtn');
+        if (staticBtn) staticBtn.classList.remove('hidden');
+        gridEl.innerHTML = data.map(news => `
+          <article class="card hover-lift group cursor-pointer animate-fade-in-up" onclick="viewNews('${news.slug}')">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-xl transition-all cursor-pointer" onclick="window.location.href='news-detail.html?slug=${news.slug}'">
+              <div class="aspect-video overflow-hidden bg-gray-100">
+                <img src="${news.thumbnail_url || 'logo.png'}" alt="${news.title}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
+              </div>
+              ${news.is_featured ?
+            `<div class="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="star" class="w-3 h-3"></i> Nổi bật
+                </div>` : ''
+          }
+              ${news.is_pinned ?
+            `<div class="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="pin" class="w-3 h-3"></i> Ghim
+                </div>` : ''
+          }
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <span><i data-lucide="calendar" class="w-3 h-3"></i></span>
+              <span>${new Date(news.published_at || news.created_at).toLocaleDateString('vi-VN')}</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors line-clamp-2">
+              ${news.title}
+            </h3>
+            <p class="text-gray-600 text-sm line-clamp-3 mb-4">
+              ${news.summary || extractTextFromHTML(news.content_html) || 'Đang cập nhật nội dung...'}
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span class="flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3 h-3"></i>
+                ${formatDate(news.published_at || news.created_at)}
+              </span>
+              <span class="text-red-primary font-medium group-hover:underline">Xem chi tiết</span>
+            </div>
+          </article>
+        `).join('');
+
+        if (data.length > 0) {
+          const btn = document.getElementById('staticViewAllBtn');
+          if (btn) btn.classList.remove('hidden');
+        }
+
+        lucide.createIcons();
+
+      } catch (error) {
+        console.error('Error loading featured news:', error);
+        loadingEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+
+    function getCategoryLabel(category) {
+      const labels = {
+        'tin-tuc': 'Tin tức',
+        'su-kien': 'Sự kiện',
+        'thong-bao': 'Thông báo',
+        'huong-dan': 'Hướng dẫn',
+        'chinh-sach': 'Chính sách'
+      };
+      return labels[category] || 'Tin tức';
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function viewNews(slug) {
+      if (slug) {
+        window.location.href = `news-detail.html?slug=${slug}`;
+      }
+    }
+
+    // Load featured news on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Small delay to ensure Supabase is initialized
+      setTimeout(loadFeaturedNews, 500);
+    });
+  </script>
+
+</body>
+
+</html>
