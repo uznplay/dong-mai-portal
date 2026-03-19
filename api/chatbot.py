@@ -10,11 +10,16 @@ import base64
 import time
 import random
 from datetime import datetime, timedelta, timezone
-try:
+
+# Load .env explicitly from current directory
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+if os.path.exists(env_path):
+    from dotenv import load_dotenv
+    load_dotenv(env_path)
+else:
+    # Try current working directory
     from dotenv import load_dotenv
     load_dotenv()
-except ImportError:
-    pass
 
 ZAI_KEYS_STR = os.getenv("ZAI_API_KEYS", "")
 ZAI_KEYS = [k.strip() for k in ZAI_KEYS_STR.split(",") if k.strip()]
@@ -25,7 +30,7 @@ if not ZAI_KEYS:
 READER_URL = "https://api.z.ai/api/paas/v4/reader"
 LLM_URL = "https://api.z.ai/api/paas/v4/chat/completions"
 
-ALLOWED_DOMAINS = ["dichvucong.gov.vn", "thuvienphapluat.vn", "luatvietnam.vn", "gov.vn"]
+ALLOWED_DOMAINS = ["dichvucong.gov.vn", "luatvietnam.vn", "luat247.vn", "vbpl.vn", "moj.gov.vn", "moha.gov.vn", "gov.vn"]
 
 # Danh sách viết tắt phổ biến cần mở rộng để search chính xác hơn
 ABBREVIATIONS = {
@@ -53,37 +58,31 @@ def expand_query(query):
 def get_search_results(query):
     # 1. Mở rộng từ viết tắt
     expanded_query = expand_query(query)
-    print(f"DEBUG: Expanded query: '{query}' -> '{expanded_query}'")
     
     candidates = []
     
     # 2. Thử search nghiêm ngặt (có site:...)
-    trusted_query = f"{expanded_query} (site:gov.vn OR site:thuvienphapluat.vn OR site:luatvietnam.vn)"
+    trusted_query = f"{expanded_query} (site:gov.vn OR site:luatvietnam.vn OR site:luat247.vn OR site:vbpl.vn)"
+    
     
     with DDGS() as ddgs:
         try:
             results = list(ddgs.text(trusted_query, region='vi-vn', max_results=6))
         except Exception as e:
-            print(f"DEBUG: DDGS Strict Error: {e}")
             results = []
             
-        print(f"DEBUG: Found {len(results)} strict search results")
         
         is_fallback = False
         # Nếu không có kết quả, thử search rộng
         if not results:
-            print("DEBUG: Strict search returned 0. Switching to broad search...")
             is_fallback = True
             try:
                 results = list(ddgs.text(expanded_query, region='vi-vn', max_results=6))
             except Exception as e:
-                print(f"DEBUG: DDGS Broad Error: {e}")
                 results = []
-            print(f"DEBUG: Found {len(results)} broad search results")
 
         for r in results:
             url = r.get('href', '').lower()
-            print(f"DEBUG: Found URL: {url}")
             
             # Bỏ qua các trang không nội dung
             if "dangky.dichvucong.gov.vn" in url or "dvc-thanh-toan-truc-tuyen" in url:
@@ -94,17 +93,15 @@ def get_search_results(query):
                 candidates.append(url)
             # Layer 2: Nếu là fallback broad search, cho phép thêm các site .gov.vn bất kỳ
             elif is_fallback and ".gov.vn" in url:
-                print(f"DEBUG: Accepting .gov.vn URL in fallback: {url}")
                 candidates.append(url)
         
-        # Sắp xếp ưu tiên: Thư viện pháp luật / Luật VN / Dịch vụ công lên đầu
-        filtered = sorted(candidates, key=lambda x: 0 if any(d in x for d in ["thuvienphapluat.vn", "luatvietnam.vn", "dichvucong.gov.vn"]) else 1)[:1]
+        # Sắp xếp ưu tiên: Luật VN / Luat247 / VBPL / Dịch vụ công lên đầu
+        filtered = sorted(candidates, key=lambda x: 0 if any(d in x for d in ["luatvietnam.vn", "luat247.vn", "vbpl.vn", "dichvucong.gov.vn"]) else 1)[:1]
         
         if not filtered:
-            print(f"DEBUG: No valid candidates found for '{query}'")
+            pass
         else:
-            print(f"DEBUG: Selected Top URL: {filtered}")
-            
+            pass
         return filtered
 
 def read_web_page_local(url):
@@ -128,37 +125,74 @@ def read_web_page_local(url):
     return ""
 
 def read_web_page(url):
-    # Dùng key đầu tiên của ZAI để đọc trang web (vì Reader API dùng chung key ZAI)
-    zai_key = ZAI_KEYS[0] if ZAI_KEYS else ""
-    headers = {
-        "Authorization": f"Bearer {zai_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "url": url,
-        "return_format": "markdown"
-    }
+    # Sử dụng Google Apps Script để đọc nội dung trang web
+    # API: https://script.google.com/macros/s/AKfycbzyBA7e4PdLn8fn_wDOVU1LvZtpzOVNlntnHJqEOgqOfDvn-7pzPi7yaL5_pIstS0BG/exec
     try:
-        # 1. Thử dùng API Reader xịn trước - Giảm timeout xuống 12s để tăng tốc fallback
-        response = requests.post(READER_URL, headers=headers, json=data, timeout=12)
+        google_script_url = "https://script.google.com/macros/s/AKfycbzyBA7e4PdLn8fn_wDOVU1LvZtpzOVNlntnHJqEOgqOfDvn-7pzPi7yaL5_pIstS0BG/exec"
+        params = {"url": url}
+        response = requests.get(google_script_url, params=params, timeout=20, allow_redirects=True)
+        
         if response.status_code == 200:
-            content = response.json().get("reader_result", {}).get("content", "")
-            if content:
-                 return content
-            else:
-                 print(f"DEBUG: API returned empty for {url}. Switching to Local Fallback...")
+            try:
+                data = response.json()
+                if data.get("status") == "success" and data.get("content"):
+                    content_len = len(data.get("content", ""))
+                    return data.get("content", "")
+                else:
+                    pass
+            except:
+                pass
+        else:
+            pass
     except Exception as e:
-        print(f"Error reading {url} with API: {e}")
+        print(f"ERROR reading {url} with Google Script: {e}")
     
-    # 2. Nếu API tạch, dùng "cây nhà lá vườn" (Local Fallback)
+    # Fallback: Dùng "cây nhà lá vườn" (Local Fallback)
     return read_web_page_local(url)
 
 from supabase import create_client, Client
+import requests
 
 # Cấu hình Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# --- GEOBLOCKING CONFIG ---
+ALLOWED_COUNTRIES = ["VN"]  # Chỉ cho phép Việt Nam
+
+def get_country_from_ip(ip):
+    """Lấy mã quốc gia từ IP sử dụng ip-api.com (miễn phí)"""
+    # Bỏ qua localhost và private IPs
+    if ip in ["127.0.0.1", "localhost", "::1"] or ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172."):
+        return "VN"  # Assume local is allowed
+    
+    try:
+        # Sử dụng ip-api.com (free: 45 requests/minute)
+        response = requests.get(f"http://ip-api.com/json/{ip}?fields=countryCode", timeout=3)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("countryCode", "")
+    except Exception as e:
+        print(f"GeoIP Error: {e}")
+    
+    return None  # Unknown
+
+def check_geo_allowed(ip):
+    """Kiểm tra IP có thuộc quốc gia được cho phép không"""
+    country = get_country_from_ip(ip)
+    if country is None:
+        # Nếu không xác định được, cho phép (tránh chặn nhầm)
+        print(f"WARNING: Could not determine country for IP {ip}, allowing...")
+        return True
+    
+    allowed = country in ALLOWED_COUNTRIES
+    if not allowed:
+        pass
+    else:
+        pass
+    
+    return allowed
 
 OR_KEYS_STR = os.getenv("OPENROUTER_API_KEYS", "")
 OPENROUTER_KEYS = [k.strip() for k in OR_KEYS_STR.split(",") if k.strip()]
@@ -282,7 +316,6 @@ class ModelRouter:
             }
             
             try:
-                print(f"DEBUG: Routing to {provider.upper()} (Key {curr_idx + 1}/{num_keys}) - Model: {model_id}")
                 
                 # Dynamic Timeout: Use 30s or remaining time, whichever is smaller
                 # (Leave 2s buffer for cleanup)
@@ -302,17 +335,14 @@ class ModelRouter:
                 
                 # If key is bad/expired/exhausted (401, 402, 403, 429) -> Try next key
                 if response.status_code in [401, 402, 403, 429]:
-                    print(f"DEBUG: Provider {provider} Key {curr_idx} failed (Status {response.status_code}). Trying next key...")
                     if response.status_code == 429:
                         time.sleep(1) # Wait 1s before switching key to avoid spamming
                     continue
                 
                 # If 503 or other server errors, it might be the model itself or the provider endpoint
                 if response.status_code in [503, 502, 504]:
-                    print(f"DEBUG: Provider {provider} returned {response.status_code}. Might be temporary.")
                     return None
 
-                print(f"DEBUG: Error calling {model_id} with key {curr_idx}: {response.text}")
                 return None
                 
             except Exception as e:
@@ -333,7 +363,7 @@ class ModelRouter:
         # 1. Lấy danh sách đen (Blacklist)
         blacklisted = self.get_blacklisted_models()
         if blacklisted:
-            print(f"DEBUG: Skipping unhealthy models: {blacklisted}")
+            pass
 
         # 2. Lọc & Xáo trộn danh sách model
         # Chỉ giữ lại model KHÔNG nằm trong blacklist
@@ -349,7 +379,6 @@ class ModelRouter:
         
         for attempt in range(self.max_queue_retries + 1):
             if time.time() - start_time > MAX_TOTAL_DURATION:
-                print("DEBUG: Time limit exceeded. Returning fallback.")
                 break
                 
             for model_info in viable_models:
@@ -443,7 +472,6 @@ def save_to_cache(question, answer):
                 "question_text": norm_q,
                 "answer_text": answer
             }).execute()
-            print(f"DEBUG: Saved to cache: '{norm_q[:50]}...'")
     except Exception as e:
         print(f"Cache Save Error: {e}")
 
@@ -477,6 +505,7 @@ def calculate_entropy(text):
 def is_gibberish(text):
     """
     Phát hiện tin nhắn rác/vô nghĩa dựa trên các thuật toán:
+        pass
     1. Độ dài từ quá khổ
     2. Thiếu nguyên âm
     3. Độ hỗn loạn (Entropy)
@@ -489,7 +518,6 @@ def is_gibberish(text):
     # 1. Check độ dài từ (Long Word)
     words = text_lower.split()
     if any(len(w) > 25 for w in words):
-        print(f"DEBUG: Gibberish Detected (Word too long > 25 chars)")
         return True
 
     # 2. Check Nguyên âm (Vowel Check)
@@ -501,28 +529,23 @@ def is_gibberish(text):
         # Vì các từ này luôn phải đi kèm một ngữ cảnh/động từ
         words_list = text_lower.split()
         if len(words_list) == 1:
-             print(f"DEBUG: Gibberish/Short-Reject (Single abbreviation without context: {text_lower})")
              return True
              
         # Nếu có từ khác đi kèm (hỏi cccd...) thì mới bypass
         if text_lower not in ["cccd", "bhxh", "bhyt", "vneid", "kcb", "ubnd", "hđnd", "dkkh"]:
-            print(f"DEBUG: Gibberish Detected (No vowels found in short message: {text_lower})")
             return True
 
     # 3. Check Entropy
     ent = calculate_entropy(text_lower)
     if len(text_lower) > 10:
         if ent < 1.0: # Quá lặp
-             print(f"DEBUG: Gibberish Detected (Entropy too low: {ent:.2f})")
              return True
         if ent > 6.0: # Quá loạn
-             print(f"DEBUG: Gibberish Detected (Entropy too high: {ent:.2f})")
              return True
 
     # 4. Check Keyboard Rows
     keyboard_patterns = ["asdf", "qwer", "zxcv", "jkl", "12345", "hjkl"]
     if any(pat in text_lower for pat in keyboard_patterns) and len(text_lower) > 10:
-        print(f"DEBUG: Gibberish Detected (Keyboard Pattern)")
         return True
 
     # 5. Check Consecutive Consonants (Phụ âm liên tiếp)
@@ -538,7 +561,6 @@ def is_gibberish(text):
             consonant_count = 0
     
     if max_consonants > 4:
-         print(f"DEBUG: Gibberish Detected (Too many consecutive consonants: {max_consonants})")
          return True
     
     # 6. Check Phonotactic Constraints (Quy tắc Âm tiết Tiếng Việt + English Basic)
@@ -560,14 +582,17 @@ def is_gibberish(text):
                    
     # Allowlist cho tieng Anh/Teencode co ban (neu regex fail)
     # Hạn chế dùng các chữ đơn lẻ (z, j, f, w) để tránh match nhầm bàn phím (VD: sdfg chứa 'f')
-    common_english_clusters = ["ck", "st", "sh", "dm", "ad", "ok", "shop", "ship", "pro", "jack"]
+    common_english_clusters = ["ck", "st", "sh", "dm", "ad", "ok", "shop", "ship", "pro", "jack", "ll", "oo", "ee", "ai", "ou", "ea", "ie"]
     single_letter_exceptions = ["z", "j", "f", "w"]
+    
+    # Common English words allowlist
+    common_english_words = {"hello", "hi", "hey", "bye", "thanks", "thank", "you", "please", "sorry", "yes", "no", "ok", "okay", "good", "bad", "nice", "great", "love", "hate", "what", "how", "why", "when", "where", "who", "help", "name", "time", "day", "today", "tomorrow", "yesterday"}
 
     for w in words:
         is_valid = False
         
         # Rule A: Check Common English / Teencode / Named Entities
-        if any(c in w for c in common_english_clusters) or w in ["cccd", "bhyt", "vneid", "kcb", "ubnd", "hđnd"]:
+        if w in common_english_words or any(c in w for c in common_english_clusters) or w in ["cccd", "bhyt", "vneid", "kcb", "ubnd", "hđnd"]:
             is_valid = True
         elif w in single_letter_exceptions: # Chỉ accept nếu đứng ĐỘC LẬP
             is_valid = True
@@ -626,7 +651,6 @@ def is_gibberish(text):
     if len(words) > 0:
         valid_ratio = valid_word_count / len(words)
         if valid_ratio < 0.5:
-             print(f"DEBUG: Gibberish Detected (Phonotactic Fail: Only {valid_ratio:.0%} valid words)")
              return True
 
     # BỎ logic tự động coi tin ngắn là Trivial/Greeting để tránh lưu cache rác (như 'sdahjhpoqwi')
@@ -641,12 +665,10 @@ def should_save_to_cache(user_message, ai_answer, should_search, context_found, 
     # 0. Anti-Spam / Anti-Gibberish Check (Input Validation)
     # Tái kiểm tra Gibberish để chắc chắn không lưu rác vào cache
     if is_gibberish(user_message):
-         print("DEBUG: Cache Denied (Double check: Gibberish Detected)")
          return False
     
     # 1. Ưu tiên: Nếu là câu chào hỏi / danh tính -> OK LƯU LUÔN (Context-independent)
     if is_greeting_or_trivial(user_message):
-        print("DEBUG: Cache Approved (Greeting/Trivial)")
         return True
 
     # 1.1 Ưu tiên ĐẶC BIỆT: Nếu câu trả lời là Giới thiệu bản thân (có từ khóa xịn) -> OK LƯU LUÔN
@@ -660,10 +682,8 @@ def should_save_to_cache(user_message, ai_answer, should_search, context_found, 
     is_procedural = any(pk in ai_lower for pk in procedural_keywords)
     
     if ("trợ lý ảo" in ai_lower or "đông mai số" in ai_lower) and not is_procedural:
-         print("DEBUG: Cache Approved (Strong Identity Answer detected - Safe)")
          return True
     elif ("trợ lý ảo" in ai_lower) and is_procedural:
-         print("DEBUG: Cache Denied (Identity keyword found but Answer looks Procedural -> Potential Hallucination)")
          return False
     
     # 1.2 Ưu tiên TUYỆT ĐỐI: Có nguồn tham khảo (Context) -> VERIFY BEFORE APPROVING
@@ -677,22 +697,18 @@ def should_save_to_cache(user_message, ai_answer, should_search, context_found, 
          has_weird_terms = any(wt in ai_lower for wt in weird_terms)
          
          if (identity_leaked and is_procedural) or has_weird_terms:
-              print(f"DEBUG: Cache Denied despite context (Identity/Gibberish leaked: id={identity_leaked}, weird={has_weird_terms})")
               return False
               
-         print("DEBUG: Cache Approved (Search context found - High confidence)")
          return True
          
     # 2. Safety Rule: Nếu là câu hỏi follow-up (đã có lịch sử chat) -> CẤM LƯU
     # (Chỉ áp dụng nếu KHÔNG có context mới. Nếu có context đã return True ở trên rồi)
     if history_len > 0:
-        print("DEBUG: Cache Denied (Follow-up message without fresh context - unsafe)")
         return False
 
     # 3. Layer 1: Nếu cần Search mà không có Context -> CẤM LƯU
     # (Tránh việc AI "chém gió" khi không có dữ liệu đầu vào)
     if should_search and not context_found:
-        print("DEBUG: Cache Denied (Search intent but Empty Context)")
         return False
 
     # 4. Layer 2: Nếu câu trả lời chứa từ khóa 'thất bại' -> CẤM LƯU
@@ -701,7 +717,6 @@ def should_save_to_cache(user_message, ai_answer, should_search, context_found, 
                     "hệ thống ai đang quá tải", "vui lòng thử lại"]
     ai_lower = ai_answer.lower()
     if any(kw in ai_lower for kw in bad_keywords):
-        print("DEBUG: Cache Denied (Bad keyword detected in answer)")
         return False
 
     # 5. Layer 3: Nếu câu trả lời quá ngắn (nghi vấn lỗi) -> CẤM LƯU
@@ -709,14 +724,11 @@ def should_save_to_cache(user_message, ai_answer, should_search, context_found, 
     if len(ai_answer) < 50:
         # Nếu là câu giới thiệu bản thân hợp lệ -> CHO QUA
         if "trợ lý ảo" in ai_lower or "đông mai" in ai_lower:
-             print("DEBUG: Cache Approved (Short but valid Identity Answer)")
              return True
              
-        print(f"DEBUG: Cache Denied (Answer too short: {len(ai_answer)} chars)")
         return False
 
     # Pass hết các vòng -> HỢP LỆ
-    print("DEBUG: Cache Approved (Valid First Message Answer)")
     return True
 
 
@@ -758,6 +770,7 @@ HÃY TRẢ LỜI TRỰC TIẾP như một tư vấn viên chuyên nghiệp. KHÔ
 NHIỆM VỤ: Giải đáp thủ tục hành chính tại phường dựa trên dữ liệu cung cấp.
 
 NGUYÊN TẮC:
+    pass
 1. **PHẠM VI**: Chỉ trả lời về Phường Đông Mai & thủ tục hành chính. Nếu hỏi việc không liên quan, hãy từ chối lịch sự.
 2. **THÁI ĐỘ**: Lễ phép, kính trọng. Xưng "Tôi", gọi dân là "Quý ông/bà" hoặc "Bạn". Dùng "Dạ/Vâng" ở đầu.
 3. **TRA CỨU**: Ưu tiên `Dữ liệu tham khảo (Context)`. Nếu không có, dùng kiến thức chung và khuyên liên hệ bộ phận Hành chính công. TUYỆT ĐỐI không bịa đặt số liệu/tên cán bộ/quy trình.
@@ -767,10 +780,12 @@ NGUYÊN TẮC:
 5. **CCCD**: Làm tại Phường Phong Cốc. **VNeID**: Làm tại Công an phường Đông Mai.
 
 THÔNG TIN LIÊN HỆ:
+    pass
 - Facebook: [Fanpage Phường Đông Mai](https://www.facebook.com/profile.php?id=61578099921000)
 - Địa chỉ: Số 15, phố Nghi Tân, khu Tân Mai, phường Đông Mai, Quảng Ninh. SĐT: 02033.580.007
 
 CÁN BỘ CHỦ CHỐT:
+    pass
 - Ông VŨ NGỌC HÙNG (Chủ tịch phường): 0913.313.928
 - Ông PHÙNG VĂN TRỌNG (Chuyên Viên): 0396.629.666
 - Bà VŨ THỊ LAN (Chuyên Viên): 0385.328.685"""
@@ -791,7 +806,9 @@ CÁN BỘ CHỦ CHỐT:
     return ai_router.execute(messages)
 
 # --- SECURITY UTILS ---
-SECRET_KEY = "DM_Portal_2026_Secure"
+SECRET_KEY = os.getenv("SECRET_KEY", "DM_Portal_2026_Secure")  # Load from env, fallback for dev only
+
+# Debug: Print loaded SECRET_KEY
 
 def deobfuscate(payload):
     try:
@@ -808,13 +825,18 @@ def verify_signature(obfuscated_payload, ts, sig):
         # Check timestamp drift (max 60s)
         now_ts = int(time.time())
         if abs(now_ts - int(ts)) > 600:
-            print(f"DEBUG: Sig rejected - Timestamp drift: {abs(now_ts - int(ts))}s")
             return False
             
         # Re-calculate hash
-        expected = hashlib.sha256(f"{ts}{obfuscated_payload}{SECRET_KEY}".encode()).hexdigest()
+        sig_string = f"{ts}{obfuscated_payload}{SECRET_KEY}"
+        
+        expected = hashlib.sha256(sig_string.encode()).hexdigest()
+        if sig != expected:
+            pass
+            
         return sig == expected
-    except Exception:
+    except Exception as e:
+        print(f"Signature Verify Error: {e}")
         return False
 
 def check_ip_rate_limit(ip):
@@ -837,7 +859,6 @@ def check_ip_rate_limit(ip):
             
             # Block if > 5 requests in 10s
             if count >= 5:
-                print(f"DEBUG: IP Rate Limit Hit for {ip}")
                 return False
                 
             # Increment
@@ -868,9 +889,19 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            # --- LAYER 1: IP RATE LIMIT ---
+            # --- LAYER 1: GEOBLOCKING ---
             # Get IP from X-Forwarded-For (Vercel) or client_address
             client_ip = self.headers.get('X-Forwarded-For', self.client_address[0]).split(',')[0].strip()
+            
+            # Check if IP is from allowed country (VN only)
+            if not check_geo_allowed(client_ip):
+                self.send_response(403)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"answer": "Xin lỗi, dịch vụ này chỉ dành cho người dùng tại Việt Nam."}).encode('utf-8'))
+                return
+
+            # --- LAYER 2: IP RATE LIMIT ---
             
             if not check_ip_rate_limit(client_ip):
                 self.send_response(429)
@@ -892,7 +923,6 @@ class handler(BaseHTTPRequestHandler):
             
             # Verify Sig
             if not verify_signature(obfuscated_msg, ts, sig):
-                print(f"DEBUG: Forbidden - Invalid Signature from {client_ip}")
                 self.send_response(403)
                 self.end_headers()
                 return
@@ -911,7 +941,6 @@ class handler(BaseHTTPRequestHandler):
             
             # 0. Anti-Spam Check
             if is_spam_request(session_id):
-                 print(f"DEBUG: Spam detected for session {session_id}")
                  self.send_response(429)
                  self.send_header('Content-type', 'application/json')
                  self.end_headers()
@@ -925,7 +954,6 @@ class handler(BaseHTTPRequestHandler):
             # Theo yêu cầu: a, á, à, @, #, v.v. -> Trả lời ngay "Tôi có thể giúp gì"
             clean_msg = user_message.strip()
             if len(clean_msg) == 1 or (len(clean_msg) > 0 and not clean_msg[0].isalnum() and len(clean_msg) < 3):
-                 print(f"DEBUG: Fast Reject for Single Char/Symbol: '{clean_msg}'")
                  self.send_response(200)
                  self.send_header('Content-type', 'application/json')
                  self.end_headers()
@@ -942,7 +970,6 @@ class handler(BaseHTTPRequestHandler):
             # 2.1 Anti-Gibberish Check (Chặn Tin Rác ngay lập tức)
             # Nếu là tin rác -> Trả lời ngay, KHÔNG search, KHÔNG AI, KHÔNG Cache.
             if is_gibberish(user_message):
-                 print(f"DEBUG: Fast Reject for Gibberish: '{user_message}'")
                  self.send_response(400) # Bad Request (hoặc 200 tùy ý)
                  self.send_header('Content-type', 'application/json')
                  self.end_headers()
@@ -967,7 +994,6 @@ class handler(BaseHTTPRequestHandler):
             ai_response = get_cached_answer(user_message)
             if ai_response:
                 is_from_cache = True
-                print(f"DEBUG: Cache Hit for '{user_message}'. Bypassing search/AI.")
             
             # B. NẾU KHÔNG CÓ CACHE -> TIẾN HÀNH SEARCH VÀ AI
             if not ai_response:
@@ -975,9 +1001,9 @@ class handler(BaseHTTPRequestHandler):
                 # BỎ điều kiện len(history) == 0 để cho phép search cả câu hỏi follow-up (VD: "Thế còn thủ tục kia?")
                 should_search = not is_trivial_check
                 
+                
                 # Tuy nhiên, nếu user đã cung cấp context (VD: chọn file upload), thì không cần Search nữa
                 if should_search and not provided_context:
-                    print(f"DEBUG: Cache Miss. Searching for '{user_message}'")
                     start_search = time.time()
                     urls = get_search_results(user_message)
                     search_time = time.time() - start_search
@@ -989,7 +1015,6 @@ class handler(BaseHTTPRequestHandler):
                         if content:
                             context += f"--- Nguồn: {url} ---\n{content[:8000]}\n\n"
                     read_time = time.time() - start_read
-                    print(f"DEBUG: Search/Read took {search_time + read_time:.2f}s")
                 elif provided_context:
                     context = provided_context
 
@@ -1002,13 +1027,13 @@ class handler(BaseHTTPRequestHandler):
                 ai_response = ai_response.replace("Một cửa", "Hành chính công")
                 
                 # Lưu vào cache nếu thành công (Dùng Validator xịn)
-                # Note: We only approve "High Confidence" if fresh search results were found (urls is non-empty)
-                # If it's just 'provided_context', we use normal validation.
-                fresh_search = bool(urls)
-                if should_save_to_cache(user_message, ai_response, should_search, fresh_search, len(history)):
+                # Note: We only approve "High Confidence" if fresh context was found (not empty)
+                # context = nội dung thực tế được đưa vào AI, urls = danh sách link
+                fresh_context = bool(context and len(context) > 0)
+                if should_save_to_cache(user_message, ai_response, should_search, fresh_context, len(history)):
                      save_to_cache(user_message, ai_response)
                 else:
-                     print("DEBUG: Skipped saving to cache (Validator rejected).")
+                    pass
 
 
             else:

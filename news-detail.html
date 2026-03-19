@@ -4,6 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Server-side security config injection -->
+    <script>
+      window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
+    </script>
+
+    <!-- Disable DevTools - Server Controlled -->
+    <script>
+      (function() {
+        var config = window.SERVER_SECURITY_CONFIG;
+        if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
+          return;
+        }
+        var ddConfig = config.disableDevtool;
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
+        script.onload = function() {
+          if (typeof DisableDevtool === 'function') {
+            DisableDevtool({
+              disableMenu: ddConfig.disableMenu !== false,
+              disableSelect: ddConfig.disableSelect === true,
+              disableCopy: ddConfig.disableCopy === true,
+              disableCut: ddConfig.disableCut === true,
+              disablePaste: ddConfig.disablePaste === true,
+              detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
+              interval: ddConfig.interval || 200
+            });
+          }
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
     <title>Chi tiết tin tức - Đông Mai Số</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
@@ -15,6 +46,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f9fafb;
         }
+        #chatbot-ui { position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 99999 !important; }
 
         .prose img {
             border-radius: 0.75rem;
@@ -106,6 +138,98 @@
         .inline-alignment {
             display: inline-block;
             width: 100%;
+        }
+
+        /* Guide Node Styles */
+        .guide-node {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin: 16px 0;
+            overflow: hidden;
+            color: white;
+        }
+
+        .guide-node-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .guide-node-header:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .guide-node-number {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .guide-node-title {
+            font-weight: 600;
+            font-size: 18px;
+            flex: 1;
+        }
+
+        .guide-node-toggle {
+            transition: transform 0.3s;
+        }
+
+        .guide-node.expanded .guide-node-toggle {
+            transform: rotate(180deg);
+        }
+
+        .guide-node-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .guide-node.expanded .guide-node-content {
+            max-height: 500px;
+        }
+
+        .guide-node-body {
+            padding: 0 16px 16px 68px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .guide-node-actions {
+            padding: 12px 16px 16px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .guide-node-complete {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .guide-node-complete:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .guide-node-complete.completed {
+            background: #10b981;
         }
     </style>
 </head>
@@ -220,7 +344,17 @@
     <script src="config.js"></script>
     <script>
         lucide.createIcons();
-        window.supabase = window.supabaseClient || supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+        
+        // Initialize Supabase client - use window.supabaseClient from config.js if available
+        if (window.supabaseClient) {
+            window.supabase = window.supabaseClient;
+        } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+            const supabaseUrl = window.SUPABASE_CONFIG?.url;
+            const supabaseKey = window.SUPABASE_CONFIG?.key;
+            if (supabaseUrl && supabaseKey) {
+                window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            }
+        }
 
         async function initPage() {
             const params = new URLSearchParams(window.location.search);
@@ -343,6 +477,9 @@
             } else {
                 tagsContainer.style.display = 'none';
             }
+
+            // Initialize icons for guide nodes
+            lucide.createIcons();
         }
 
         // ==========================================
@@ -411,6 +548,44 @@
                             html += `<figure><img src="${content}" alt="Image"></figure>`;
                         }
                         break;
+                    case 'case':
+                        // Case block - hiển thị như lựa chọn có thể mở rộng
+                        const caseNum = block.caseNumber || '';
+                        const subCases = block.subCases || [];
+                        let subCasesHtml = '';
+                        if (subCases.length > 0) {
+                            subCases.forEach((subCase, idx) => {
+                                subCasesHtml += `
+                                    <div class="guide-node sub-case" data-case-number="${caseNum}" data-sub-case="${idx + 1}">
+                                        <div class="guide-node-header" onclick="toggleGuideNode(this)">
+                                            <div class="guide-node-number">${caseNum}.${idx + 1}</div>
+                                            <div class="guide-node-title">${subCase.title || 'Case con ' + (idx + 1)}</div>
+                                            <div class="guide-node-toggle">
+                                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                                            </div>
+                                        </div>
+                                        <div class="guide-node-content">
+                                            <div class="guide-node-body">${(subCase.content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+                        html += `<div class="guide-case" data-case-number="${caseNum}">
+                            <div class="guide-case-header" onclick="toggleGuideCase(this)">
+                                <span class="guide-case-icon">⚡</span>
+                                <span class="guide-case-label">Lựa chọn ${caseNum}</span>
+                                <span class="guide-case-title">${block.title || 'Lựa chọn ' + caseNum}</span>
+                                <div class="guide-case-toggle">
+                                    <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="guide-case-content">
+                                <div class="guide-case-body">${(block.content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>
+                                ${subCasesHtml}
+                            </div>
+                        </div>`;
+                        break;
                 }
             });
 
@@ -445,7 +620,7 @@
                                 <span><i data-lucide="calendar" class="w-3 h-3 inline"></i> ${new Date(news.published_at).toLocaleDateString('vi-VN')}</span>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 `).join('');
                 lucide.createIcons();
             } else {
@@ -453,8 +628,80 @@
             }
         }
 
+        // Guide Node Functions
+        function toggleGuideNode(header) {
+            const node = header.closest('.guide-node');
+            node.classList.toggle('expanded');
+            lucide.createIcons();
+        }
+
+        function markNodeComplete(btn, nodeNumber) {
+            btn.classList.toggle('completed');
+            if (btn.classList.contains('completed')) {
+                btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i><span>Đã hoàn thành</span>';
+            } else {
+                btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i><span>Đánh dấu hoàn thành</span>';
+            }
+            lucide.createIcons();
+        }
+
         initPage();
     </script>
+
+  <!-- Chatbot UI -->
+  <div id="chatbot-ui" style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; display: flex; flex-direction: column; align-items: flex-end;">
+    <div id="chat-hint" class="mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 animate-fade-in-up border border-red-100 max-w-[280px]">
+      <div class="bg-red-500 rounded-xl p-2 flex-shrink-0">
+        <i data-lucide="message-square" class="text-white w-6 h-6"></i>
+      </div>
+      <div class="flex-1">
+        <h4 class="font-extrabold text-gray-900 text-sm leading-tight">Trợ lý ảo Đông Mai Số <span class="inline-block w-2 h-2 bg-green-500 rounded-full ml-1 animate-pulse"></span></h4>
+        <p class="text-red-500 font-bold text-xs mt-0.5">HỖ TRỢ TTHC 24/7</p>
+      </div>
+      <button onclick="document.getElementById('chat-hint').style.display='none'" class="text-gray-400 hover:text-gray-600">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <button onclick="toggleChat()" class="bg-white p-1 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-red-500 w-16 h-16 relative group">
+      <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="w-full h-full object-cover rounded-full" alt="Chatbot">
+      <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+      <div id="chat-icon-close" class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        <i data-lucide="x" class="w-8 h-8"></i>
+      </div>
+    </button>
+
+    <div id="chat-drawer" class="hidden w-[350px] md:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden border border-gray-100">
+      <div class="bg-red-primary p-4 text-white flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <i data-lucide="bot"></i>
+          <span class="font-bold">Trợ lý ảo Phường Đông Mai</span>
+        </div>
+        <button id="chat-reset" onclick="resetChat()" class="hover:bg-white/20 p-1.5 rounded-full transition-colors" title="Tạo hội thoại mới">
+          <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 max-w-[85%] self-start">
+          Xin chào! Tôi có thể giúp gì cho bạn về các thủ tục hành chính tại phường Đông Mai?
+        </div>
+      </div>
+
+      <div class="p-4 bg-white border-t">
+        <div class="flex gap-2">
+          <input type="text" id="chat-input" placeholder="Nhập câu hỏi..." class="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:border-red-primary text-sm">
+          <button onclick="sendMessage()" class="bg-red-primary text-white p-2 rounded-full hover:bg-red-700">
+            <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="chatbot.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 
 </html>

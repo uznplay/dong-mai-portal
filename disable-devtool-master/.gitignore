@@ -1,0 +1,8 @@
+node_modules
+/output
+.pnpm-debug.log
+/npm
+/docs
+bundle.js
+bundle.js.map
+.DS_Store

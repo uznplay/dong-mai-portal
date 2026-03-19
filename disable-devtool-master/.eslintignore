@@ -1,0 +1,8 @@
+node_modules
+scripts/dev/*.js
+*.html
+**/libs/*.js
+npm
+docs
+output
+*.min.js

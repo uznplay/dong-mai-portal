@@ -10,10 +10,69 @@
   <meta http-equiv="Expires" content="0">
   <!-- Security: Disable DevTools as early as possible -->
   <!-- TEMPORARILY DISABLED FOR TESTING -->
-  <!-- <script src='https://cdn.jsdelivr.net/npm/disable-devtool@0.3.7' disable-devtool-auto url='about:blank'
-    disable-menu='true' disable-select='true' disable-copy='true' disable-cut='true' disable-paste='true'
-    clear-log='true'></script> -->
+  <script>
+    // Silence Tailwind production warning
+    const _warn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return;
+      _warn.apply(console, args);
+    };
+  </script>
   <script src="lunar.js"></script>
+  
+  <!-- Server-side security config injection -->
+  <script>
+    window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
+  </script>
+  
+  <!-- Disable DevTools - Server Controlled -->
+  <script>
+    (function() {
+      var config = window.SERVER_SECURITY_CONFIG;
+      if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
+        console.log('[Security] DevTools protection is disabled by server');
+        return;
+      }
+      
+      var ddConfig = config.disableDevtool;
+      console.log('[Security] Loading DevTools protection with config:', ddConfig);
+      
+      // Load disable-devtool from CDN
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
+      script.onload = function() {
+        if (typeof DisableDevtool === 'function') {
+          DisableDevtool({
+            disableMenu: ddConfig.disableMenu !== false,
+            disableSelect: ddConfig.disableSelect === true,
+            disableCopy: ddConfig.disableCopy === true,
+            disableCut: ddConfig.disableCut === true,
+            disablePaste: ddConfig.disablePaste === true,
+            detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
+            interval: ddConfig.interval || 200,
+            ondevtoolopen: function(type, next) {
+              console.warn('[Security] DevTools detected! Type:', type);
+              // Optional: Log to server
+              if (navigator.sendBeacon) {
+                navigator.sendBeacon('/api/security-log', JSON.stringify({
+                  event: 'devtool_open',
+                  type: type,
+                  timestamp: new Date().toISOString()
+                }));
+              }
+              next(); // Continue to close window
+            }
+          });
+          console.log('[Security] DevTools protection activated');
+        }
+      };
+      script.onerror = function() {
+        console.error('[Security] Failed to load disable-devtool');
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
+  
   <title>Đông Mai Số - Hành chính phục vụ</title>
 
   <!-- SEO & Social Media Meta Tags -->
@@ -40,6 +99,9 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <link rel="stylesheet" href="./styles.css">
+  <style>
+    #chatbot-ui { position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 99999 !important; }
+  </style>
 </head>
 
 <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
@@ -318,6 +380,24 @@
           </span>
         </a>
 
+        <!-- QR Generator -->
+        <a href="miniapps/qr-generator.html"
+          class="card hover-lift group block cursor-pointer bg-white border border-gray-200">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-primary transition-colors duration-300">
+              <i data-lucide="qr-code"
+                class="text-red-primary group-hover:text-white transition-colors duration-300 w-7 h-7"></i>
+            </div>
+            <h3 class="text-xl font-bold text-black">Tạo QR Code</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Tạo mã QR cho văn bản và liên kết.</p>
+          <span
+            class="text-red-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+            Sử dụng ngay <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </span>
+        </a>
+
         <!-- Tổng đài hỗ trợ -->
         <div class="card hover-lift group cursor-pointer bg-white border border-gray-200" onclick="showPhone()">
           <div class="flex items-center gap-4 mb-4">
@@ -515,7 +595,7 @@
 
 
   <!-- Chatbot UI -->
-  <div id="chatbot-ui" class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+  <div id="chatbot-ui" style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; display: flex; flex-direction: column; align-items: flex-end;">
     <!-- Chat Suggestion Tooltip -->
     <div id="chat-hint"
       class="mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 animate-fade-in-up border border-red-100 max-w-[280px]">
@@ -615,11 +695,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script>
-    // Initialize Supabase (already done in config.js but ensuring global assignment)
-    window.supabase = window.supabaseClient || supabase.createClient(
-      window.SUPABASE_CONFIG.url,
-      window.SUPABASE_CONFIG.key
-    );
+    // Initialize Supabase client - use window.supabaseClient from config.js if available
+    if (window.supabaseClient) {
+      window.supabase = window.supabaseClient;
+    } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+      const supabaseUrl = window.SUPABASE_CONFIG?.url;
+      const supabaseKey = window.SUPABASE_CONFIG?.key;
+      if (supabaseUrl && supabaseKey) {
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    }
   </script>
 
   <!-- Main Scripts with Phone Modal and Featured News -->

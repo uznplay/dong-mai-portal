@@ -8,6 +8,37 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Server-side security config injection -->
+    <script>
+      window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
+    </script>
+
+    <!-- Disable DevTools - Server Controlled -->
+    <script>
+      (function() {
+        var config = window.SERVER_SECURITY_CONFIG;
+        if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
+          return;
+        }
+        var ddConfig = config.disableDevtool;
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
+        script.onload = function() {
+          if (typeof DisableDevtool === 'function') {
+            DisableDevtool({
+              disableMenu: ddConfig.disableMenu !== false,
+              disableSelect: ddConfig.disableSelect === true,
+              disableCopy: ddConfig.disableCopy === true,
+              disableCut: ddConfig.disableCut === true,
+              disablePaste: ddConfig.disablePaste === true,
+              detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
+              interval: ddConfig.interval || 200
+            });
+          }
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
     <title>Tin nổi bật - Admin Portal Đông Mai</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
@@ -221,12 +252,233 @@
             border: 1px solid #e5e5e5;
         }
 
+        .notion-block-content.callout .callout-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .notion-block-content.callout .callout-text {
+            flex: 1;
+            outline: none;
+            min-height: 1.5em;
+            line-height: 1.6;
+        }
+
         .notion-block-content[data-type="divider"] {
             margin: 8px 0;
             border: none;
             border-top: 1px solid #e5e7eb;
             height: 1px;
             width: 100%;
+        }
+
+        /* Case Block Styles */
+        .notion-block[data-type="case"] {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 0;
+            margin: 16px 0;
+            color: #1e293b;
+        }
+
+        .notion-block[data-type="case"]:hover {
+            border-color: #d97706;
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+        }
+
+        .notion-block[data-type="case"] .case-block-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .notion-block[data-type="case"] .case-block-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .notion-block[data-type="case"] .case-block-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notion-block[data-type="case"] .case-block-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+
+        .notion-block[data-type="case"] .case-block-preview {
+            font-size: 13px;
+            color: #b45309;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .notion-block[data-type="case"] .case-block-edit,
+        .notion-block[data-type="case"] .case-block-add-sub,
+        .notion-block[data-type="case"] .case-block-delete {
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .notion-block[data-type="case"] .case-block-edit,
+        .notion-block[data-type="case"] .case-block-add-sub {
+            background: #f59e0b;
+            color: white;
+            font-weight: bold;
+        }
+
+        .notion-block[data-type="case"] .case-block-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .notion-block[data-type="case"]:hover .case-block-edit,
+        .notion-block[data-type="case"]:hover .case-block-add-sub,
+        .notion-block[data-type="case"]:hover .case-block-delete {
+            opacity: 1;
+        }
+
+        .notion-block[data-type="case"] .sub-cases-container {
+            padding: 0 16px 16px 48px;
+        }
+
+        .notion-block[data-type="case"] .sub-case-item {
+            background: white;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .notion-block[data-type="case"] .sub-case-item:hover {
+            background: #fffbeb;
+        }
+
+        /* Modal Editor (Common for Case/Sub-case) */
+        .modal-editor {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-editor.active {
+            display: flex;
+        }
+
+        .modal-editor .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-editor .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .modal-editor .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-editor .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-editor .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .modal-editor .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-editor .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-editor .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .modal-editor .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .modal-editor .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        /* Mini Editor trong Modal */
+        .modal-mini-editor {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            min-height: 300px;
+            padding: 16px;
+            outline: none;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-mini-editor:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         /* List styles */
@@ -1201,8 +1453,9 @@
                 code</span></div>
         <div class="block-type-item" onclick="addBlock('divider')"><i data-lucide="minus" class="w-5 h-5"></i><span>Dấu
                 phân cách</span></div>
-        <div class="block-type-item" onclick="document.getElementById('imageUpload').click()"><i data-lucide="image"
+        <div class="block-type-item" onclick="addBlock('image')"><i data-lucide="image"
                 class="w-5 h-5"></i><span>Hình ảnh</span></div>
+        <div class="block-type-item" onclick="addBlock('case')"><i data-lucide="git-merge" class="w-5 h-5"></i><span>Case/Lựa chọn</span></div>
     </div>
     <!-- Floating Text Toolbar -->
 
@@ -1568,7 +1821,10 @@
                     break;
                 case 'blockquote': content = `<blockquote class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="Trích dẫn..."></blockquote>`;
                     break;
-                case 'callout': content = `<div class="notion-block-content callout" contenteditable="true" data-type="${type}" data-placeholder="Thông báo..."><span class="text-2xl mr-2">💡</span><span contenteditable="true" class="flex-1"></span></div>`;
+                case 'callout': content = `<div class="notion-block-content callout" contenteditable="true" data-type="${type}" data-placeholder="Thông báo...">
+                    <span class="callout-icon" contenteditable="false">💡</span>
+                    <span class="callout-text" contenteditable="true"></span>
+                </div>`;
                     break;
                 case 'code': content = `<pre class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="Code here..."></pre>`;
                     break;
@@ -1578,6 +1834,23 @@
                     // Handle both URL and base64 data URLs
                     const imgSrc = (initialHTML && (initialHTML.startsWith('http') || initialHTML.startsWith('data:'))) ? initialHTML : '';
                     content = `<div class="image-block-wrapper"><img src="${imgSrc}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" data-block-id="${id}"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+                    break;
+                case 'case':
+                    // Case block - lựa chọn trong switch (có thể chứa sub-cases)
+                    const caseIndex = (document.querySelectorAll('.notion-block[data-type="case"]').length + 1);
+                    content = `
+                        <div class="case-block-wrapper" onclick="openCaseEditor('${id}')">
+                            <div class="case-block-icon">⚡</div>
+                            <div class="case-block-info">
+                                <div class="case-block-label">Lựa chọn ${caseIndex}</div>
+                                <div class="case-block-preview">${initialHTML ? initialHTML.substring(0, 50) + (initialHTML.length > 50 ? '...' : '') : 'Click để thêm nội dung case...'}</div>
+                            </div>
+                            <div class="case-block-edit"><i data-lucide="edit-2" class="w-4 h-4"></i></div>
+                            <div class="case-block-add-sub" onclick="event.stopPropagation(); addSubCase('${id}')" title="Thêm case con">+</div>
+                            <div class="case-block-delete" onclick="event.stopPropagation(); deleteCaseBlock('${id}')" title="Xóa case">🗑️</div>
+                        </div>
+                        <div class="sub-cases-container" id="subCases-${id}"></div>
+                    `;
                     break;
                 default: content = `<div class="notion-block-content" contenteditable="true" data-type="paragraph" data-placeholder="Nhập nội dung hoặc gõ '/' để chọn block..."></div>`;
             }
@@ -2352,6 +2625,7 @@
                             html += `<figure class="${alignClass}" ${style}><img src="${block.content}" alt="Image"></figure>`;
                         }
                         break;
+
                 }
             });
             return html;
@@ -2490,6 +2764,19 @@
                 if (content) {
                     let align = '';
 
+                    // Special handling for callout - get content from .callout-text
+                    if (block.dataset.type === 'callout') {
+                        const calloutText = block.querySelector('.callout-text');
+                        blocks.push({
+                            id: block.id,
+                            type: block.dataset.type,
+                            content: calloutText ? calloutText.innerHTML : content.innerHTML,
+                            text: calloutText ? calloutText.textContent : content.textContent,
+                            align: ''
+                        });
+                        return;
+                    }
+
                     // Check alignment on the content element itself
                     if (content.classList.contains('text-center') || content.style.textAlign === 'center') align = 'center';
                     if (content.classList.contains('text-right') || content.style.textAlign === 'right') align = 'right';
@@ -2528,6 +2815,19 @@
                     });
                 } else if (block.dataset.type === 'divider') {
                     blocks.push({ id: block.id, type: 'divider', content: '', text: '' });
+                } else if (block.dataset.type === 'case') {
+                    // Case block - lưu từ blocksData (bao gồm sub-cases)
+                    const blocksData = window.blocksData || [];
+                    const caseData = blocksData.find(b => b.id === block.id) || {};
+                    blocks.push({
+                        id: block.id,
+                        type: 'case',
+                        title: caseData.title || '',
+                        content: caseData.content || '',
+                        text: caseData.text || '',
+                        caseNumber: caseData.caseNumber || '',
+                        subCases: caseData.subCases || []
+                    });
                 }
             });
         }
@@ -2933,11 +3233,583 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../config.js"></script>
-    <script>window.supabase = window.supabaseClient || supabase.createClient(window.SUPABASE_CONFIG.url,
-            window.SUPABASE_CONFIG.key);
+    <script>
+        // Initialize Supabase client - use window.supabaseClient from config.js if available
+        if (window.supabaseClient) {
+            window.supabase = window.supabaseClient;
+        } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+            const supabaseUrl = window.SUPABASE_CONFIG?.url;
+            const supabaseKey = window.SUPABASE_CONFIG?.key;
+            if (supabaseUrl && supabaseKey) {
+                window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            }
+        }
 
         // Fix for image upload function relying on global supabase
     </script>
+
+
+
+
+    <!-- Sub-Case Editor Modal -->
+    <div id="subCaseEditorModal" class="modal-editor">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3><span class="modal-header-icon">📋</span> <span id="subCaseEditorTitle">Chỉnh sửa Case con</span></h3>
+                <button onclick="closeSubCaseEditor()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Hidden inputs for data -->
+                <input type="hidden" id="subCaseParentId">
+                <input type="hidden" id="subCaseIndex">
+
+                <!-- Full Toolbar for Sub-Case -->
+                <div id="subCaseTextToolbar" class="text-toolbar" style="position: static; margin-bottom: 12px;">
+                    <div class="relative">
+                        <div class="toolbar-dropdown-trigger" onclick="toggleSubCaseDropdown('subCaseBlockTypeDropdown')">
+                            <span>Text</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                        </div>
+                        <div id="subCaseBlockTypeDropdown" class="toolbar-dropdown-menu hidden">
+                            <div class="color-item" onclick="setSubCaseBlockType('paragraph')"><i data-lucide="type" class="w-4 h-4"></i> Text</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('h1')"><i data-lucide="heading-1" class="w-4 h-4"></i> Heading 1</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('h2')"><i data-lucide="heading-2" class="w-4 h-4"></i> Heading 2</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('ul')"><i data-lucide="list" class="w-4 h-4"></i> Bullet List</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('ol')"><i data-lucide="list-ordered" class="w-4 h-4"></i> Numbered List</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('quote')"><i data-lucide="quote" class="w-4 h-4"></i> Quote</div>
+                            <div class="color-item" onclick="setSubCaseBlockType('code')"><i data-lucide="code" class="w-4 h-4"></i> Code</div>
+                        </div>
+                    </div>
+                    <div class="toolbar-separator"></div>
+                    <button class="toolbar-btn" onclick="formatSubCaseText('bold')" title="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatSubCaseText('italic')" title="Italic"><i data-lucide="italic" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatSubCaseText('underline')" title="Underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatSubCaseText('createLink')" title="Link"><i data-lucide="link" class="w-4 h-4"></i></button>
+                    <div class="toolbar-separator"></div>
+                    <button class="toolbar-btn" onclick="setSubCaseAlignment('left')" title="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="setSubCaseAlignment('center')" title="Align Center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="setSubCaseAlignment('right')" title="Align Right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b;">Tiêu đề Case con:</label>
+                    <input type="text" id="subCaseTitleInput" placeholder="Nhập tiêu đề case con..." style="width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; outline: none;">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b;">Nội dung chi tiết:</label>
+                    <div id="subCaseContentEditor" class="modal-mini-editor" contenteditable="true" placeholder="Viết nội dung case con..."></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSubCaseEditor()" class="btn btn-secondary">Hủy</button>
+                <button onclick="saveSubCaseContent()" class="btn btn-primary">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Editor Modal (với toolbar định dạng + sub-cases) -->
+    <div id="caseEditorModal" class="modal-editor">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3><span class="modal-header-icon">⚡</span> <span id="caseEditorTitle">Chỉnh sửa Lựa chọn</span></h3>
+                <button onclick="closeCaseEditor()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Full Toolbar (giống như bên ngoài) -->
+                <div id="caseTextToolbar" class="text-toolbar" style="position: static; margin-bottom: 12px;">
+                    <!-- Block Type Dropdown -->
+                    <div class="relative">
+                        <div class="toolbar-dropdown-trigger" onclick="toggleCaseDropdown('caseBlockTypeDropdown')">
+                            <span>Text</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                        </div>
+                        <div id="caseBlockTypeDropdown" class="toolbar-dropdown-menu hidden">
+                            <div class="color-item" onclick="setCaseBlockType('paragraph')"><i data-lucide="type" class="w-4 h-4"></i> Text</div>
+                            <div class="color-item" onclick="setCaseBlockType('h1')"><i data-lucide="heading-1" class="w-4 h-4"></i> Heading 1</div>
+                            <div class="color-item" onclick="setCaseBlockType('h2')"><i data-lucide="heading-2" class="w-4 h-4"></i> Heading 2</div>
+                            <div class="color-item" onclick="setCaseBlockType('ul')"><i data-lucide="list" class="w-4 h-4"></i> Bullet List</div>
+                            <div class="color-item" onclick="setCaseBlockType('ol')"><i data-lucide="list-ordered" class="w-4 h-4"></i> Numbered List</div>
+                            <div class="color-item" onclick="setCaseBlockType('quote')"><i data-lucide="quote" class="w-4 h-4"></i> Quote</div>
+                            <div class="color-item" onclick="setCaseBlockType('code')"><i data-lucide="code" class="w-4 h-4"></i> Code</div>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-separator"></div>
+
+                    <button class="toolbar-btn" onclick="formatCaseText('bold')" title="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('italic')" title="Italic"><i data-lucide="italic" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('underline')" title="Underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('strikethrough')" title="Strike"><i data-lucide="strikethrough" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('code')" title="Code"><i data-lucide="code" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('createLink')" title="Link"><i data-lucide="link" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="formatCaseText('buttonLink')" title="Button Link" style="color: #8B5CF6;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="8" width="18" height="6" rx="2"/>
+                            <path d="M12 8V5"/>
+                            <path d="M9 5h6"/>
+                        </svg>
+                    </button>
+
+                    <div class="toolbar-separator"></div>
+
+                    <button class="toolbar-btn" onclick="setCaseAlignment('left')" title="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="setCaseAlignment('center')" title="Align Center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                    <button class="toolbar-btn" onclick="setCaseAlignment('right')" title="Align Right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+
+                    <div class="toolbar-separator"></div>
+
+                    <!-- Color Dropdown -->
+                    <div class="relative">
+                        <div class="toolbar-dropdown-trigger" onclick="toggleCaseDropdown('caseColorDropdown')">
+                            <span class="text-lg">A</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                        </div>
+                        <div id="caseColorDropdown" class="toolbar-dropdown-menu hidden" style="width: 200px; max-height: 300px; overflow-y: auto;">
+                            <div class="p-2 text-xs font-bold text-gray-500">COLOR</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', 'black')"><div class="w-4 h-4 border rounded bg-black"></div> Default</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#9CA3AF')"><div class="w-4 h-4 border rounded bg-gray-400"></div> Gray</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#B45309')"><div class="w-4 h-4 border rounded bg-yellow-700"></div> Brown</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#EA580C')"><div class="w-4 h-4 border rounded bg-orange-600"></div> Orange</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#16A34A')"><div class="w-4 h-4 border rounded bg-green-600"></div> Green</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#2563EB')"><div class="w-4 h-4 border rounded bg-blue-600"></div> Blue</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#9333EA')"><div class="w-4 h-4 border rounded bg-purple-600"></div> Purple</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#DB2777')"><div class="w-4 h-4 border rounded bg-pink-600"></div> Pink</div>
+                            <div class="color-item" onclick="setCaseColor('foreColor', '#DC2626')"><div class="w-4 h-4 border rounded bg-red-600"></div> Red</div>
+                            <div class="p-2 text-xs font-bold text-gray-500 border-t mt-1">BACKGROUND</div>
+                            <div class="color-item" onclick="setCaseColor('hiliteColor', 'white')"><div class="w-4 h-4 border rounded bg-white"></div> Default</div>
+                            <div class="color-item" onclick="setCaseColor('hiliteColor', '#FEF3C7')"><div class="w-4 h-4 border rounded bg-yellow-100"></div> Yellow</div>
+                            <div class="color-item" onclick="setCaseColor('hiliteColor', '#DCFCE7')"><div class="w-4 h-4 border rounded bg-green-100"></div> Green</div>
+                            <div class="color-item" onclick="setCaseColor('hiliteColor', '#DBEAFE')"><div class="w-4 h-4 border rounded bg-blue-100"></div> Blue</div>
+                            <div class="color-item" onclick="setCaseColor('hiliteColor', '#FEE2E2')"><div class="w-4 h-4 border rounded bg-red-100"></div> Red</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b;">Tiêu đề Lựa chọn:</label>
+                    <input type="text" id="caseTitleInput" placeholder="Nhập tiêu đề lựa chọn..." style="width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; outline: none;">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b;">Nội dung chi tiết:</label>
+                    <div id="caseContentEditor" class="modal-mini-editor" contenteditable="true" placeholder="Viết nội dung lựa chọn..."></div>
+                </div>
+
+                <!-- Sub-cases Section -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: 600; color: #1e293b;">Case con (Sub-cases):</label>
+                        <button onclick="addSubCaseFromModal()" style="padding: 6px 12px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">+ Thêm Case con</button>
+                    </div>
+                    <div id="subCasesList-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;">
+                        <!-- Sub-cases will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeCaseEditor()" class="btn btn-secondary">Hủy</button>
+                <button onclick="saveCaseContent()" class="btn btn-primary">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCaseEditor();
+                closeSubCaseEditor();
+            }
+        });
+
+        // ==========================================
+        // CASE EDITOR MODAL FUNCTIONS
+        // ==========================================
+        let currentEditingCaseId = null;
+        let currentEditingCaseIndex = 0;
+
+        function openCaseEditor(blockId) {
+            const block = document.getElementById(blockId);
+            if (!block) return;
+
+            currentEditingCaseId = blockId;
+
+            const allCases = document.querySelectorAll('.notion-block[data-type="case"]');
+            allCases.forEach((c, idx) => {
+                if (c.id === blockId) {
+                    currentEditingCaseIndex = idx + 1;
+                }
+            });
+
+            document.getElementById('caseEditorTitle').textContent = 'Chỉnh sửa Lựa chọn ' + currentEditingCaseIndex;
+
+            const blocksData = window.blocksData || [];
+            const caseData = blocksData.find(b => b.id === blockId);
+
+            if (caseData) {
+                document.getElementById('caseTitleInput').value = caseData.title || '';
+                document.getElementById('caseContentEditor').innerHTML = caseData.content || '';
+                // Load sub-cases
+                renderSubCases(blockId, caseData.subCases || []);
+            } else {
+                document.getElementById('caseTitleInput').value = 'Lựa chọn ' + currentEditingCaseIndex;
+                document.getElementById('caseContentEditor').innerHTML = '';
+                renderSubCases(blockId, []);
+            }
+
+            document.getElementById('caseEditorModal').classList.add('active');
+            setTimeout(() => document.getElementById('caseTitleInput').focus(), 100);
+        }
+
+        function closeCaseEditor() {
+            document.getElementById('caseEditorModal').classList.remove('active');
+            currentEditingCaseId = null;
+            // Also close sub-case editor if open
+            closeSubCaseEditor();
+        }
+
+        function renderSubCases(parentId, subCases) {
+            const container = document.getElementById('subCasesList-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (!subCases || subCases.length === 0) {
+                container.innerHTML = '<div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 20px;">Chưa có case con nào</div>';
+                return;
+            }
+
+            subCases.forEach((subCase, idx) => {
+                const div = document.createElement('div');
+                div.className = 'sub-case-item';
+                div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; cursor: pointer;';
+                div.onclick = function() { openSubCaseEditor(parentId, idx); };
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${idx + 1}</span>
+                        <span style="color: #1e293b; font-size: 14px;">${subCase.title || 'Case con ' + (idx + 1)}</span>
+                    </div>
+                    <span style="color: #64748b; font-size: 12px;" onclick="event.stopPropagation(); deleteSubCase('${parentId}', ${idx})">🗑️</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addSubCase(parentId) {
+            const blocksData = window.blocksData || [];
+            let caseData = blocksData.find(b => b.id === parentId);
+
+            if (!caseData) {
+                caseData = { id: parentId, type: 'case', title: '', content: '', subCases: [] };
+                blocksData.push(caseData);
+            }
+
+            if (!caseData.subCases) caseData.subCases = [];
+            caseData.subCases.push({
+                title: 'Case con ' + (caseData.subCases.length + 1),
+                content: ''
+            });
+
+            window.blocksData = blocksData;
+
+            // If modal is open, refresh the list
+            if (document.getElementById('caseEditorModal').classList.contains('active')) {
+                renderSubCases(parentId, caseData.subCases);
+            }
+
+            // Also add visual sub-case element in editor
+            const container = document.getElementById('subCases-' + parentId);
+            if (container) {
+                const idx = caseData.subCases.length;
+                const div = document.createElement('div');
+                div.className = 'sub-case-item';
+                div.id = 'subCase-' + parentId + '-' + idx;
+                div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border: 1px solid #f59e0b; border-radius: 6px; margin: 8px 0 8px 24px; cursor: pointer;';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;" onclick="openSubCaseEditor('${parentId}', ${idx - 1})">
+                        <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${idx}</span>
+                        <span style="color: #1e293b; font-size: 14px;">Case con ${idx}</span>
+                    </div>
+                    <span style="color: #64748b; font-size: 12px;" onclick="event.stopPropagation(); deleteSubCase('${parentId}', ${idx - 1})">🗑️</span>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function openSubCaseEditor(parentId, subCaseIndex) {
+            const blocksData = window.blocksData || [];
+            const caseData = blocksData.find(b => b.id === parentId);
+
+            if (caseData && caseData.subCases && caseData.subCases[subCaseIndex]) {
+                const subCase = caseData.subCases[subCaseIndex];
+                const allSubCases = document.querySelectorAll('.sub-case-item');
+
+                // Open a modal for sub-case editing
+                document.getElementById('subCaseEditorTitle').textContent = 'Chỉnh sửa Case con ' + (subCaseIndex + 1);
+                document.getElementById('subCaseParentId').value = parentId;
+                document.getElementById('subCaseIndex').value = subCaseIndex;
+                document.getElementById('subCaseTitleInput').value = subCase.title || '';
+                document.getElementById('subCaseContentEditor').innerHTML = subCase.content || '';
+
+                document.getElementById('subCaseEditorModal').classList.add('active');
+                setTimeout(() => document.getElementById('subCaseTitleInput').focus(), 100);
+            }
+        }
+
+        function closeSubCaseEditor() {
+            document.getElementById('subCaseEditorModal').classList.remove('active');
+        }
+
+        function saveSubCaseContent() {
+            const parentId = document.getElementById('subCaseParentId').value;
+            const subCaseIndex = parseInt(document.getElementById('subCaseIndex').value);
+            const title = document.getElementById('subCaseTitleInput').value;
+            const content = document.getElementById('subCaseContentEditor').innerHTML;
+
+            const blocksData = window.blocksData || [];
+            const caseData = blocksData.find(b => b.id === parentId);
+
+            if (caseData && caseData.subCases && caseData.subCases[subCaseIndex]) {
+                caseData.subCases[subCaseIndex].title = title;
+                caseData.subCases[subCaseIndex].content = content;
+                window.blocksData = blocksData;
+
+                // Refresh the sub-cases list
+                renderSubCases(parentId, caseData.subCases);
+                updateBlocks();
+            }
+
+            closeSubCaseEditor();
+        }
+
+        function saveCaseContent() {
+            if (!currentEditingCaseId) return;
+
+            const title = document.getElementById('caseTitleInput').value;
+            const content = document.getElementById('caseContentEditor').innerHTML;
+
+            const block = document.getElementById(currentEditingCaseId);
+            if (block) {
+                const labelEl = block.querySelector('.case-block-label');
+                const previewEl = block.querySelector('.case-block-preview');
+
+                if (labelEl) labelEl.textContent = title || 'Lựa chọn ' + currentEditingCaseIndex;
+                if (previewEl) {
+                    const textContent = document.getElementById('caseContentEditor').textContent;
+                    previewEl.textContent = textContent ? textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '') : 'Click để thêm nội dung case...';
+                }
+
+                if (!window.blocksData) window.blocksData = [];
+                const existingIdx = window.blocksData.findIndex(b => b.id === currentEditingCaseId);
+
+                const blocksData = window.blocksData;
+                let caseData = blocksData.find(b => b.id === currentEditingCaseId);
+
+                // Preserve existing sub-cases
+                const existingSubCases = caseData ? (caseData.subCases || []) : [];
+
+                const blockData = {
+                    id: currentEditingCaseId,
+                    type: 'case',
+                    title: title,
+                    content: content,
+                    text: document.getElementById('caseContentEditor').textContent,
+                    caseNumber: currentEditingCaseIndex,
+                    subCases: existingSubCases
+                };
+
+                if (existingIdx >= 0) {
+                    window.blocksData[existingIdx] = blockData;
+                } else {
+                    window.blocksData.push(blockData);
+                }
+
+                updateBlocks();
+            }
+
+            closeCaseEditor();
+        }
+
+        document.getElementById('caseEditorModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCaseEditor();
+        });
+
+        document.getElementById('subCaseEditorModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSubCaseEditor();
+        });
+
+        // Format text function for the mini editor
+        function formatText(format) {
+            const editor = document.getElementById('caseContentEditor');
+            if (!editor) return;
+
+            editor.focus();
+
+            switch(format) {
+                case 'bold':
+                    document.execCommand('bold', false, null);
+                    break;
+                case 'italic':
+                    document.execCommand('italic', false, null);
+                    break;
+                case 'underline':
+                    document.execCommand('underline', false, null);
+                    break;
+                case 'h1':
+                    document.execCommand('formatBlock', false, '<h1>');
+                    break;
+                case 'h2':
+                    document.execCommand('formatBlock', false, '<h2>');
+                    break;
+                case 'h3':
+                    document.execCommand('formatBlock', false, '<h3>');
+                    break;
+                case 'ul':
+                    document.execCommand('insertUnorderedList', false, null);
+                    break;
+                case 'ol':
+                    document.execCommand('insertOrderedList', false, null);
+                    break;
+                case 'quote':
+                    document.execCommand('formatBlock', false, '<blockquote>');
+                    break;
+            }
+        }
+
+        // Case Editor format functions (for case content)
+        function formatCaseText(format) {
+            const editor = document.getElementById('caseContentEditor');
+            if (!editor) return;
+            editor.focus();
+
+            switch(format) {
+                case 'bold': document.execCommand('bold', false, null); break;
+                case 'italic': document.execCommand('italic', false, null); break;
+                case 'underline': document.execCommand('underline', false, null); break;
+                case 'strikethrough': document.execCommand('strikeThrough', false, null); break;
+                case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
+                case 'createLink':
+                    const url = prompt('Nhập URL:');
+                    if (url) document.execCommand('createLink', false, url);
+                    break;
+                case 'buttonLink':
+                    // Button link handled differently
+                    break;
+            }
+        }
+
+        function setCaseBlockType(type) {
+            const editor = document.getElementById('caseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('formatBlock', false, '<' + type + '>');
+            toggleCaseDropdown('caseBlockTypeDropdown');
+        }
+
+        function setCaseAlignment(align) {
+            const editor = document.getElementById('caseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('justify' + align.charAt(0).toUpperCase() + align.slice(1), false, null);
+        }
+
+        function setCaseColor(type, color) {
+            const editor = document.getElementById('caseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(type, false, color);
+            toggleCaseDropdown('caseColorDropdown');
+        }
+
+        function toggleCaseDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        }
+
+        // Sub-case editor format functions
+        function formatSubCaseText(format) {
+            const editor = document.getElementById('subCaseContentEditor');
+            if (!editor) return;
+            editor.focus();
+
+            switch(format) {
+                case 'bold': document.execCommand('bold', false, null); break;
+                case 'italic': document.execCommand('italic', false, null); break;
+                case 'underline': document.execCommand('underline', false, null); break;
+                case 'strikethrough': document.execCommand('strikeThrough', false, null); break;
+                case 'code': document.execCommand('formatBlock', false, '<pre>'); break;
+                case 'createLink':
+                    const url = prompt('Nhập URL:');
+                    if (url) document.execCommand('createLink', false, url);
+                    break;
+                case 'buttonLink':
+                    break;
+            }
+        }
+
+        function setSubCaseBlockType(type) {
+            const editor = document.getElementById('subCaseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('formatBlock', false, '<' + type + '>');
+            toggleSubCaseDropdown('subCaseBlockTypeDropdown');
+        }
+
+        function setSubCaseAlignment(align) {
+            const editor = document.getElementById('subCaseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('justify' + align.charAt(0).toUpperCase() + align.slice(1), false, null);
+        }
+
+        function setSubCaseColor(type, color) {
+            const editor = document.getElementById('subCaseContentEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(type, false, color);
+            toggleSubCaseDropdown('subCaseColorDropdown');
+        }
+
+        function toggleSubCaseDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        }
+
+        // Add sub-case from modal
+        function addSubCaseFromModal() {
+            if (currentEditingCaseId) {
+                addSubCase(currentEditingCaseId);
+            }
+        }
+
+        // Delete sub-case
+        function deleteSubCase(parentId, subCaseIndex) {
+            const blocksData = window.blocksData || [];
+            const caseData = blocksData.find(b => b.id === parentId);
+
+            if (caseData && caseData.subCases && caseData.subCases[subCaseIndex]) {
+                caseData.subCases.splice(subCaseIndex, 1);
+                window.blocksData = blocksData;
+                renderSubCases(parentId, caseData.subCases);
+            }
+        }
+
+        // Delete entire case block
+        function deleteCaseBlock(blockId) {
+            if (confirm('Bạn có chắc chắn muốn xóa case này?')) {
+                const block = document.getElementById(blockId);
+                if (block) {
+                    block.remove();
+                    // Also remove from blocksData
+                    const blocksData = window.blocksData || [];
+                    window.blocksData = blocksData.filter(b => b.id !== blockId);
+                    updateBlocks();
+                }
+            }
+        }
+    </script>
+
     <script src="notion-features.js"></script>
     <script src="alias-manager.js"></script>
     <parameter name="StartLine">1736

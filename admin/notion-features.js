@@ -721,7 +721,8 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
         'blockquote': "Trích dẫn...",
         'callout': "Thông báo...",
         'code': "Code here...",
-        'divider': ""
+        'divider': "",
+        'case': "Nhập tiêu đề case..."
     };
 
     switch (type) {
@@ -736,7 +737,10 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
             content = `<blockquote class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="${placeholderMap[type]}">${initialHTML}</blockquote>`;
             break;
         case 'callout':
-            content = `<div class="notion-block-content callout" contenteditable="true" data-type="${type}" data-placeholder="${placeholderMap[type]}"><span class="text-2xl mr-2" contenteditable="false">💡</span><span contenteditable="true" class="flex-1">${initialHTML}</span></div>`;
+            content = `<div class="notion-block-content callout" contenteditable="true" data-type="${type}" data-placeholder="${placeholderMap[type]}">
+                <span class="callout-icon" contenteditable="false">💡</span>
+                <span class="callout-text" contenteditable="true">${initialHTML}</span>
+            </div>`;
             break;
         case 'code':
             content = `<pre class="notion-block-content" contenteditable="true" data-type="${type}" data-placeholder="${placeholderMap[type]}">${initialHTML}</pre>`;
@@ -747,6 +751,24 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
         case 'image':
             const src = (initialHTML && (initialHTML.startsWith('http') || initialHTML.startsWith('data:'))) ? initialHTML : '';
             content = `<div class="image-block-wrapper"><img src="${src}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" onclick="removeBlock('${id}')"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
+            break;
+        case 'case':
+            // Case block - lựa chọn trong switch (có thể chứa sub-cases)
+            const caseNum = (document.querySelectorAll('.notion-block[data-type="case"]').length + 1);
+            const casePreview = initialHTML ? initialHTML.substring(0, 50) + (initialHTML.length > 50 ? '...' : '') : 'Click để thêm nội dung case...';
+            content = `
+                <div class="case-block-wrapper" onclick="openCaseEditor('${id}')">
+                    <div class="case-block-icon">⚡</div>
+                    <div class="case-block-info">
+                        <div class="case-block-label">Lựa chọn ${caseNum}</div>
+                        <div class="case-block-preview">${casePreview}</div>
+                    </div>
+                    <div class="case-block-edit"><i data-lucide="edit-2" class="w-4 h-4"></i></div>
+                    <div class="case-block-add-sub" onclick="event.stopPropagation(); addSubCase('${id}')" title="Thêm case con">+</div>
+                    <div class="case-block-delete" onclick="event.stopPropagation(); deleteCaseBlock('${id}')" title="Xóa case">🗑️</div>
+                </div>
+                <div class="sub-cases-container" id="subCases-${id}"></div>
+            `;
             break;
         default:
             // Use div instead of p to avoid browser HTML parsing issues with nested elements
@@ -1097,6 +1119,7 @@ const SLASH_MENU_ITEMS = [
         title: 'Nâng cao',
         items: [
             { type: 'code', label: 'Code block', icon: 'code', desc: 'Chèn code.' },
+            { type: 'case', label: 'Case/Lựa chọn', icon: 'git-merge', desc: 'Thêm case lựa chọn có thể lồng nhau.' },
         ]
     }
 ];

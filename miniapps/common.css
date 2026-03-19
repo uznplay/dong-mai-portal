@@ -1,16 +1,28 @@
 /* Shared styles for Mini Apps */
 
-/* Mobile Responsive */
+/* Ensure chatbot is always on top - Critical for mobile */
+#chatbot-ui {
+    z-index: 999999 !important;
+    position: fixed !important;
+}
+
+/* Mobile Responsive - Enhanced */
 @media (max-width: 640px) {
     .miniapp-card {
-        padding: 1.5rem;
-        margin: 1rem;
+        padding: 1.25rem;
+        margin: 0.5rem;
         border-radius: 0.5rem;
     }
 
+    .miniapp-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
     .miniapp-header .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
     }
 
     .miniapp-header h1 {
@@ -22,24 +34,36 @@
     }
 
     .miniapp-header img {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
     }
 
     .btn-secondary {
         padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-secondary span {
+        display: none;
+    }
+
+    .btn-secondary i {
+        margin: 0 !important;
     }
 
     .form-group {
         margin-bottom: 1rem;
     }
 
+    .form-label {
+        font-size: 0.875rem;
+    }
+
     .form-input,
     .form-select,
     .form-textarea {
         padding: 0.75rem;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
     }
 
     .btn-submit {
@@ -50,6 +74,63 @@
 
     .grid-cols-2 {
         grid-template-columns: 1fr;
+    }
+
+    .text-3xl {
+        font-size: 1.5rem !important;
+    }
+
+    .text-lg {
+        font-size: 1rem !important;
+    }
+
+    .w-16 {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .h-16 {
+        height: 3rem;
+    }
+
+    .inline-flex {
+        flex-wrap: wrap;
+    }
+
+    .max-w-xl {
+        max-width: 100%;
+    }
+
+    /* Ensure chatbot is visible on mobile - raise it above header */
+    #chatbot-ui {
+        bottom: 80px !important;
+        right: 12px !important;
+        z-index: 999999 !important;
+    }
+
+    /* Add padding-bottom to body for chatbot space */
+    body.miniapp-container,
+    .miniapp-container {
+        padding-bottom: 160px !important;
+    }
+
+    /* Chat drawer on mobile - smaller width */
+    #chat-drawer {
+        width: calc(100vw - 24px) !important;
+        max-width: 350px;
+        right: 0 !important;
+    }
+}
+
+/* Tablet Responsive */
+@media (max-width: 768px) and (min-width: 641px) {
+    .miniapp-card {
+        padding: 2rem;
+        margin: 1.5rem;
+    }
+
+    .btn-submit {
+        padding: 0.875rem 2rem;
     }
 }
 
@@ -348,6 +429,45 @@
     }
 
     .steps-container::before {
+        display: none;
+    }
+
+    /* Table styles for mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        font-size: 0.875rem;
+    }
+
+    th, td {
+        padding: 0.5rem;
+    }
+
+    /* Header mobile fixes */
+    .miniapp-header .flex {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .miniapp-header .items-center {
+        align-items: center;
+    }
+
+    /* Search form */
+    #searchForm {
+        padding: 0;
+    }
+
+    /* Result card */
+    .result-card {
+        padding: 1.25rem;
+    }
+
+    /* Hide non-essential on mobile */
+    .hide-mobile {
         display: none;
     }
 }

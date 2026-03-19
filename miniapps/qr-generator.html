@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Server-side security config injection -->
+    <script>
+      window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
+    </script>
+
+    <!-- Disable DevTools - Server Controlled -->
+    <script>
+      (function() {
+        var config = window.SERVER_SECURITY_CONFIG;
+        if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
+          console.log('[Security] DevTools protection is disabled by server');
+          return;
+        }
+
+        var ddConfig = config.disableDevtool;
+        console.log('[Security] Loading DevTools protection with config:', ddConfig);
+
+        // Load disable-devtool from CDN
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
+        script.onload = function() {
+          if (typeof DisableDevtool === 'function') {
+            DisableDevtool({
+              disableMenu: ddConfig.disableMenu !== false,
+              disableSelect: ddConfig.disableSelect === true,
+              disableCopy: ddConfig.disableCopy === true,
+              disableCut: ddConfig.disableCut === true,
+              disablePaste: ddConfig.disablePaste === true,
+              detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
+              interval: ddConfig.interval || 200,
+              ondevtoolopen: function(type, next) {
+                console.warn('[Security] DevTools detected! Type:', type);
+                if (navigator.sendBeacon) {
+                  navigator.sendBeacon('/api/security-log', JSON.stringify({
+                    event: 'devtool_open',
+                    type: type,
+                    timestamp: new Date().toISOString()
+                  }));
+                }
+                next();
+              }
+            });
+            console.log('[Security] DevTools protection activated');
+          }
+        };
+        script.onerror = function() {
+          console.error('[Security] Failed to load disable-devtool');
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
+    <title>Tạo QR Code - Đông Mai Số</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Global SVG icon fix - stroke-based (Feather style) */
+        svg:not([fill]) {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-hover: #242424;
+            --primary: #e63946;
+            --primary-hover: #ff4d5a;
+            --secondary: #f1faee;
+            --accent: #a8dadc;
+            --text: #ffffff;
+            --text-secondary: #888888;
+            --border: #333333;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --ai: #9b59b6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Chặn tràn ngang - không cho scroll ngang */
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 160px;
+        }
+
+        /* Chatbot: luôn cố định góc phải VIEWPORT (màn hình), không theo scroll ngang */
+        #chatbot-ui {
+            position: fixed !important;
+            bottom: 24px !important;
+            right: 24px !important;
+            left: auto !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        /* Mobile responsive fixes */
+        @media (max-width: 640px) {
+            html, body {
+                overflow-x: hidden !important;
+            }
+
+            body {
+                padding-bottom: 200px;
+            }
+
+            /* Chatbot luôn góc phải màn hình */
+            #chatbot-ui {
+                position: fixed !important;
+                bottom: 90px !important;
+                right: 16px !important;
+                left: auto !important;
+                z-index: 999999 !important;
+                display: flex !important;
+            }
+
+            #chat-drawer {
+                width: calc(100vw - 32px) !important;
+                max-width: 350px !important;
+            }
+
+            /* Container full width on mobile */
+            .max-w-6xl, main.max-w-7xl {
+                max-width: 100% !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Header mobile */
+            .header .max-w-6xl {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Main content */
+            main {
+                padding: 1.5rem 1rem !important;
+            }
+
+            /* Title */
+            h1 {
+                font-size: 1.75rem !important;
+            }
+
+            .text-4xl {
+                font-size: 1.75rem !important;
+            }
+
+            .text-5xl {
+                font-size: 2rem !important;
+            }
+
+            .text-lg {
+                font-size: 1rem !important;
+            }
+
+            /* Grid to single column */
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Cards */
+            .card {
+                padding: 1.25rem !important;
+                border-radius: 1rem !important;
+            }
+
+            /* Buttons */
+            .btn-primary {
+                padding: 14px 24px !important;
+                font-size: 1rem !important;
+            }
+
+            .btn-secondary {
+                padding: 10px 16px !important;
+                font-size: 0.875rem !important;
+            }
+
+            /* Input fields */
+            .input-field {
+                padding: 14px 16px !important;
+                font-size: 1rem !important;
+            }
+
+            /* QR result container */
+            #qr-result {
+                min-height: auto !important;
+                padding: 1rem;
+            }
+
+            /* Icon sizes */
+            .w-24, .h-24 {
+                width: 4rem !important;
+                height: 4rem !important;
+            }
+
+            .w-12, .h-12 {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+
+            /* Hide "Về trang chủ" text on mobile */
+            .header .btn-secondary span {
+                display: none;
+            }
+
+            /* Tabs */
+            .flex.justify-center.gap-3 {
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        .glass {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 18px 32px;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 57, 70, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary);
+        }
+
+        .input-field {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            color: var(--text);
+            font-size: 18px;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            min-height: 140px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Tránh tràn ngang */
+        main, .card, #qr-result, #qr-canvas {
+            max-width: 100% !important;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(26, 26, 26, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Animated gradient background */
+        .hero-bg {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
+            position: relative;
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(230, 57, 70, 0.1) 0%, transparent 50%);
+            animation: pulse 15s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* QR Canvas - 500px cố định */
+        #qr-canvas {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            display: inline-block;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        #qr-canvas img,
+        #qr-canvas canvas,
+        #qr-canvas table {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive: trên mobile QR nhỏ lại cho vừa */
+        @media (max-width: 640px) {
+            #qr-canvas { padding: 20px; }
+            #qr-canvas img, #qr-canvas canvas, #qr-canvas table { max-width: 100% !important; }
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        /* Preset buttons */
+        .preset-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Color picker */
+        .color-picker-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .color-picker-wrapper input[type="color"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* Tabs */
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="hero-bg min-h-screen">
+    <!-- Header -->
+    <header class="header">
+        <div class="max-w-6xl mx-auto px-6 md:px-10 py-4">
+            <div class="flex items-center justify-between">
+                <a href="../index.html" class="flex items-center gap-3">
+                    <img src="../logo.png" alt="Logo" class="w-10 h-10">
+                    <div>
+                        <h1 class="font-bold text-lg">Đông Mai Số</h1>
+                        <p class="text-xs text-gray-400">QR Generator</p>
+                    </div>
+                </a>
+                <a href="../index.html" class="btn-secondary text-sm">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Về trang chủ
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content - rộng hơn, bớt trống -->
+    <main class="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-16">
+        <!-- Title -->
+        <div class="text-center mb-10 md:mb-12">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-primary/20 rounded-2xl mb-6">
+                <i data-lucide="qr-code" class="w-12 h-12 text-primary"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-3">Tạo QR Code</h1>
+            <p class="text-gray-400 text-lg md:text-xl mb-6">Tạo mã QR cho văn bản và liên kết</p>
+            <p class="text-gray-600 mb-4">Tạo mã QR cho văn bản và liên kết.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex justify-center gap-3 mb-8">
+            <button class="tab-btn active" onclick="switchTab('text')">
+                <i data-lucide="text" class="w-5 h-5 inline mr-2"></i>Văn bản
+            </button>
+            <button class="tab-btn" onclick="switchTab('url')">
+                <i data-lucide="link" class="w-5 h-5 inline mr-2"></i>Liên kết
+            </button>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 lg:gap-10">
+            <!-- Input Section -->
+            <div class="card">
+                <!-- Text Tab -->
+                <div id="tab-text" class="tab-content active">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="text" class="w-5 h-5 text-primary"></i>
+                        Nhập văn bản
+                    </h3>
+                    <textarea id="text-input" class="input-field" placeholder="Nhập nội dung cần tạo QR..." rows="4"></textarea>
+                </div>
+
+                <!-- URL Tab -->
+                <div id="tab-url" class="tab-content">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="link" class="w-5 h-5 text-primary"></i>
+                        Nhập liên kết
+                    </h3>
+                    <input type="url" id="url-input" class="input-field" placeholder="https://example.com">
+                </div>
+
+                <!-- Options -->
+                <div class="mt-6 pt-6 border-t border-gray-800">
+                    <h4 class="font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" class="w-5 h-5 text-primary"></i>
+                        Tùy chọn
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2">Màu QR</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="qr-color" value="#000000">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-2">Màu nền</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="bg-color" value="#ffffff">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button onclick="generateQR()" class="btn-primary w-full mt-6 justify-center">
+                    <i data-lucide="qr-code" class="w-5 h-5"></i>
+                    Tạo QR Code
+                </button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="card text-center">
+                <h3 class="font-semibold mb-6 flex items-center justify-center gap-2">
+                    <i data-lucide="eye" class="w-5 h-5 text-primary"></i>
+                    Xem trước
+                </h3>
+
+                <div id="qr-result" class="flex flex-col items-center justify-center min-h-[380px]">
+                    <div id="qr-placeholder" class="text-gray-500 text-lg">
+                        <i data-lucide="qr-code" class="w-28 h-28 mx-auto mb-4 opacity-30"></i>
+                        <p>Nhập nội dung và nhấn "Tạo QR Code"</p>
+                    </div>
+                    <div id="qr-canvas" class="hidden"></div>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading flex-col items-center justify-center py-12">
+                    <div class="spinner"></div>
+                    <p class="mt-4 text-gray-400">Đang tạo QR Code...</p>
+                </div>
+
+                <!-- Download Buttons -->
+                <div id="download-btns" class="hidden mt-6 space-y-3">
+                    <button onclick="downloadQR('png')" class="btn-primary w-full justify-center">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        Tải PNG
+                    </button>
+                    <button onclick="downloadQR('jpg')" class="btn-secondary w-full justify-center">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                        Tải JPG
+                    </button>
+                    <button onclick="copyData()" class="btn-secondary w-full justify-center">
+                        <i data-lucide="copy" class="w-5 h-5"></i>
+                        Sao chép dữ liệu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+        <span id="toast-message">Thành công!</span>
+    </div>
+
+    <!-- Chatbot UI -->
+    <div id="chatbot-ui" class="flex flex-col items-end" style="margin-bottom: env(safe-area-inset-bottom, 0); position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 999999 !important; display: flex !important; visibility: visible !important; opacity: 1 !important;">
+        <div id="chat-hint" class="mr-2 md:mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 border border-red-100 max-w-[280px]" style="display: flex !important;">
+            <div class="bg-red-500 rounded-xl p-2 flex-shrink-0">
+                <i data-lucide="message-square" class="text-white w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-extrabold text-gray-900 text-sm leading-tight">Trợ lý ảo Đông Mai Số <span class="inline-block w-2 h-2 bg-green-500 rounded-full ml-1 animate-pulse"></span></h4>
+                <p class="text-red-500 font-bold text-xs mt-0.5">HỖ TRỢ TTHC 24/7</p>
+            </div>
+            <button onclick="document.getElementById('chat-hint').style.display='none'" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <button onclick="toggleChat()" class="bg-white p-1 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-red-500 w-16 h-16 relative group" style="position: relative !important; z-index: 999999 !important; display: flex !important;">
+            <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="w-full h-full object-cover rounded-full" alt="Chatbot">
+            <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+            <div id="chat-icon-close" class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </div>
+        </button>
+        <div id="chat-drawer" class="hidden w-[350px] md:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden border border-gray-100" style="max-width: min(350px, 90vw);">
+            <div class="bg-red-600 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bot"></i>
+                    <span class="font-bold">Trợ lý ảo Phường Đông Mai</span>
+                </div>
+                <button id="chat-reset" onclick="resetChat()" class="hover:bg-white/20 p-1.5 rounded-full transition-colors" title="Tạo hội thoại mới">
+                    <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 max-w-[85%] self-start">
+                    Xin chào! Tôi có thể giúp gì cho bạn về các thủ tục hành chính tại phường Đông Mai?
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t">
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Nhập câu hỏi..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-red-600 text-sm" style="background: white !important; color: #1f2937 !important;">
+                    <button onclick="sendMessage()" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700">
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../chatbot.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Variables - kích thước QR cố định 500px
+        const QR_SIZE = 500;
+        let currentData = '';
+        let qrCode = null;
+
+        // Tab switching
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.tab-btn').classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        // Get data based on current tab
+        function getQRData() {
+            const activeTab = document.querySelector('.tab-content.active').id.replace('tab-', '');
+            
+            switch(activeTab) {
+                case 'text':
+                    return document.getElementById('text-input').value.trim();
+                case 'url':
+                    let url = document.getElementById('url-input').value.trim();
+                    // Add https:// if no protocol is specified
+                    if (url && !url.match(/^https?:\/\//i)) {
+                        url = 'https://' + url;
+                    }
+                    return url;
+                case 'wifi':
+                    const ssid = document.getElementById('wifi-ssid').value.trim();
+                    const password = document.getElementById('wifi-password').value;
+                    const type = document.getElementById('wifi-type').value;
+                    if (!ssid) return '';
+                    return `WIFI:T:${type};S:${ssid};P:${password};;`;
+                case 'vcard':
+                    const firstname = document.getElementById('vcard-firstname').value.trim();
+                    const lastname = document.getElementById('vcard-lastname').value.trim();
+                    const phone = document.getElementById('vcard-phone').value.trim();
+                    const email = document.getElementById('vcard-email').value.trim();
+                    const company = document.getElementById('vcard-company').value.trim();
+                    
+                    if (!firstname && !lastname && !phone && !email) return '';
+                    
+                    let vcard = 'BEGIN:VCARD\nVERSION:3.0';
+                    if (firstname || lastname) vcard += `\nN:${lastname};${firstname};;;`;
+                    if (firstname || lastname) vcard += `\nFN:${firstname} ${lastname}`.trim();
+                    if (phone) vcard += `\nTEL:${phone}`;
+                    if (email) vcard += `\nEMAIL:${email}`;
+                    if (company) vcard += `\nORG:${company}`;
+                    vcard += '\nEND:VCARD';
+                    return vcard;
+                default:
+                    return '';
+            }
+        }
+
+        // Generate QR Code
+        function generateQR() {
+            const data = getQRData();
+            
+            if (!data) {
+                showToast('Vui lòng nhập nội dung!', 'error');
+                return;
+            }
+
+            currentData = data;
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('qr-placeholder').classList.add('hidden');
+            document.getElementById('qr-canvas').classList.add('hidden');
+            document.getElementById('download-btns').classList.add('hidden');
+
+            try {
+                const canvas = document.getElementById('qr-canvas');
+                const color = document.getElementById('qr-color').value;
+                const bgColor = document.getElementById('bg-color').value;
+
+                // Clear previous QR
+                canvas.innerHTML = '';
+
+                // Create QR using qrcodejs - cố định 256px
+                new QRCode(canvas, {
+                    text: data,
+                    width: QR_SIZE,
+                    height: QR_SIZE,
+                    colorDark: color,
+                    colorLight: bgColor,
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+
+                setTimeout(() => {
+                    document.getElementById('loading').classList.remove('active');
+                    canvas.classList.remove('hidden');
+                    document.getElementById('download-btns').classList.remove('hidden');
+                    showToast('Tạo QR Code thành công!', 'success');
+                }, 100);
+            } catch (error) {
+                console.error('Error generating QR:', error);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('qr-placeholder').classList.remove('hidden');
+                showToast('Lỗi khi tạo QR Code!', 'error');
+            }
+        }
+
+        // Download QR Code
+        function downloadQR(format) {
+            const canvasEl = document.getElementById('qr-canvas');
+            
+            if (!canvasEl.classList.contains('hidden')) {
+                const img = canvasEl.querySelector('img');
+                if (img) {
+                    const link = document.createElement('a');
+                    link.download = `qrcode-${Date.now()}.${format}`;
+                    const padding = 40;
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = QR_SIZE + padding * 2;
+                    tempCanvas.height = QR_SIZE + padding * 2;
+                    const ctx = tempCanvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    ctx.drawImage(img, padding, padding);
+                    link.href = format === 'png' ? tempCanvas.toDataURL('image/png') : tempCanvas.toDataURL('image/jpeg', 0.9);
+                    link.click();
+                    showToast('Tải xuống thành công!', 'success');
+                }
+            }
+        }
+
+        // Copy data
+        function copyData() {
+            if (currentData) {
+                navigator.clipboard.writeText(currentData).then(() => {
+                    showToast('Đã sao chép dữ liệu!', 'success');
+                }).catch(() => {
+                    showToast('Không thể sao chép!', 'error');
+                });
+            }
+        }
+
+        // Show toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            if (!toast || !toastMessage) return;
+            
+            toast.className = 'toast ' + type;
+            toastMessage.textContent = message;
+            
+            const icon = toast.querySelector('i');
+            if (icon) {
+                if (type === 'success') {
+                    icon.setAttribute('data-lucide', 'check-circle');
+                } else {
+                    icon.setAttribute('data-lucide', 'x-circle');
+                }
+                lucide.createIcons();
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Generate on Enter key
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateQR();
+                }
+            });
+        });
+    </script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>
