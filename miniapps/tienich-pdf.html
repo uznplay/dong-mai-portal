@@ -5,22 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Disable DevTools - Server Controlled -->
-                    type: type,
-                    timestamp: new Date().toISOString()
-                  }));
-                }
-                next();
-              }
-            });
-            console.log('[Security] DevTools protection activated');
-          }
-        };
-        script.onerror = function() {
-          console.error('[Security] Failed to load disable-devtool');
-        };
-        document.head.appendChild(script);
-      })();
-    </script>
+    <script src="/security.js"></script>
     <title>PDF Tools - Đông Mai Số</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
