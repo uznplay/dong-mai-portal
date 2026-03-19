@@ -22,6 +22,14 @@
       "destination": "/api/create-admin.py"
     },
     {
+      "source": "/api/security-config",
+      "destination": "/api/security_config.py"
+    },
+    {
+      "source": "/api/security-config/update",
+      "destination": "/api/security_config.py"
+    },
+    {
       "source": "/admin",
       "destination": "/admin/index.html"
     }

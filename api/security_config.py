@@ -49,14 +49,15 @@ class handler(BaseHTTPRequestHandler):
     
     def do_GET(self):
         """Trả về cấu hình bảo mật (để admin dashboard có thể xem)"""
-        if self.path == '/api/security-config':
+        # On Vercel, self.path might be different based on rewrites
+        if '/api/security-config' in self.path:
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
             self.send_header('Pragma', 'no-cache')
             self.end_headers()
             
-            # Trả về config (chỉ dùng cho admin, không dùng ở client)
+            # Trả về config
             self.wfile.write(json.dumps(config.get_config()).encode('utf-8'))
             return
         

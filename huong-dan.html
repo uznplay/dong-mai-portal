@@ -4,37 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Server-side security config injection -->
-    <script>
-      window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
-    </script>
-
     <!-- Disable DevTools - Server Controlled -->
-    <script>
-      (function() {
-        var config = window.SERVER_SECURITY_CONFIG;
-        if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
-          return;
-        }
-        var ddConfig = config.disableDevtool;
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
-        script.onload = function() {
-          if (typeof DisableDevtool === 'function') {
-            DisableDevtool({
-              disableMenu: ddConfig.disableMenu !== false,
-              disableSelect: ddConfig.disableSelect === true,
-              disableCopy: ddConfig.disableCopy === true,
-              disableCut: ddConfig.disableCut === true,
-              disablePaste: ddConfig.disablePaste === true,
-              detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
-              interval: ddConfig.interval || 200
-            });
-          }
-        };
-        document.head.appendChild(script);
-      })();
-    </script>
+    <script src="/security.js"></script>
     <title>Hướng Dẫn Dịch Vụ Công - Đông Mai Số</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
