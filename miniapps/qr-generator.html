@@ -4,57 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Server-side security config injection -->
-    <script>
-      window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
-    </script>
-
     <!-- Disable DevTools - Server Controlled -->
-    <script>
-      (function() {
-        var config = window.SERVER_SECURITY_CONFIG;
-        if (!config || !config.disableDevtool || !config.disableDevtool.enabled) {
-          console.log('[Security] DevTools protection is disabled by server');
-          return;
-        }
-
-        var ddConfig = config.disableDevtool;
-        console.log('[Security] Loading DevTools protection with config:', ddConfig);
-
-        // Load disable-devtool from CDN
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/disable-devtool';
-        script.onload = function() {
-          if (typeof DisableDevtool === 'function') {
-            DisableDevtool({
-              disableMenu: ddConfig.disableMenu !== false,
-              disableSelect: ddConfig.disableSelect === true,
-              disableCopy: ddConfig.disableCopy === true,
-              disableCut: ddConfig.disableCut === true,
-              disablePaste: ddConfig.disablePaste === true,
-              detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
-              interval: ddConfig.interval || 200,
-              ondevtoolopen: function(type, next) {
-                console.warn('[Security] DevTools detected! Type:', type);
-                if (navigator.sendBeacon) {
-                  navigator.sendBeacon('/api/security-log', JSON.stringify({
-                    event: 'devtool_open',
-                    type: type,
-                    timestamp: new Date().toISOString()
-                  }));
-                }
-                next();
-              }
-            });
-            console.log('[Security] DevTools protection activated');
-          }
-        };
-        script.onerror = function() {
-          console.error('[Security] Failed to load disable-devtool');
-        };
-        document.head.appendChild(script);
-      })();
-    </script>
+    <script src="/security.js"></script>
     <title>Tạo QR Code - Đông Mai Số</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
