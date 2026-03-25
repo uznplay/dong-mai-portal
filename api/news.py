@@ -55,101 +55,92 @@ def _send(handler, status, data):
     handler.wfile.write(json.dumps(data).encode('utf-8'))
 
 
-class handler:
-    """Vercel/serverless: export default async function(req, res)"""
+class handler(BaseHTTPRequestHandler):
+    """Vercel/serverless: Standard BaseHTTPRequestHandler"""
 
-    @staticmethod
-    def handle_event(event, context=None):
-        """Vercel serverless function signature"""
-        import urllib.request
-        import urllib.error
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
-        req = event
-        if hasattr(req, 'method'):
-            method = req.get('method', 'GET')
-        else:
-            method = 'GET'
-
-        if method == 'OPTIONS':
-            return {'statusCode': 200,
-                    'headers': {'Access-Control-Allow-Origin': '*',
-                                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                                'Access-Control-Allow-Headers': 'Content-Type'}}
-
-        if method != 'POST':
-            return {'statusCode': 405, 'body': json.dumps({'error': 'Method not allowed'})}
-
-        body = {}
-        if hasattr(req, 'get') and callable(req.get):
-            body = req.get('body') or {}
-        elif hasattr(req, 'body'):
-            body = req.get('body', {}) if hasattr(req, 'get') else (req.body or {})
-
-        if isinstance(body, str):
-            body = json.loads(body)
-        encoded = body.get('payload', '') if isinstance(body, dict) else ''
-        if encoded:
-            decoded = base64.b64decode(encoded).decode('utf-8')
-            body = json.loads(decoded)
-
-        ip = 'unknown'
-        if hasattr(req, 'get'):
-            ip = req.get('headers', {}).get('x-forwarded-for', 'unknown')
-            if isinstance(ip, str) and ',' in ip:
-                ip = ip.split(',')[0].strip()
-
-        if not _rate_limit(ip):
-            return {'statusCode': 429, 'body': json.dumps({'error': 'Too many requests'})}
+    def do_POST(self):
+        """Standard Vercel POST handler"""
+        if not _rate_limit(self.client_address[0]):
+            _send(self, 429, {'error': 'Too many requests. Please slow down.'})
+            return
 
         if not supabase:
-            return {'statusCode': 500, 'body': json.dumps({'error': 'Supabase not configured'})}
-
-        table = body.get('table', '')
-        action = body.get('action', '')
-        params = body.get('params', {})
-
-        if table not in ALLOWED_TABLES:
-            return {'statusCode': 403, 'body': json.dumps({'error': 'Table not allowed'})}
+            _send(self, 500, {'error': 'Supabase not configured'})
+            return
 
         try:
-            query = supabase.table(table).select(params.get('select', '*'))
+            content_len = int(self.headers.get('Content-Length', 0))
+            raw = self.rfile.read(content_len)
+            body = json.loads(raw.decode('utf-8'))
 
-            for col, val in params.get('eq', {}).items():
-                query = query.eq(col, val)
-            for col, val in params.get('neq', {}).items():
-                query = query.neq(col, val)
+            # Decode Base64-encoded payload (if any)
+            encoded = body.get('payload', '')
+            if encoded:
+                decoded = base64.b64decode(encoded).decode('utf-8')
+                body = json.loads(decoded)
 
-            # not filter không tương thích với supabase-py v2
-            # RLS policy lọc tag "hướng dẫn" ở database
+            table = body.get('table', '')
+            action = body.get('action', 'select')
+            params = body.get('params', {})
 
-            of = params.get('or')
-            if of:
-                query = query.or_(of)
+            if table not in ALLOWED_TABLES:
+                _send(self, 403, {'error': 'Table not allowed'})
+                return
 
-            ord = params.get('order')
-            if ord:
-                col = ord.get('column', 'published_at')
-                asc = ord.get('ascending', False)
-                query = query.order(col, desc=not asc)
+            if action == 'select':
+                query = supabase.table(table).select(params.get('select', '*'))
+                for col, val in params.get('eq', {}).items():
+                    query = query.eq(col, val)
+                for col, val in params.get('neq', {}).items():
+                    query = query.neq(col, val)
+                
+                of = params.get('or')
+                if of:
+                    query = query.or_(of)
 
-            lim = params.get('limit')
-            if lim:
-                query = query.limit(lim)
+                ord_ = params.get('order')
+                if ord_:
+                    col = ord_.get('column', 'published_at')
+                    asc = ord_.get('ascending', False)
+                    query = query.order(col, desc=not asc)
 
-            if params.get('single'):
-                result = query.single().execute()
+                lim = params.get('limit')
+                if lim:
+                    query = query.limit(lim)
+
+                if params.get('single'):
+                    result = query.single().execute()
+                else:
+                    result = query.execute()
+                
+                _send(self, 200, {'data': result.data})
+
+            elif action == 'insert':
+                result = supabase.table(table).insert(params.get('values')).execute()
+                _send(self, 200, {'data': result.data})
+
+            elif action == 'update':
+                result = supabase.table(table).update(params.get('values')).eq('id', params.get('id')).execute()
+                _send(self, 200, {'data': result.data})
+
+            elif action == 'delete':
+                result = supabase.table(table).delete().eq('id', params.get('id')).execute()
+                _send(self, 200, {'data': result.data})
+
             else:
-                result = query.execute()
-
-            # supabase-py v2 dùng try/except, không có .error attribute
-            return {'statusCode': 200,
-                    'body': json.dumps({'data': result.data}),
-                    'headers': {'Content-Type': 'application/json',
-                                'Cache-Control': 'no-store',
-                                'Access-Control-Allow-Origin': '*'}}
+                _send(self, 400, {'error': f'Unknown action: {action}'})
 
         except Exception as e:
-            return {'statusCode': 500, 'body': json.dumps({'error': str(e)})}
+            import traceback
+            traceback.print_exc()
+            _send(self, 500, {'error': f'Server error: {e}'})
 
 
 # Python HTTP Server: called by UnifiedHandler in run_server.py

@@ -1,8 +1,8 @@
 {
   "rewrites": [
-    { "source": "/api/env", "destination": "/api/env.js" },
-    { "source": "/api/config", "destination": "/api/config.js" },
-    { "source": "/api/news", "destination": "/api/news.js" },
-    { "source": "/api/security-config", "destination": "/api/security-config.js" }
+    { "source": "/api/env", "destination": "/api/env.py" },
+    { "source": "/api/config", "destination": "/api/config.py" },
+    { "source": "/api/news", "destination": "/api/news.py" },
+    { "source": "/api/security-config", "destination": "/api/security_config.py" }
   ]
 }
