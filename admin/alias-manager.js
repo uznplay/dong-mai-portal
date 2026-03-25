@@ -3,9 +3,22 @@
 // ==========================================
 let currentAliases = [];
 
+function normalizeKeywordAlias(s) {
+    if (s == null || s === undefined) return '';
+    try {
+        return String(s)
+            .normalize('NFC')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLocaleLowerCase('vi');
+    } catch (e) {
+        return String(s).replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+}
+
 function addAlias() {
     const input = document.getElementById('aliasInput');
-    const alias = input.value.trim().toLowerCase();
+    const alias = normalizeKeywordAlias(input.value);
 
     if (!alias) {
         showToast('Vui lòng nhập từ khóa');
@@ -17,7 +30,7 @@ function addAlias() {
         return;
     }
 
-    if (currentAliases.includes(alias)) {
+    if (currentAliases.some((a) => normalizeKeywordAlias(a) === alias)) {
         showToast('Từ khóa đã tồn tại');
         return;
     }
@@ -71,7 +84,15 @@ window.addEventListener('DOMContentLoaded', () => {
 // Function to load aliases from post object (called from admin-news-edit.html)
 function loadAliasesFromPost(post) {
     if (post && post.keyword_aliases && Array.isArray(post.keyword_aliases)) {
-        currentAliases = post.keyword_aliases.filter(a => a && typeof a === 'string');
+        const seen = new Set();
+        currentAliases = [];
+        for (const raw of post.keyword_aliases) {
+            if (!raw || typeof raw !== 'string') continue;
+            const n = normalizeKeywordAlias(raw);
+            if (!n || seen.has(n)) continue;
+            seen.add(n);
+            currentAliases.push(n);
+        }
         renderAliases();
     }
 }

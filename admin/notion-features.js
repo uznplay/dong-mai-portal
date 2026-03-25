@@ -721,8 +721,7 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
         'blockquote': "Trích dẫn...",
         'callout': "Thông báo...",
         'code': "Code here...",
-        'divider': "",
-        'case': "Nhập tiêu đề case..."
+        'divider': ""
     };
 
     switch (type) {
@@ -752,23 +751,20 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
             const src = (initialHTML && (initialHTML.startsWith('http') || initialHTML.startsWith('data:'))) ? initialHTML : '';
             content = `<div class="image-block-wrapper"><img src="${src}" alt="Image" class="image-block-preview" id="img-${id}"><div class="image-block-remove" onclick="removeBlock('${id}')"><i data-lucide="x" class="w-4 h-4"></i></div></div>`;
             break;
-        case 'case':
-            // Case block - lựa chọn trong switch (có thể chứa sub-cases)
-            const caseNum = (document.querySelectorAll('.notion-block[data-type="case"]').length + 1);
-            const casePreview = initialHTML ? initialHTML.substring(0, 50) + (initialHTML.length > 50 ? '...' : '') : 'Click để thêm nội dung case...';
-            content = `
-                <div class="case-block-wrapper" onclick="openCaseEditor('${id}')">
-                    <div class="case-block-icon">⚡</div>
-                    <div class="case-block-info">
-                        <div class="case-block-label">Lựa chọn ${caseNum}</div>
-                        <div class="case-block-preview">${casePreview}</div>
+        case 'youtube':
+            content = `<div class="youtube-embed-block-inner">
+                <div class="youtube-embed-card-head">
+                    <span class="youtube-embed-card-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                    <div class="youtube-embed-card-titles">
+                        <span class="youtube-embed-card-title">Nhúng YouTube</span>
+                        <span class="youtube-embed-card-hint">Dán nguyên thẻ &lt;iframe&gt; từ trang chia sẻ của YouTube</span>
                     </div>
-                    <div class="case-block-edit"><i data-lucide="edit-2" class="w-4 h-4"></i></div>
-                    <div class="case-block-add-sub" onclick="event.stopPropagation(); addSubCase('${id}')" title="Thêm case con">+</div>
-                    <div class="case-block-delete" onclick="event.stopPropagation(); deleteCaseBlock('${id}')" title="Xóa case">🗑️</div>
                 </div>
-                <div class="sub-cases-container" id="subCases-${id}"></div>
-            `;
+                <div class="youtube-embed-card-body">
+                    <textarea class="youtube-embed-field" rows="5" spellcheck="false" placeholder="&lt;iframe ... src=&quot;https://www.youtube.com/embed/VIDEO_ID&quot; ...&gt;&lt;/iframe&gt;"></textarea>
+                </div>
+                <p class="youtube-embed-card-foot">Chỉ chấp nhận nhúng từ youtube.com hoặc youtube-nocookie.com (đường dẫn /embed/).</p>
+            </div>`;
             break;
         default:
             // Use div instead of p to avoid browser HTML parsing issues with nested elements
@@ -794,14 +790,24 @@ function addBlock(type, focus = false, index = -1, initialHTML = '') {
         editor.appendChild(block);
     }
 
+    if (type === 'youtube') {
+        const ta = block.querySelector('.youtube-embed-field');
+        if (ta && initialHTML) ta.value = initialHTML;
+    }
+
     hideBlockSelector();
 
     if (window.lucide) lucide.createIcons();
 
     if (focus) {
-        const contentEl = block.querySelector('.notion-block-content');
-        if (contentEl) {
-            setTimeout(() => contentEl.focus(), 0);
+        if (type === 'youtube') {
+            const ta = block.querySelector('.youtube-embed-field');
+            if (ta) setTimeout(() => ta.focus(), 0);
+        } else {
+            const contentEl = block.querySelector('.notion-block-content');
+            if (contentEl) {
+                setTimeout(() => contentEl.focus(), 0);
+            }
         }
     }
 }
@@ -811,7 +817,10 @@ function removeBlock(blockId) {
     if (!block) return;
     const editor = document.getElementById('notionEditor');
     if (editor.children.length <= 1) {
-        block.querySelector('.notion-block-content').innerHTML = '';
+        const ce = block.querySelector('.notion-block-content');
+        const yt = block.querySelector('.youtube-embed-field');
+        if (ce) ce.innerHTML = '';
+        else if (yt) yt.value = '';
         return;
     }
     block.remove();
@@ -847,18 +856,6 @@ function initKeyboardShortcuts() {
             if (document.getElementById('blockTypeSelector').classList.contains('active')) return;
             e.preventDefault();
             document.execCommand('insertLineBreak', false, null);
-            return;
-        }
-
-        // SHIFT + ENTER = Create new block
-        if (e.key === 'Enter' && e.shiftKey) {
-            e.preventDefault();
-            const currentType = activeBlock.dataset.type;
-            if (currentType === 'ul' || currentType === 'ol') {
-                addBlock(currentType, true, index + 1);
-            } else {
-                addBlock('paragraph', true, index + 1);
-            }
             return;
         }
 
@@ -1113,13 +1110,13 @@ const SLASH_MENU_ITEMS = [
         title: 'Đa phương tiện',
         items: [
             { type: 'image', label: 'Hình ảnh', icon: 'image', desc: 'Tải ảnh.' },
+            { type: 'youtube', label: 'YouTube', icon: 'video', desc: 'Dán mã nhúng iframe từ YouTube.' },
         ]
     },
     {
         title: 'Nâng cao',
         items: [
             { type: 'code', label: 'Code block', icon: 'code', desc: 'Chèn code.' },
-            { type: 'case', label: 'Case/Lựa chọn', icon: 'git-merge', desc: 'Thêm case lựa chọn có thể lồng nhau.' },
         ]
     }
 ];

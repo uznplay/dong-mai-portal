@@ -12,6 +12,40 @@ else:
     load_dotenv()
 
 
+def _env_bool(key: str, default: str = "false") -> bool:
+    """Đọc bool từ .env — chấp nhận true/false có hoặc không có ngoặc kép."""
+    raw = os.getenv(key, default)
+    if raw is None:
+        raw = default
+    s = str(raw).strip().strip('"').strip("'").lower()
+    return s in ("true", "1", "yes", "on")
+
+
+def _env_int(key: str, default: int = 200) -> int:
+    raw = os.getenv(key, str(default))
+    if raw is None:
+        return default
+    try:
+        return int(str(raw).strip().strip('"').strip("'"))
+    except ValueError:
+        return default
+
+
+def _env_detectors() -> list:
+    raw = os.getenv("DISABLE_DEVTOOL_DETECTORS", "0 1 2 3 4 5 6 7")
+    parts = str(raw).replace(",", " ").split()
+    out = []
+    for p in parts:
+        p = p.strip().strip('"').strip("'")
+        if not p:
+            continue
+        try:
+            out.append(int(p))
+        except ValueError:
+            continue
+    return out if out else [0, 1, 2, 3, 4, 5, 6, 7]
+
+
 class SecurityConfig:
     """Quản lý cấu hình bảo mật từ phía server"""
     
@@ -24,18 +58,18 @@ class SecurityConfig:
         return {
             # Cấu hình disable-devtool
             "disableDevtool": {
-                "enabled": os.getenv("DISABLE_DEVTOOL_ENABLED", "true").lower() == "true",
-                "disableMenu": os.getenv("DISABLE_DEVTOOL_DISABLE_MENU", "true").lower() == "true",
-                "disableSelect": os.getenv("DISABLE_DEVTOOL_DISABLE_SELECT", "false").lower() == "true",
-                "disableCopy": os.getenv("DISABLE_DEVTOOL_DISABLE_COPY", "false").lower() == "true",
-                "disableCut": os.getenv("DISABLE_DEVTOOL_DISABLE_CUT", "false").lower() == "true",
-                "disablePaste": os.getenv("DISABLE_DEVTOOL_DISABLE_PASTE", "false").lower() == "true",
-                "detectors": os.getenv("DISABLE_DEVTOOL_DETECTORS", "0 1 2 3 4 5 6 7").split(),
-                "interval": int(os.getenv("DISABLE_DEVTOOL_INTERVAL", "200")),
+                "enabled": _env_bool("DISABLE_DEVTOOL_ENABLED", "true"),
+                "disableMenu": _env_bool("DISABLE_DEVTOOL_DISABLE_MENU", "true"),
+                "disableSelect": _env_bool("DISABLE_DEVTOOL_DISABLE_SELECT", "false"),
+                "disableCopy": _env_bool("DISABLE_DEVTOOL_DISABLE_COPY", "false"),
+                "disableCut": _env_bool("DISABLE_DEVTOOL_DISABLE_CUT", "false"),
+                "disablePaste": _env_bool("DISABLE_DEVTOOL_DISABLE_PASTE", "false"),
+                "detectors": _env_detectors(),
+                "interval": _env_int("DISABLE_DEVTOOL_INTERVAL", 200),
             },
             # Các cấu hình bảo mật khác có thể thêm sau
             "security": {
-                "enabled": os.getenv("SECURITY_ENABLED", "true").lower() == "true",
+                "enabled": _env_bool("SECURITY_ENABLED", "true"),
             }
         }
 

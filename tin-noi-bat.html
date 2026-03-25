@@ -126,24 +126,97 @@
     <script>
         lucide.createIcons();
 
-        // Initialize Supabase client - use window.supabaseClient from config.js if available
-        if (window.supabaseClient) {
-            window.supabase = window.supabaseClient;
-        } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-            const supabaseUrl = window.SUPABASE_CONFIG?.url;
-            const supabaseKey = window.SUPABASE_CONFIG?.key;
-            if (supabaseUrl && supabaseKey) {
-                window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
-            }
-        }
-
-        // Helper to extract plain text from HTML content
         function extractTextFromHTML(html) {
             if (!html) return '';
             const div = document.createElement('div');
             div.innerHTML = html;
             const text = div.textContent || div.innerText || '';
             return text.trim().substring(0, 150) + (text.length > 150 ? '...' : '');
+        }
+
+        function extractPlainTextFromContentBlocks(content) {
+            if (!content || !Array.isArray(content)) return '';
+            const chunks = [];
+            for (const b of content) {
+                if (!b || !b.type) continue;
+                if (b.type === 'divider' || b.type === 'image' || b.type === 'youtube') continue;
+                let t = (b.text || '').replace(/\s+/g, ' ').trim();
+                if (!t && b.content && typeof b.content === 'string') {
+                    const d = document.createElement('div');
+                    d.innerHTML = b.content;
+                    t = (d.textContent || '').replace(/\s+/g, ' ').trim();
+                }
+                if (t) chunks.push(t);
+                if (chunks.join(' ').length >= 200) break;
+            }
+            const s = chunks.join(' ').trim();
+            if (!s) return '';
+            return s.length <= 150 ? s : s.substring(0, 147) + '...';
+        }
+
+        function normalizeViSearch(s) {
+            if (s == null || s === undefined) return '';
+            try {
+                return String(s)
+                    .normalize('NFC')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .toLocaleLowerCase('vi');
+            } catch (e) {
+                return String(s).replace(/\s+/g, ' ').trim().toLowerCase();
+            }
+        }
+
+        function fieldMatchesQuery(value, queryNorm) {
+            if (!queryNorm) return true;
+            return normalizeViSearch(value).includes(queryNorm);
+        }
+
+        function postMatchesSearch(post, queryNorm) {
+            if (!queryNorm) return true;
+            if (fieldMatchesQuery(post.title, queryNorm)) return true;
+            if (fieldMatchesQuery(post.summary, queryNorm)) return true;
+            if (post.keyword_aliases && Array.isArray(post.keyword_aliases)) {
+                for (const alias of post.keyword_aliases) {
+                    if (fieldMatchesQuery(alias, queryNorm)) return true;
+                }
+            }
+            if (post.content_html) {
+                const d = document.createElement('div');
+                d.innerHTML = post.content_html;
+                if (fieldMatchesQuery(d.textContent || '', queryNorm)) return true;
+            }
+            if (post.content && Array.isArray(post.content)) {
+                for (const b of post.content) {
+                    if (!b) continue;
+                    if (fieldMatchesQuery(b.text, queryNorm)) return true;
+                    if (b.content && typeof b.content === 'string') {
+                        const d2 = document.createElement('div');
+                        d2.innerHTML = b.content;
+                        if (fieldMatchesQuery(d2.textContent || '', queryNorm)) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function formatKeywordAliasesLine(aliases) {
+            if (!aliases || !Array.isArray(aliases)) return '';
+            const parts = aliases.map(a => String(a).trim()).filter(Boolean);
+            if (!parts.length) return '';
+            return 'Từ khóa: ' + parts.slice(0, 10).join(' · ');
+        }
+
+        function postCardExcerpt(news) {
+            const sum = (news.summary && news.summary.trim()) ? news.summary.trim() : '';
+            if (sum) return sum.length <= 200 ? sum : sum.substring(0, 197) + '...';
+            const fromHtml = extractTextFromHTML(news.content_html);
+            if (fromHtml && fromHtml.replace(/\.\.\.$/, '').trim()) return fromHtml;
+            const fromBlocks = extractPlainTextFromContentBlocks(news.content);
+            if (fromBlocks) return fromBlocks;
+            const aliases = formatKeywordAliasesLine(news.keyword_aliases);
+            if (aliases) return aliases;
+            return 'Đang cập nhật nội dung...';
         }
 
         // Pagination & Search State
@@ -154,18 +227,31 @@
 
         async function loadNews() {
             try {
-                // Exclude guides: neither has tag "hướng dẫn" nor category "Hướng dẫn"
-                const { data, error } = await supabase
-                    .from('featured_news')
-                    .select('*')
-                    .eq('status', 'published')
-                    .not('tags', 'cs', '{"hướng dẫn"}')
-                    .neq('category', 'huong-dan')
-                    .order('published_at', { ascending: false });
+                // Exclude guides via server-side proxy (key KHÔNG bao giờ đi qua browser)
+                const rawPayload = {
+                    table: 'featured_news',
+                    action: 'select',
+                    params: {
+                        eq: { status: 'published' },
+                        neq: { category: 'huong-dan' },
+                        order: { column: 'published_at', ascending: false }
+                    }
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(rawPayload))));
+
+                const res = await fetch('/api/news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payload: encoded })
+                });
+
+                const result = await res.json();
 
                 document.getElementById('loading').classList.add('hidden');
 
-                if (error) throw error;
+                if (!res.ok || result.error) throw new Error(result.error || 'Failed to fetch');
+
+                const data = result.data;
 
                 if (!data || data.length === 0) {
                     document.getElementById('empty-state').classList.remove('hidden');
@@ -213,7 +299,7 @@
                             <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${new Date(news.published_at || news.created_at).toLocaleDateString('vi-VN')}</span>
                         </div>
                         <h3 class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 group-hover:text-red-600 transition-colors">${news.title}</h3>
-                        <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-1">${news.summary || extractTextFromHTML(news.content_html) || 'Đang cập nhật nội dung...'}</p>
+                        <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-1">${postCardExcerpt(news)}</p>
                         
                         <div class="pt-4 border-t border-gray-50 flex items-center justify-between">
                             <span class="text-red-600 text-sm font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
@@ -285,23 +371,11 @@
         }
 
         function handleSearch(e) {
-            const query = e.target.value.toLowerCase().trim();
+            const query = normalizeViSearch(e.target.value);
             if (!query) {
                 filteredPosts = allPosts;
             } else {
-                filteredPosts = allPosts.filter(post => {
-                    // Search in title
-                    if (post.title.toLowerCase().includes(query)) return true;
-                    // Search in summary
-                    if (post.summary && post.summary.toLowerCase().includes(query)) return true;
-                    // ✅ Search in keyword aliases (NEW)
-                    if (post.keyword_aliases && Array.isArray(post.keyword_aliases)) {
-                        return post.keyword_aliases.some(alias =>
-                            alias.toLowerCase().includes(query)
-                        );
-                    }
-                    return false;
-                });
+                filteredPosts = allPosts.filter(post => postMatchesSearch(post, query));
             }
             renderPage(1);
         }
@@ -314,6 +388,7 @@
             return labels[category] || 'Tin tức';
         }
 
+        // Trang chỉ dùng proxy /api/news — không cần chờ SUPABASE_CONFIG (có thể không bật key trên public)
         loadNews();
     </script>
 

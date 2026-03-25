@@ -6,15 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Disable DevTools - Server Controlled -->
     <script src="/security.js"></script>
-    <!-- Server-side env injection (phải nằm trong <script>, không thì trình duyệt in ra màn hình) -->
-    <script>
-        /*INJECT_SERVER_ENV*/window.SERVER_ENV = {};/*END_INJECT*/
-    </script>
     <title>PDF Tools - Đông Mai Số</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Inter: Latin + Latin Extended + Vietnamese — tránh lệch font chữ có dấu (Outfit webfont thường thiếu subset) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=latin,latin-ext,vietnamese" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -55,13 +50,11 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Outfit', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            font-optical-sizing: auto;
         }
 
         /* Back button */
@@ -1036,18 +1029,12 @@
             padding: 16px 24px;
             border-radius: 12px;
             font-size: 14px;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             z-index: 200;
             opacity: 0;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .toast-message {
-            font-family: inherit;
-            line-height: 1.45;
         }
 
         .toast.visible {
@@ -1314,148 +1301,6 @@
                 grid-template-columns: 1fr;
             }
         }
-
-        /* Thumbail for scanner muilti*/
-        .thumb-wrapper {
-            position: relative;
-            width: 80px;
-            height: 80px;
-        }
-
-        /* Nút xóa hình tròn nhỏ màu đỏ */
-        .btn-delete-thumb {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            background: #ff3b30; /* Màu đỏ iOS */
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 10;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-
-        .btn-delete-thumb:hover {
-            transform: scale(1.2);
-            background: #d10000;
-        }
-        .scan-thumb {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            object-fit: cover;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .scan-thumb.active {
-            border-color: #007aff; /* Màu xanh nổi bật cho ảnh đang chọn */
-            transform: scale(1.05);
-        }
-        .scan-thumb:hover {
-            opacity: 0.8;
-        }
-        /* Ô "Thêm ảnh" có dấu cộng */
-        .add-more-thumb {
-            width: 80px;
-            height: 80px;
-            border: 2px dashed var(--border); /* Đường viền đứt đoạn */
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 30px;
-            color: var(--border);
-            background: rgba(255, 255, 255, 0.05);
-            transition: all 0.2s;
-        }
-
-        .add-more-thumb:hover {
-            border-color: #007aff;
-            color: #007aff;
-            background: rgba(0, 122, 255, 0.1);
-        }
-
-        /* Lỗi kết nối API Scanner (thay cho alert) */
-        .scan-api-error-banner {
-            display: none;
-            margin-bottom: 16px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            background: rgba(220, 53, 69, 0.12);
-            border: 1px solid rgba(220, 53, 69, 0.5);
-            color: var(--text);
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .scan-api-error-banner.visible {
-            display: block;
-        }
-
-        .scan-api-error-inner {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .scan-api-error-icon {
-            flex-shrink: 0;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(220, 53, 69, 0.85);
-            color: #fff;
-            font-weight: 800;
-            font-size: 16px;
-            line-height: 28px;
-            text-align: center;
-        }
-
-        .scan-api-error-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .scan-api-error-text strong {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 15px;
-        }
-
-        .scan-api-error-text p {
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.5;
-            opacity: 0.92;
-        }
-
-        .scan-api-error-close {
-            flex-shrink: 0;
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text);
-            font-size: 22px;
-            line-height: 1;
-            cursor: pointer;
-        }
-
-        .scan-api-error-close:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
     </style>
     <style>
         #chatbot-ui { position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 99999 !important; }
@@ -1528,17 +1373,7 @@
                     </svg>
                     Nén PDF
                 </button>
-                <button class="tab-btn" data-tab="scan-pdf">
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="4 8 4 4 8 4"></polyline>
-                        <polyline points="16 4 20 4 20 8"></polyline>
-                        <polyline points="20 16 20 20 16 20"></polyline>
-                        <polyline points="8 20 4 20 4 16"></polyline>
-                        <line x1="4" y1="12" x2="20" y2="12"></line>
-                    </svg>
-                    Scanner
-                </button>
+
             </div>
             <p class="subtitle" id="subtitle">Kéo thả file PDF của bạn vào đây để tách thành từng trang riêng biệt</p>
         </header>
@@ -1669,33 +1504,20 @@
             <div class="file-list" id="fileListGop" style="display: none; margin-top: 20px;">
                 <h3 style="color: var(--text); margin-bottom: 16px; font-size: 16px;">Files đã chọn:</h3>
                 <div id="gopFilesContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
-
+                
                 <!-- Preview Section -->
                 <div id="gopPreview" style="margin-top: 20px; display: none;">
-                    <h4
-                        style="color: var(--text); margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
+                    <h4 style="color: var(--text); margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         Xem trước nội dung
                     </h4>
-                    <div id="gopPreviewContent"
-                        style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; max-height: 300px; overflow-y: auto; border: 1px solid var(--border);">
-                    </div>
+                    <div id="gopPreviewContent" style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; max-height: 300px; overflow-y: auto; border: 1px solid var(--border);"></div>
                 </div>
 
-                <div class="actions"
-                    style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <div class="actions" style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                     <button class="btn btn-secondary" onclick="addMoreGopFiles()"
                         style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                        <svg viewBox="0 0 24 24"
-                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
+                        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         Thêm file
                     </button>
                     <button class="btn btn-secondary" onclick="clearGopFiles()"
@@ -1759,28 +1581,22 @@
 
             <!-- Compression Options -->
             <div id="nenOptions" style="display: none; margin-top: 20px;">
-                <div
-                    style="background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                <div style="background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
                     <h3 style="color: var(--text); margin-bottom: 16px; font-size: 16px;">Cài đặt nén:</h3>
-
+                    
                     <!-- Compression Level -->
                     <div style="margin-bottom: 16px;">
-                        <label
-                            style="color: var(--text-secondary); font-size: 14px; display: block; margin-bottom: 8px;">Mức
-                            độ nén:</label>
+                        <label style="color: var(--text-secondary); font-size: 14px; display: block; margin-bottom: 8px;">Mức độ nén:</label>
                         <div style="display: flex; gap: 10px;">
-                            <button class="nen-level-btn active" data-level="low" onclick="setNenLevel('low')"
-                                style="flex: 1; padding: 12px; background: var(--primary); border: none; border-radius: 8px; color: white; cursor: pointer;">
+                            <button class="nen-level-btn active" data-level="low" onclick="setNenLevel('low')" style="flex: 1; padding: 12px; background: var(--primary); border: none; border-radius: 8px; color: white; cursor: pointer;">
                                 Nhẹ
                                 <span style="font-size: 11px; display: block; opacity: 0.8;">Chất lượng cao</span>
                             </button>
-                            <button class="nen-level-btn" data-level="medium" onclick="setNenLevel('medium')"
-                                style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer;">
+                            <button class="nen-level-btn" data-level="medium" onclick="setNenLevel('medium')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer;">
                                 Trung bình
                                 <span style="font-size: 11px; display: block; opacity: 0.8;">Cân bằng</span>
                             </button>
-                            <button class="nen-level-btn" data-level="high" onclick="setNenLevel('high')"
-                                style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer;">
+                            <button class="nen-level-btn" data-level="high" onclick="setNenLevel('high')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer;">
                                 Mạnh
                                 <span style="font-size: 11px; display: block; opacity: 0.8;">Giảm nhiều</span>
                             </button>
@@ -1788,8 +1604,7 @@
                     </div>
 
                     <!-- File Info -->
-                    <div id="nenFileInfo"
-                        style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div id="nenFileInfo" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
                         <p style="color: var(--text); font-size: 14px; margin-bottom: 4px;" id="nenFileName"></p>
                         <p style="color: var(--text-secondary); font-size: 12px;" id="nenFileSize"></p>
                     </div>
@@ -1797,22 +1612,12 @@
                     <div class="actions" style="display: flex; gap: 12px; justify-content: center;">
                         <button class="btn btn-secondary" onclick="resetNenPdf()"
                             style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                            <svg viewBox="0 0 24 24"
-                                style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"
-                                fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
+                            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             Chọn lại
                         </button>
                         <button class="btn btn-primary" onclick="compressPdf()"
                             style="padding: 12px 24px; background: var(--primary); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: 500;">
-                            <svg viewBox="0 0 24 24"
-                                style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"
-                                fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path>
-                                <path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path>
-                            </svg>
+                            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path></svg>
                             Nén PDF
                         </button>
                     </div>
@@ -1821,14 +1626,9 @@
 
             <!-- Compression Result -->
             <div id="nenResult" style="display: none; margin-top: 20px;">
-                <div
-                    style="background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); text-align: center;">
+                <div style="background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); text-align: center;">
                     <div style="color: var(--success); margin-bottom: 16px;">
-                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
+                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
                     <h3 style="color: var(--text); margin-bottom: 12px;">Nén thành công!</h3>
                     <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
@@ -1852,13 +1652,7 @@
                         </button>
                         <button class="btn btn-primary" onclick="downloadNenPdf()"
                             style="padding: 12px 24px; background: var(--primary); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: 500;">
-                            <svg viewBox="0 0 24 24"
-                                style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"
-                                fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
+                            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             Tải về
                         </button>
                     </div>
@@ -1866,166 +1660,7 @@
             </div>
         </div>
 
-        <!-- Tab Content: cho Scanner-->
-        <div class="tab-content" id="tab-scan-pdf">
 
-            <div id="scanApiErrorBanner" class="scan-api-error-banner" role="alert">
-                <div class="scan-api-error-inner">
-                    <div class="scan-api-error-icon">!</div>
-                    <div class="scan-api-error-text">
-                        <strong id="scanApiErrorTitle">Không kết nối được máy chủ scan</strong>
-                        <p id="scanApiErrorDetail"></p>
-                    </div>
-                    <button type="button" class="scan-api-error-close" id="scanApiErrorClose"
-                        aria-label="Đóng thông báo">×</button>
-                </div>
-            </div>
-
-            <div class="drop-zone" id="dropZoneScan">
-                <div class="drop-icon">
-                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" fill="none"
-                        stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                </div>
-                <p class="drop-text">Kéo thả hình ảnh vào đây</p>
-                <p class="drop-subtext">hoặc click để chọn ảnh (JPG, PNG)</p>
-                <input type="file" class="file-input" id="scanFileInput" accept="image/*" multiple>
-
-                <div style="margin-top: 15px; position: relative; z-index: 2;">
-                    <button class="btn btn-secondary" id="btnOpenCamera"
-                        style="padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer;">
-                        <svg viewBox="0 0 24 24"
-                            style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
-                            </path>
-                            <circle cx="12" cy="13" r="4"></circle>
-                        </svg>
-                        Mở Máy Ảnh
-                    </button>
-                </div>
-            </div>
-            <div id="scanPreviewContainer"
-                style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; padding: 10px; border-top: 1px solid var(--border);">
-            </div>
-            <div id="cameraModal"
-                style="display: none; width: 100%; padding: 10px; box-sizing: border-box; flex-direction: column; align-items: center;">
-
-                <video id="cameraStream" autoplay playsinline
-                    style="width: 100%; max-width: 500px; border-radius: 12px; background: #000; object-fit: cover;">
-                </video>
-                
-                <canvas id="captureCanvas" style="display: none;"></canvas>
-
-                <div id="cameraThumbnails" style="display: flex; gap: 8px; width: 100%; max-width: 500px; overflow-x: auto; padding: 10px 0; min-height: 80px;">
-                </div>
-                <div
-                    style="margin-top: 15px; display: flex; gap: 10px; width: 100%; max-width: 500px; justify-content: center;">
-
-                    <button class="btn btn-secondary" id="btnCloseCamera"
-                        style="flex: 1; padding: 15px; border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border);">
-                        Hủy
-                    </button>
-
-                    <button class="btn btn-primary" id="btnCaptureFrame" onclick="capturePhoto()"
-                        style="flex: 2; padding: 15px; border-radius: 10px; font-size: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 8px;" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        Chụp Ảnh
-                    </button>
-
-                    <button class="btn btn-success" id="btnFinishCapture" style="display: none; background: var(--success); color: white;" onclick="finishCapture()">Xong</button>
-
-                </div>
-            </div>
-
-            <div id="scanEditorContainer" style="display: none; margin-top: 20px;">
-                <div class="options-header" style="margin-bottom: 16px;">
-                    <h3 class="options-title" style="color: var(--text);">Preview pictures</h3>
-                </div>
-
-                <div id="previewArea"
-                    style="position: relative; width: 100%; max-height: 500px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <canvas id="scanCanvas" style="max-width: 25%; max-height: 500px; display: block;"></canvas>
-                    <canvas id="cornersCanvas" style="position: absolute; top: 0; left: 0; cursor: crosshair;"></canvas>
-                </div>
-
-                <div class="actionsChange" id="actionsChange"
-                    style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-secondary" id="btnRotateScanLeft"
-                        style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                        ↶ Xoay trái
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="btnRotateScanRight"
-                        style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                        ↷ Xoay phải
-                    </button>
-                    <button class="btn btn-primary" id="btnApplyScan"
-                        style="padding: 12px 24px; background: var(--primary); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: 500;">
-                        <svg viewBox="0 0 24 24"
-                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Xác nhận & Cắt
-                    </button>
-                </div>
-                <div id="downloadArea" style="display: none; margin-top: 20px; text-align: center;">
-                    <button class="btn btn-success" id="btnDownloadResult"
-                        style="padding: 12px 30px; background: #28a745; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; font-size: 16px;">
-                        <svg viewBox="0 0 24 24"
-                            style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Tải PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="resetAfterScan()"
-                        style="margin-left: 10px; padding: 12px 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                        Bắt đầu 1 hồ sơ mới
-                    </button>
-                </div>
-            </div>
-
-            <div class="pages-section" id="scannedPagesSection" style="display: none; margin-top: 30px;">
-                <div class="pages-header">
-                    <h2 class="pages-title">Các trang đã quét</h2>
-                    <span class="pages-count" id="scannedCount">0 trang</span>
-                </div>
-
-                <div class="pages-grid" id="scannedPagesGrid"
-                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                </div>
-
-                <div class="actions"
-                    style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; border-top: 1px solid var(--border); padding-top: 20px;">
-                    <button class="btn btn-secondary" id="btnClearScans"
-                        style="padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;">
-                        Xóa tất cả
-                    </button>
-                    <button class="btn btn-primary" id="btnExportScanToPDF"
-                        style="padding: 12px 24px; background: var(--primary); border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: 500;">
-                        <svg viewBox="0 0 24 24"
-                            style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="12" y1="18" x2="12" y2="12"></line>
-                            <line x1="9" y1="15" x2="15" y2="15"></line>
-                        </svg>
-                        Xuất thành 1 file PDF
-                    </button>
-                </div>
-            </div>
-        </div>
 
 
         <div class="loading-overlay" id="loadingOverlay">
@@ -2216,16 +1851,57 @@
                 spinner.classList.add('ai');
 
                 try {
-                    loadingText.textContent = 'Đang chuẩn bị file...';
-                    const base64PDF = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            const result = reader.result;
-                            resolve(result.split(',')[1]);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(currentFile);
-                    });
+                    loadingText.textContent = 'Đang nén file cho AI...';
+                    
+                    const { PDFDocument } = PDFLib;
+                    const newPdfDoc = await PDFDocument.create();
+                    const numPagesToCompress = pdfDoc.numPages;
+                    const scaleCompress = 1.0; 
+                    const qualityCompress = 0.5;
+                    
+                    for (let i = 1; i <= numPagesToCompress; i++) {
+                        loadingText.textContent = `Đang nén trang ${i}/${numPagesToCompress}...`;
+                        const page = await pdfDoc.getPage(i);
+                        const viewport = page.getViewport({ scale: scaleCompress });
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
+                        
+                        const imgDataUrl = canvas.toDataURL('image/jpeg', qualityCompress);
+                        
+                        const base64Data = imgDataUrl.split(',')[1];
+                        const binaryStr = atob(base64Data);
+                        const len = binaryStr.length;
+                        const bytes = new Uint8Array(len);
+                        for (let j = 0; j < len; j++) {
+                            bytes[j] = binaryStr.charCodeAt(j);
+                        }
+                        
+                        const img = await newPdfDoc.embedJpg(bytes);
+                        const pdfPage = newPdfDoc.addPage([img.width, img.height]);
+                        pdfPage.drawImage(img, {
+                            x: 0,
+                            y: 0,
+                            width: img.width,
+                            height: img.height
+                        });
+                    }
+                    
+                    const compressedPdfBytes = await newPdfDoc.save();
+                    let binaryStrSave = '';
+                    const bytesArray = new Uint8Array(compressedPdfBytes);
+                    const chunk = 8192;
+                    for (let i = 0; i < bytesArray.length; i += chunk) {
+                        binaryStrSave += String.fromCharCode.apply(null, bytesArray.subarray(i, i + chunk));
+                    }
+                    const base64PDF = btoa(binaryStrSave);
 
                     loadingText.textContent = 'Đang gửi lên AI...';
 
@@ -2603,10 +2279,10 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                         showToast(`Đã tải ${aiAnalysisResult.documents.length} tài liệu`, 'success');
                         showLoading(false);
                         return;
-                    }
+                    } 
                     else if (splitMode === 'custom' && rangeInput.value.trim()) {
                         exportGroups = parsePageRangeGroups(rangeInput.value.trim(), totalPages);
-                    }
+                    } 
                     else {
                         // Tách từng trang một (All)
                         exportGroups = Array.from({ length: totalPages }, (_, i) => [i + 1]);
@@ -2626,7 +2302,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                             newDoc.addPage(page);
                         }
                         const pdfBytes = await newDoc.save();
-                        const fileName = group.length > 1 ? `pages_${group[0]}-${group[group.length - 1]}.pdf` : `page_${group[0]}.pdf`;
+                        const fileName = group.length > 1 ? `pages_${group[0]}-${group[group.length-1]}.pdf` : `page_${group[0]}.pdf`;
                         downloadFile(pdfBytes, fileName);
                     } else {
                         const zip = new JSZip();
@@ -2637,7 +2313,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                                 newDoc.addPage(page);
                             }
                             const pdfBytes = await newDoc.save();
-                            const fileName = group.length > 1 ? `pages_${group[0]}-${group[group.length - 1]}.pdf` : `page_${group[0]}.pdf`;
+                            const fileName = group.length > 1 ? `pages_${group[0]}-${group[group.length-1]}.pdf` : `page_${group[0]}.pdf`;
                             zip.file(fileName, pdfBytes);
                         }
                         const content = await zip.generateAsync({ type: 'blob' });
@@ -2667,7 +2343,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                         const [startStr, endStr] = trimmed.split('-');
                         const start = parseInt(startStr.trim());
                         const end = parseInt(endStr.trim());
-
+                        
                         if (!isNaN(start) && !isNaN(end)) {
                             const min = Math.max(1, Math.min(start, end));
                             const max = Math.min(maxPages, Math.max(start, end));
@@ -2767,7 +2443,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                         'gop-pdf': 'Kéo thả nhiều file PDF vào đây để gộp thành một file duy nhất',
                         'pdf-image': 'Kéo thả file PDF vào đây để chuyển đổi thành hình ảnh',
                         'nen-pdf': 'Kéo thả file PDF vào đây để nén giảm kích thước file',
-                        'scan-pdf': 'Tải ảnh lên để tạo file PDF chất lượng cao'
+                        'scan': 'Chụp ảnh hoặc tải ảnh giấy tờ để scan như CamScanner'
                     };
                     document.getElementById('subtitle').textContent = subtitles[tabName] || '';
                 });
@@ -2847,16 +2523,16 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             async function loadGopPreview() {
                 const previewContent = document.getElementById('gopPreviewContent');
                 previewContent.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Đang tải xem trước...</p>';
-
+                
                 try {
                     let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
-
+                    
                     for (let i = 0; i < gopFiles.length; i++) {
                         const file = gopFiles[i];
                         const arrayBuffer = await file.arrayBuffer();
                         const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                         const numPages = pdfDoc.numPages;
-
+                        
                         html += `
                             <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -2870,7 +2546,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                             </div>
                         `;
                     }
-
+                    
                     html += '</div>';
                     previewContent.innerHTML = html;
                 } catch (error) {
@@ -2883,27 +2559,27 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             async function previewGopFile(index) {
                 const file = gopFiles[index];
                 showLoading(true, 'Đang tải xem trước...');
-
+                
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     const numPages = pdfDoc.numPages;
-
+                    
                     // Render thumbnails for all pages
                     let pagesHtml = '<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px;">';
-
+                    
                     for (let pageNum = 1; pageNum <= Math.min(numPages, 20); pageNum++) {
                         const page = await pdfDoc.getPage(pageNum);
                         const viewport = page.getViewport({ scale: 0.3 });
-
+                        
                         const canvas = document.createElement('canvas');
                         canvas.width = viewport.width;
                         canvas.height = viewport.height;
                         const ctx = canvas.getContext('2d');
-
+                        
                         await page.render({ canvasContext: ctx, viewport: viewport }).promise;
                         const dataUrl = canvas.toDataURL('image/png');
-
+                        
                         pagesHtml += `
                             <div style="position: relative; border: 1px solid var(--border); border-radius: 4px; overflow: hidden;">
                                 <img src="${dataUrl}" style="display: block; max-width: 120px; height: auto;" />
@@ -2911,21 +2587,21 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                             </div>
                         `;
                     }
-
+                    
                     if (numPages > 20) {
                         pagesHtml += `<div style="width: 100%; text-align: center; color: var(--text-secondary); padding: 10px;">... và ${numPages - 20} trang nữa</div>`;
                     }
                     pagesHtml += '</div>';
-
+                    
                     let html = `<div style="padding: 20px;">
                         <h4 style="color: var(--text); margin-bottom: 16px; font-size: 16px;">${file.name}</h4>
                         <p style="color: var(--text-secondary); margin-bottom: 8px;">Số trang: <strong style="color: var(--text);">${numPages}</strong></p>
                         <p style="color: var(--text-secondary); margin-bottom: 8px;">Kích thước: <strong style="color: var(--text);">${formatFileSize(file.size)}</strong></p>
                         ${pagesHtml}
                     </div>`;
-
+                    
                     showLoading(false);
-
+                    
                     const modal = document.createElement('div');
                     modal.id = 'previewModal';
                     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
@@ -2939,7 +2615,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                         </div>
                     `;
                     document.body.appendChild(modal);
-
+                    
                     modal.addEventListener('click', (e) => {
                         if (e.target === modal) modal.remove();
                     });
@@ -2949,7 +2625,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 }
             }
 
-            window.addMoreGopFiles = function () {
+            window.addMoreGopFiles = function() {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.pdf';
@@ -2963,7 +2639,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 renderGopFiles();
             }
 
-            window.moveGopFile = function (index, direction) {
+            window.moveGopFile = function(index, direction) {
                 const newIndex = index + direction;
                 if (newIndex < 0 || newIndex >= gopFiles.length) return;
                 const temp = gopFiles[index];
@@ -3058,7 +2734,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 dropZoneNen.style.display = 'none';
             }
 
-            window.setNenLevel = function (level) {
+            window.setNenLevel = function(level) {
                 nenLevel = level;
                 document.querySelectorAll('.nen-level-btn').forEach(btn => {
                     if (btn.dataset.level === level) {
@@ -3083,7 +2759,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
 
                 try {
                     const arrayBuffer = await nenFile.arrayBuffer();
-
+                    
                     // Compression quality based on level
                     const qualityMap = {
                         'low': 0.8,
@@ -3091,7 +2767,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                         'high': 0.3
                     };
                     const quality = qualityMap[nenLevel] || 0.5;
-
+                    
                     // Scale factor - giảm resolution để nén
                     const scaleMap = {
                         'low': 1.5,
@@ -3103,30 +2779,30 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     // Load PDF với pdf.js
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     const numPages = pdf.numPages;
-
+                    
                     // Tạo PDF mới với pdf-lib
                     const newPdfDoc = await PDFLib.PDFDocument.create();
-
+                    
                     for (let i = 1; i <= numPages; i++) {
                         showLoading(true, `Đang nén trang ${i}/${numPages}...`);
-
+                        
                         const page = await pdf.getPage(i);
                         const viewport = page.getViewport({ scale: scale * 2 }); // Render ở resolution cao hơn
-
+                        
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
                         canvas.width = viewport.width;
                         canvas.height = viewport.height;
-
+                        
                         await page.render({
                             canvasContext: context,
                             viewport: viewport
                         }).promise;
-
+                        
                         // Convert to JPEG với quality thấp
                         const imgDataUrl = canvas.toDataURL('image/jpeg', quality);
                         const imgBytes = await fetch(imgDataUrl).then(r => r.arrayBuffer());
-
+                        
                         // Add image to new PDF
                         const img = await newPdfDoc.embedJpg(imgBytes);
                         const pdfPage = newPdfDoc.addPage([img.width, img.height]);
@@ -3137,11 +2813,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                             height: img.height
                         });
                     }
-
+                    
                     // Save PDF đã nén
                     const compressedPdfBytes = await newPdfDoc.save({ useObjectStreams: true });
                     const resultBlob = new Blob([compressedPdfBytes], { type: 'application/pdf' });
-
+                    
                     // Calculate sizes
                     const beforeSize = nenFile.size;
                     const afterSize = resultBlob.size;
@@ -3150,11 +2826,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     document.getElementById('nenBeforeSize').textContent = formatFileSize(beforeSize);
                     document.getElementById('nenAfterSize').textContent = formatFileSize(afterSize);
                     document.getElementById('nenReduction').textContent = reduction > 0 ? `-${reduction}%` : '0%';
-
+                    
                     nenResultBlob = resultBlob;
                     document.getElementById('nenOptions').style.display = 'none';
                     document.getElementById('nenResult').style.display = 'block';
-
+                    
                     showLoading(false);
                     showToast('Nén PDF thành công!');
                 } catch (error) {
@@ -3164,13 +2840,13 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 }
             }
 
-            window.downloadNenPdf = function () {
+            window.downloadNenPdf = function() {
                 if (!nenResultBlob) return;
                 const originalName = nenFile.name.replace('.pdf', '');
                 downloadFile(nenResultBlob, `${originalName}_compressed.pdf`, true);
             };
 
-            window.resetNenPdf = function () {
+            window.resetNenPdf = function() {
                 nenFile = null;
                 nenResultBlob = null;
                 fileInputNen.value = '';
@@ -3346,124 +3022,34 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             };
 
             // ==================== SCANNER / CAMSCANNER ====================
-            /**
-             * Env client-side — thứ tự ưu tiên:
-             * 1. window.SERVER_ENV.SCAN_API_URL  (inject bởi run_server.py / local dev)
-             * 2. /api/env từ Vercel serverless fn    (production Vercel)
-             * 3. fallback localhost
-             */
-            async function loadEnvFromVercel() {
-                try {
-                    const r = await fetch('/api/env', { cache: 'no-store' });
-                    if (!r.ok) return;
-                    const data = await r.json();
-                    if (data && data.env && data.env.scanApiUrl) {
-                        if (!window.SERVER_ENV) window.SERVER_ENV = {};
-                        window.SERVER_ENV.SCAN_API_URL = data.env.scanApiUrl;
-                    }
-                } catch (_) { /* silent — server có thể không có /api/env */ }
-            }
-
-            /** Lấy SCAN_API_URL — dùng async để load từ Vercel nếu cần */
-            const SCAN_API_URL = (window.SERVER_ENV && window.SERVER_ENV.SCAN_API_URL) || '';
-            async function getScanApiUrl() {
-                if (SCAN_API_URL) return SCAN_API_URL;
-                // Gọi Vercel API
-                await loadEnvFromVercel();
-                const url = (window.SERVER_ENV && window.SERVER_ENV.SCAN_API_URL) || '';
-                if (url) return url;
-                // Fallback: thử cổng 8080 trước, rồi 8000
-                return 'http://localhost:8080/api/scanner';
-            }
-
-            // Kick-off fetch Vercel env ngay khi trang load (không block)
-            loadEnvFromVercel();
             let scannedPages = [];
             let currentScanImage = null;
             let originalScanImage = null;
-            /** Data URL ảnh đang chọn — dùng lại khi kéo slider xoay, tránh đọc file lặp */
-            let currentScanDataUrl = null;
             let detectedCorners = null;
             let videoStream = null;
-            let liveDetectionInterval = null;
-            let lastAIDetectTime = 0;
-
-            // Thumbail hiển thị list ảnh
-            let currentActiveIndex = -1; // Vị trí ảnh đang hiển thị trên Canvas
-            let scanFiles = []; // Bây giờ sẽ chứa [{file: File, rotation: 0}, ...]
 
             // Initialize scan file input
-            const dropZoneScan = document.getElementById('dropZoneScan');
             const scanFileInput = document.getElementById('scanFileInput');
-            const btnOpenCamera = document.getElementById('btnOpenCamera');
-            const btnApplyScan = document.getElementById('btnApplyScan');
-            const btnRotateScanLeft = document.getElementById('btnRotateScanLeft');
-            const btnRotateScanRight = document.getElementById('btnRotateScanRight');
-            const scanApiErrorBanner = document.getElementById('scanApiErrorBanner');
-            const scanApiErrorTitle = document.getElementById('scanApiErrorTitle');
-            const scanApiErrorDetail = document.getElementById('scanApiErrorDetail');
-            const scanApiErrorClose = document.getElementById('scanApiErrorClose');
-            const canvas = document.getElementById('scanCanvas');
-            const btnCloseCamera = document.getElementById('btnCloseCamera');
-
-            if (dropZoneScan && scanFileInput) {
-                dropZoneScan.addEventListener('click', (e) => {
-                    // 2. Kiểm tra: Nếu click TRÚNG nút Camera hoặc TRÚNG các thẻ con bên trong nút Camera (svg, path, text)
-                    // thì thoát ra, không chạy lệnh click vào input file nữa.
-                    if (btnOpenCamera && btnOpenCamera.contains(e.target)) {
-                        return;
-                    }
-                    // 3. Nếu click vào các vùng khác trong Drop Zone thì mới mở chọn file
-                    if (e.target !== scanFileInput) {
-                        scanFileInput.click();
-                    }
-                });
-                dropZoneScan.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropZoneScan.classList.add('dragover');
-                });
-                dropZoneScan.addEventListener('dragleave', () => {
-                    dropZoneScan.classList.remove('dragover');
-                });
-                dropZoneScan.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    const files = Array.from(e.dataTransfer.files);
-                    files.forEach(file => {
-                        if (file.type.startsWith('image/')) handleScanFile(file);
-                    });
-                });
-                btnOpenCamera.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation(); // QUAN TRỌNG: Ngăn chặn sự kiện click lan ra dropZoneScan
-                    openCamera(); // Gọi hàm mở camera của bạn
-                });
-                btnApplyScan.addEventListener('click', (e) => {
-                    handleSendScanAPI();
-                });
-                btnCloseCamera.addEventListener('click', () => closeCamera());
+            if (scanFileInput) {
                 scanFileInput.addEventListener('change', (e) => {
-                    const files = Array.from(e.target.files);
-                    files.forEach(file => handleScanFile(file));
-                    e.target.value = ''; // Reset để có thể chọn lại cùng 1 file nếu cần
-                });
-                if (btnRotateScanLeft) {
-                    btnRotateScanLeft.addEventListener('click', () => adjustScanRotation(-90));
-                }
-                if (btnRotateScanRight) {
-                    btnRotateScanRight.addEventListener('click', () => adjustScanRotation(90));
-                }
-                if (scanApiErrorClose) {
-                    scanApiErrorClose.addEventListener('click', hideScanApiError);
-                }
+                    if (e.target.files && e.target.files[0]) {
+                        // Reset manual corner mode
+                        manualCornerMode = false;
+                        document.getElementById('btnManualCorners').style.background = 'rgba(255,255,255,0.1)';
+                        document.getElementById('btnManualCorners').style.color = 'var(--text)';
 
+                        handleScanFile(e.target.files[0]);
+                    }
+                });
             }
 
-            function org_openCamera() {
+            function openCamera() {
                 const modal = document.getElementById('cameraModal');
                 const video = document.getElementById('cameraStream');
 
                 // Pre-load AI model
                 loadCocoModel();
+
                 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                         .then(stream => {
@@ -3484,26 +3070,8 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 }
             }
 
-            function openCamera() {
-                const modal = document.getElementById('cameraModal');
-                const video = document.getElementById('cameraStream');
-
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                        .then(stream => {
-                            videoStream = stream;
-                            video.srcObject = stream;
-                            modal.style.display = 'flex';
-                            dropZoneScan.style.display = 'none';
-                        })
-                        .catch(err => {
-                            showToast('Không thể mở camera: ' + err.message);
-                        });
-                } else {
-                    showToast('Trình duyệt không hỗ trợ camera');
-                }
-            }
-
+            let liveDetectionInterval = null;
+            let lastAIDetectTime = 0;
 
             async function startLiveDetection() {
                 const video = document.getElementById('cameraStream');
@@ -3597,84 +3165,20 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             function capturePhoto() {
                 const video = document.getElementById('cameraStream');
                 const canvas = document.getElementById('captureCanvas');
-                const ctx = canvas.getContext('2d');
-
-                // Thiết lập kích thước chuẩn theo video
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
+                canvas.getContext('2d').drawImage(video, 0, 0);
 
-                // Xuất ảnh Base64
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                
-                // Đưa vào mảng scanFiles chính của bạn
-                const newFile = dataURLtoFile(dataUrl, `capture_${Date.now()}.jpg`);
-                scanFiles.push({
-                    file: newFile,
-                    rotation: 0
-                });
 
-                // Hiện nút "Xong"
-                document.getElementById('btnFinishCapture').style.display = 'block';
-                
-                // Cập nhật số lượng ảnh trên màn hình
-                showToast(`Đã chụp: ${scanFiles.length} ảnh`);
+                // Close camera first
+                closeCamera();
 
-                // Hiệu ứng Flash nháy màn hình cho sướng mắt
-                video.style.opacity = '0.5';
-                setTimeout(() => video.style.opacity = '1', 100);
-
-                // Vẽ danh sách ảnh vừa chụp vào modal
-                renderCameraThumbnails();
+                // Then process image
+                handleScanImageWithDetection(dataUrl);
             }
 
-            // 3. Hàm vẽ Thumbnail dành riêng cho Modal Camera
-            function renderCameraThumbnails() {
-                const container = document.getElementById('cameraThumbnails');
-                container.innerHTML = '';
-
-                scanFiles.forEach((item, index) => {
-                    const thumb = document.createElement('div');
-                    thumb.style = "position: relative; min-width: 60px; height: 60px; border-radius: 6px; overflow: hidden; border: 2px solid #fff;";
-                    
-                    const img = document.createElement('img');
-                    img.src = URL.createObjectURL(item.file);
-                    img.style = "width: 100%; height: 100%; object-fit: cover;";
-                    
-                    thumb.appendChild(img);
-                    container.appendChild(thumb);
-                    
-                    // Tự động cuộn sang phải để thấy ảnh mới nhất
-                    container.scrollLeft = container.scrollWidth;
-                });
-            }
-
-            // 4. Hàm kết thúc chụp
-            function finishCapture() {
-                closeCamera(); // Hàm đóng stream của bạn
-                document.getElementById('cameraModal').style.display = 'none';
-                
-                // Render lại danh sách ảnh ở ngoài màn hình chính
-                renderScanThumbnails(); 
-                
-                // Tự động chọn tấm cuối cùng để hiện lên Canvas chỉnh sửa
-                if (scanFiles.length > 0) {
-                    selectScanImage(scanFiles.length - 1);
-                }
-            }
-            function dataURLtoFile(dataurl, filename) {
-                var arr = dataurl.split(','),
-                    mime = arr[0].match(/:(.*?);/)[1],
-                    bstr = atob(arr[1]), 
-                    n = bstr.length, 
-                    u8arr = new Uint8Array(n);
-                while(n--){
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new File([u8arr], filename, {type:mime});
-            }
-
-            function org_handleScanImagePreview(dataUrl) {
+            function handleScanImageWithDetection(dataUrl) {
                 const img = new Image();
                 img.onload = () => {
                     originalScanImage = img;
@@ -3705,262 +3209,6 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 img.src = dataUrl;
             }
 
-            function handleScanImagePreview(dataUrl, rotation = 0) {
-                const img = new Image();
-                img.onload = () => {
-                    originalScanImage = img;
-                    currentScanImage = img;
-
-                    // 1. Hiển thị trình chỉnh sửa (Editor)
-                    document.getElementById('dropZoneScan').style.display = 'none';
-                    document.getElementById('scanEditorContainer').style.display = 'block';
-                    document.getElementById('cameraModal').style.display = 'none';
-
-                    const canvas = document.getElementById('scanCanvas');
-                    const ctx = canvas.getContext('2d');
-                    const maxWidth = 800;
-
-                    // 2. Kích thước bounding box khi xoay bất kỳ góc (không chỉ 90°)
-                    const rad = (rotation * Math.PI) / 180;
-                    const c = Math.abs(Math.cos(rad));
-                    const s = Math.abs(Math.sin(rad));
-                    const targetWidth = img.width * c + img.height * s;
-                    const targetHeight = img.width * s + img.height * c;
-
-                    // 3. Tính tỉ lệ Scale để vừa khít maxWidth
-                    const scale = Math.min(1, maxWidth / Math.max(targetWidth, 1));
-                    canvas.width = Math.max(1, Math.round(targetWidth * scale));
-                    canvas.height = Math.max(1, Math.round(targetHeight * scale));
-
-                    // 5. VẼ ẢNH ĐÃ XOAY LÊN CANVAS
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.save();
-                    
-                    // Di chuyển tâm vẽ về giữa canvas
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    // Xoay context theo độ
-                    ctx.rotate((rotation * Math.PI) / 180);
-                    
-                    // Vẽ ảnh (phải dùng img.width/height gốc và scale gốc)
-                    ctx.drawImage(
-                        img, 
-                        (-img.width * scale) / 2, 
-                        (-img.height * scale) / 2, 
-                        img.width * scale, 
-                        img.height * scale
-                    );
-                    ctx.restore();
-                };
-                img.src = dataUrl;
-            }
-
-            // 0. Biến toàn cục để quản lý bộ nhớ ảnh
-            let currentScanResultUrl = null;
-
-            function normalizeRotationDeg(r) {
-                let x = Number(r) % 360;
-                if (x < 0) x += 360;
-                return x;
-            }
-
-            function hideScanApiError() {
-                if (scanApiErrorBanner) scanApiErrorBanner.classList.remove('visible');
-            }
-
-            function showScanApiError(title, detailHtml) {
-                if (scanApiErrorTitle) scanApiErrorTitle.textContent = title || 'Đã xảy ra lỗi';
-                if (scanApiErrorDetail) scanApiErrorDetail.textContent = detailHtml || '';
-                if (scanApiErrorBanner) scanApiErrorBanner.classList.add('visible');
-            }
-
-            async function handleSendScanAPI() {
-                if (scanFiles.length === 0) {
-                    if (typeof showToast === 'function') showToast('Vui lòng thêm ít nhất một ảnh!', 'error');
-                    return;
-                }
-
-                const downloadArea = document.getElementById('downloadArea');
-                const btnDownloadResult = document.getElementById('btnDownloadResult');
-                const actionsChange = document.getElementById('actionsChange');
-
-                hideScanApiError();
-
-                if (typeof showLoading === 'function') {
-                    showLoading(true, 'AI đang suy nghĩ...');
-                }
-
-                try {
-                    // 1. Tạo FormData để chứa nhiều file
-                    const formData = new FormData();
-
-                    // 2. Duyệt qua từng ảnh trong hàng đợi và xử lý xoay trước khi gửi
-                    for (let i = 0; i < scanFiles.length; i++) {
-                        const item = scanFiles[i];
-                        
-                        // Hàm bổ trợ để lấy Blob của ảnh sau khi đã xoay (xem ở phần dưới)
-                        const rotatedBlob = await getProcessedBlob(item);
-                        if (!rotatedBlob) {
-                            throw new Error('Không đọc được một ảnh trong danh sách (lỗi tải file).');
-                        }
-                        // Thêm vào formData (tên field là 'images')
-                        formData.append('images', rotatedBlob, `image_${i}_${Date.now()}.jpg`);
-                    }
-
-                    // 3. Gọi API (Lưu ý: Không set Header Content-Type khi dùng FormData)
-                    const response = await fetch(await getScanApiUrl(), {
-                        method: 'POST',
-                        body: formData 
-                        // Trình duyệt sẽ tự động thêm Boundary cho multipart/form-data
-                    });
-
-                    if (!response.ok) throw new Error(`Server báo lỗi: ${response.status}`);
-
-                    // 4. Nhận kết quả (Giả sử Server trả về 1 file PDF duy nhất)
-                    const processedBlob = await response.blob();
-                    
-                    if (currentScanResultUrl) {
-                        URL.revokeObjectURL(currentScanResultUrl);
-                    }
-                    currentScanResultUrl = URL.createObjectURL(processedBlob);
-
-                    // --- PHẦN HIỂN THỊ XEM TRƯỚC PDF ---
-                    const previewArea = document.getElementById('previewArea');
-                        previewArea.innerHTML = ''; 
-
-                        // --- TỐI ƯU CHO MOBILE ---
-                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-                        if (isMobile) {
-                            // Trên điện thoại: Hiện nút bấm để mở Tab mới (Native Viewer)
-                            previewArea.innerHTML = `
-                                <div style="text-align:center; padding: 40px 20px;">
-                                    <div style="font-size: 50px; margin-bottom: 20px;">📄</div>
-                                    <p style="color: var(--text); margin-bottom: 20px;">Tài liệu PDF đã sẵn sàng!</p>
-                                    <button onclick="window.open(currentScanResultUrl)" class="btn btn-primary" style="width:100%; padding: 15px;">
-                                        Mở xem PDF ngay
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            // Trên máy tính: Vẫn dùng iframe như cũ
-                            const pdfViewer = document.createElement('iframe');
-                            pdfViewer.src = currentScanResultUrl;
-                            pdfViewer.style.width = '100%';
-                            pdfViewer.style.height = '600px';
-                            pdfViewer.style.border = 'none';
-                            previewArea.appendChild(pdfViewer);
-                        }
-
-                    // 5. Hiển thị khu vực tải về
-                    actionsChange.style.display = 'none';
-                    downloadArea.style.display = 'block';
-
-                    if (typeof showLoading === 'function') showLoading(false);
-                    if (typeof showToast === 'function') showToast('Đã tạo PDF thành công!');
-
-                    btnDownloadResult.onclick = function () {
-                        const link = document.createElement('a');
-                        link.href = currentScanResultUrl;
-                        link.download = 'scan_document.pdf'; // Đổi sang đuôi .pdf nếu server trả về pdf
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    };
-
-                } catch (error) {
-                    console.error("Lỗi xử lý danh sách ảnh:", error);
-                    if (typeof showLoading === 'function') showLoading(false);
-                    const msg = (error && error.message) ? String(error.message) : '';
-                    const isNetwork =
-                        msg === 'Failed to fetch' ||
-                        msg.indexOf('NetworkError') !== -1 ||
-                        msg.indexOf('Load failed') !== -1 ||
-                        msg.indexOf('Network request failed') !== -1 ||
-                        (error && error.name === 'TypeError');
-                    if (isNetwork) {
-                        showScanApiError(
-                            'Dịch vụ tạo PDF từ ảnh đang bận hoặc chưa sẵn sàng',
-                            'Không thể xử lý ảnh ngay lúc này. Vui lòng chờ giây lát rồi thử lại.'
-                        );
-                    } else {
-                        showScanApiError(
-                            'Xử lý scan thất bại',
-                            'Đã xảy ra lỗi khi tạo PDF. Vui lòng thử lại.'
-                        );
-                    }
-                }
-            }
-
-            async function getProcessedBlob(item) {
-                return new Promise((resolve) => {
-                    const objUrl = URL.createObjectURL(item.file);
-                    const img = new Image();
-                    img.onload = () => {
-                        const tempCanvas = document.createElement('canvas');
-                        const tempCtx = tempCanvas.getContext('2d');
-                        const rad = (item.rotation * Math.PI) / 180;
-                        const c = Math.abs(Math.cos(rad));
-                        const s = Math.abs(Math.sin(rad));
-                        tempCanvas.width = Math.max(1, Math.round(img.width * c + img.height * s));
-                        tempCanvas.height = Math.max(1, Math.round(img.width * s + img.height * c));
-
-                        tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
-                        tempCtx.rotate(rad);
-                        tempCtx.drawImage(img, -img.width / 2, -img.height / 2);
-
-                        tempCanvas.toBlob((blob) => {
-                            URL.revokeObjectURL(objUrl);
-                            resolve(blob);
-                        }, 'image/jpeg', 0.9);
-                    };
-                    img.onerror = () => {
-                        URL.revokeObjectURL(objUrl);
-                        resolve(null);
-                    };
-                    img.src = objUrl;
-                });
-            }
-
-            // Hàm Reset để làm ảnh khác
-            function resetAfterScan() {
-                // 1. Dọn dẹp bộ nhớ ảnh kết quả (giữ nguyên của bạn)
-                if (currentScanResultUrl) {
-                    URL.revokeObjectURL(currentScanResultUrl);
-                    currentScanResultUrl = null;
-                }
-
-                // 2. QUAN TRỌNG: Xóa sạch dữ liệu mảng ảnh cũ
-                scanFiles = []; 
-                currentActiveIndex = -1;
-                currentScanDataUrl = null;
-                hideScanApiError();
-
-                // 3. Xóa sạch danh sách Thumbnail đang hiển thị trên màn hình
-                const thumbContainer = document.getElementById('scanPreviewContainer');
-                if (thumbContainer) {
-                    thumbContainer.innerHTML = '';
-                }
-
-                // 4. Reset input file (để nếu chọn lại cùng 1 file cũ vẫn ăn)
-                const fileInput = document.getElementById('scanFileInput');
-                if (fileInput) fileInput.value = '';
-
-                // 5. Điều chỉnh giao diện các nút
-                actionsChange.style.display = 'flex';
-                downloadArea.style.display = 'none';
-
-                // 6. Xóa trắng canvas chính
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // 7. Quay về trạng thái ban đầu
-                dropZoneScan.style.display = 'block'; // Hiện lại ô thả file
-                scanEditorContainer.style.display = 'none'; // Ẩn trình biên tập
-                cameraModal.style.display = 'none'; // Ẩn camera
-                
-                if (typeof showToast === 'function') showToast("Đã làm mới hoàn toàn!");
-            }
-
             async function runAutoDetectAndCrop() {
                 const canvas = document.getElementById('scanCanvas');
 
@@ -3985,6 +3233,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                             canvas.height = cropped.height;
                             ctx.drawImage(cropped, 0, 0);
 
+                            // Clear corners display
+                            const cornersCanvas = document.getElementById('cornersCanvas');
+                            cornersCanvas.getContext('2d').clearRect(0, 0, cornersCanvas.width, cornersCanvas.height);
+                            detectedCorners = null;
+
                             showLoading(false);
                             showToast('Đã quét & cắt tự động!');
                         } else {
@@ -4005,16 +3258,15 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             async function loadCocoModel() {
                 if (cocoModel || isModelLoading) return;
                 isModelLoading = true;
-                console.log('COCO-SSD model loaded!');
-                // try {
-                //     cocoModel = await cocoSsd.load({
-                //         base: 'lite_mobilenet_v2'
-                //     });
-                //     console.log('COCO-SSD model loaded!');
-                // } catch (e) {
-                //     console.error('Failed to load COCO model:', e);
-                // }
-                // isModelLoading = false;
+                try {
+                    cocoModel = await cocoSsd.load({
+                        base: 'lite_mobilenet_v2'
+                    });
+                    console.log('COCO-SSD model loaded!');
+                } catch (e) {
+                    console.error('Failed to load COCO model:', e);
+                }
+                isModelLoading = false;
             }
 
             // TensorFlow.js AI Object Detection - detects ANY object
@@ -4360,155 +3612,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             }
 
             function handleScanFile(file) {
-                // 1. Thêm file mới vào danh sách VỚI GÓC XOAY MẶC ĐỊNH LÀ 0
-                scanFiles.push({
-                    file: file,
-                    rotation: 0 // Thêm thuộc tính này để quản lý góc xoay
-                });
-                
-                // 2. Vẽ lại danh sách Thumbnail
-                renderScanThumbnails();
-
-                // 3. Nếu là ảnh đầu tiên, tự động hiển thị
-                if (currentActiveIndex === -1) {
-                    selectScanImage(0);
-                }
-            }
-            
-            function renderScanThumbnails() {
-                const container = document.getElementById('scanPreviewContainer');
-                if (!container) return;
-                
-                // 1. Xóa sạch để vẽ lại
-                container.innerHTML = ''; 
-
-                // 2. Vẽ các ảnh trong danh sách (Dùng vòng lặp đồng bộ)
-                scanFiles.forEach((item, index) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'thumb-wrapper';
-
-                    const img = document.createElement('img');
-                    
-                    // DÙNG CÁCH NÀY: Nhanh và đồng bộ, không bị lặp
-                    img.src = URL.createObjectURL(item.file);
-                    
-                    // THÊM: Xoay luôn cái thumbnail cho khớp với góc bạn đã chỉnh
-                    img.style.transform = `rotate(${item.rotation}deg)`;
-                    
-                    img.className = `scan-thumb ${index === currentActiveIndex ? 'active' : ''}`;
-                    img.onclick = () => selectScanImage(index);
-
-                    // Nút xóa
-                    const delBtn = document.createElement('button');
-                    delBtn.innerHTML = '×';
-                    delBtn.className = 'btn-delete-thumb';
-                    delBtn.onclick = (event) => {
-                        event.stopPropagation();
-                        // Giải phóng bộ nhớ trước khi xóa file
-                        URL.revokeObjectURL(img.src); 
-                        deleteScanImage(index);
-                    };
-
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(delBtn);
-                    container.appendChild(wrapper);
-                });
-
-                // 3. Thêm ô dấu cộng vào cuối cùng
-                const addBox = document.createElement('div');
-                addBox.className = 'add-more-thumb';
-                addBox.innerHTML = '+';
-                addBox.onclick = () => document.getElementById('scanFileInput').click();
-                container.appendChild(addBox);
-            }
-
-            function deleteScanImage(index) {
-                scanFiles.splice(index, 1);
-                
-                if (scanFiles.length === 0) {
-                    currentActiveIndex = -1;
-                    currentScanDataUrl = null;
-                    // Xóa sạch canvas
-                    const canvas = document.getElementById('scanCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                } else if (currentActiveIndex === index) {
-                    currentActiveIndex = Math.min(index, scanFiles.length - 1);
-                    selectScanImage(currentActiveIndex);
-                } else if (currentActiveIndex > index) {
-                    currentActiveIndex--;
-                }
-                
-                renderScanThumbnails(); // Luôn vẽ lại để hiện ô dấu cộng
-            }
-
-            function syncScanRotationUI(deg) {
-                const n = Math.round(normalizeRotationDeg(deg));
-                const slider = document.getElementById('scanRotationSlider');
-                const num = document.getElementById('scanRotationNumber');
-                if (slider) slider.value = String(n);
-                if (num) num.value = String(n);
-            }
-
-            function refreshCurrentScanCanvasFromRotation() {
-                if (currentActiveIndex < 0) return;
-                const item = scanFiles[currentActiveIndex];
-                if (currentScanDataUrl) {
-                    handleScanImagePreview(currentScanDataUrl, item.rotation);
-                    renderScanThumbnails();
-                    return;
-                }
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentScanDataUrl = e.target.result;
-                    handleScanImagePreview(e.target.result, item.rotation);
-                    renderScanThumbnails();
-                };
-                reader.readAsDataURL(item.file);
+                reader.onload = (e) => handleScanImageWithDetection(e.target.result);
+                reader.readAsDataURL(file);
             }
 
-            function adjustScanRotation(delta) {
-                if (currentActiveIndex === -1 || scanFiles.length === 0) return;
-                const item = scanFiles[currentActiveIndex];
-                item.rotation = normalizeRotationDeg(item.rotation + delta);
-                syncScanRotationUI(item.rotation);
-                refreshCurrentScanCanvasFromRotation();
-                if (typeof showToast === 'function') {
-                    showToast(`Góc hiện tại: ${Math.round(item.rotation)}°`);
-                }
-            }
-
-            function setScanRotationAbsolute(deg) {
-                if (currentActiveIndex === -1 || scanFiles.length === 0) return;
-                const item = scanFiles[currentActiveIndex];
-                item.rotation = normalizeRotationDeg(deg);
-                syncScanRotationUI(item.rotation);
-                refreshCurrentScanCanvasFromRotation();
-            }
-
-            function selectScanImage(index) {
-                if (index < 0 || index >= scanFiles.length) return;
-
-                currentActiveIndex = index;
-                
-                // 1. Lấy Object dữ liệu { file: ..., rotation: ... }
-                const fileData = scanFiles[index]; 
-
-                // 2. Cập nhật giao diện (active border cho thumbnail)
-                renderScanThumbnails();
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentScanDataUrl = e.target.result;
-                    fileData.rotation = normalizeRotationDeg(fileData.rotation);
-                    syncScanRotationUI(fileData.rotation);
-                    handleScanImagePreview(e.target.result, fileData.rotation);
-                };
-
-                // 4. FIX LỖI: Truyền fileData.file (đối tượng Blob/File thực sự)
-                reader.readAsDataURL(fileData.file); 
-            }
-            
             function handleScanImage(dataUrl) {
                 const img = new Image();
                 img.onload = () => {
@@ -5596,79 +4704,76 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             };
         </script>
 
-        <!-- Chatbot UI for PDF Tool -->
-        <div id="chatbot-ui"
-            style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; display: flex; flex-direction: column; align-items: flex-end;">
-            <!-- Chat Suggestion Tooltip -->
-            <div id="chat-hint"
-                class="mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 animate-fade-in-up border border-red-100 max-w-[280px]">
-                <div class="bg-red-500 rounded-xl p-2 flex-shrink-0">
-                    <i data-lucide="message-square" class="text-white w-6 h-6"></i>
+    <!-- Chatbot UI for PDF Tool -->
+    <div id="chatbot-ui" style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; display: flex; flex-direction: column; align-items: flex-end;">
+        <!-- Chat Suggestion Tooltip -->
+        <div id="chat-hint"
+            class="mr-4 mb-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-3 animate-fade-in-up border border-red-100 max-w-[280px]">
+            <div class="bg-red-500 rounded-xl p-2 flex-shrink-0">
+                <i data-lucide="message-square" class="text-white w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-extrabold text-gray-900 text-sm leading-tight">Trợ lý ảo Đông Mai Số <span
+                        class="inline-block w-2 h-2 bg-green-500 rounded-full ml-1 animate-pulse"></span></h4>
+                <p class="text-red-500 font-bold text-xs mt-0.5">HỖ TRỢ TTHC 24/7</p>
+            </div>
+            <button onclick="document.getElementById('chat-hint').style.display='none'"
+                class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Chat Button with Avatar -->
+        <button onclick="toggleChat()"
+            class="bg-white p-1 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-red-500 w-16 h-16 relative group">
+            <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="w-full h-full object-cover rounded-full"
+                alt="Chatbot">
+            <!-- Status dot -->
+            <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+
+            <!-- Close icon (hidden by default, shown when chat open) -->
+            <div id="chat-icon-close"
+                class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </div>
+        </button>
+
+        <!-- Chat Drawer -->
+        <div id="chat-drawer"
+            class="hidden w-[350px] md:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden border border-gray-100">
+            <div class="bg-red-600 p-4 text-white flex justify-between items-center" style="background: #dc2626;">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bot"></i>
+                    <span class="font-bold">Trợ lý ảo Phường Đông Mai</span>
                 </div>
-                <div class="flex-1">
-                    <h4 class="font-extrabold text-gray-900 text-sm leading-tight">Trợ lý ảo Đông Mai Số <span
-                            class="inline-block w-2 h-2 bg-green-500 rounded-full ml-1 animate-pulse"></span></h4>
-                    <p class="text-red-500 font-bold text-xs mt-0.5">HỖ TRỢ TTHC 24/7</p>
-                </div>
-                <button onclick="document.getElementById('chat-hint').style.display='none'"
-                    class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="w-4 h-4"></i>
+                <button id="chat-reset" onclick="resetChat()" class="hover:bg-white/20 p-1.5 rounded-full transition-colors"
+                    title="Tạo hội thoại mới">
+                    <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- Chat Button with Avatar -->
-            <button onclick="toggleChat()"
-                class="bg-white p-1 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-red-500 w-16 h-16 relative group">
-                <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"
-                    class="w-full h-full object-cover rounded-full" alt="Chatbot">
-                <!-- Status dot -->
-                <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
-
-                <!-- Close icon (hidden by default, shown when chat open) -->
-                <div id="chat-icon-close"
-                    class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i data-lucide="x" class="w-8 h-8"></i>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 max-w-[85%] self-start">
+                    Xin chào! Tôi có thể giúp gì cho bạn về các thủ tục hành chính tại phường Đông Mai?
                 </div>
-            </button>
+            </div>
 
-            <!-- Chat Drawer -->
-            <div id="chat-drawer"
-                class="hidden w-[350px] md:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden border border-gray-100">
-                <div class="bg-red-600 p-4 text-white flex justify-between items-center" style="background: #dc2626;">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="bot"></i>
-                        <span class="font-bold">Trợ lý ảo Phường Đông Mai</span>
-                    </div>
-                    <button id="chat-reset" onclick="resetChat()"
-                        class="hover:bg-white/20 p-1.5 rounded-full transition-colors" title="Tạo hội thoại mới">
-                        <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
+            <div class="p-4 bg-white border-t">
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Nhập câu hỏi..."
+                        class="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:border-red-600 text-sm text-gray-900 bg-white" style="border-color: #d1d5db;">
+                    <button onclick="sendMessage()" class="text-white p-2 rounded-full hover:bg-red-700" style="background: #dc2626;">
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
                     </button>
-                </div>
-
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                    <div class="bg-red-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 max-w-[85%] self-start">
-                        Xin chào! Tôi có thể giúp gì cho bạn về các thủ tục hành chính tại phường Đông Mai?
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white border-t">
-                    <div class="flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Nhập câu hỏi..."
-                            class="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:border-red-600 text-sm text-gray-900 bg-white"
-                            style="border-color: #d1d5db;">
-                        <button onclick="sendMessage()" class="text-white p-2 rounded-full hover:bg-red-700"
-                            style="background: #dc2626;">
-                            <i data-lucide="send" style="width: 18px; height: 18px;"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
-        <script src="../chatbot.js"></script>
-        <script>
-            // Initialize Lucide icons
-            lucide.createIcons();
-        </script>
+    </div>
+    <script src="../chatbot.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
 </body>
 
 </html>

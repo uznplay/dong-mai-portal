@@ -25,6 +25,17 @@
             width: 100%;
         }
 
+        .prose .youtube-embed-wrapper {
+            margin: 1.5rem 0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .prose .youtube-embed-wrapper iframe {
+            border: 0;
+        }
+
         .prose h1 {
             font-size: 2em;
             font-weight: 700;
@@ -315,17 +326,16 @@
     <script src="config.js"></script>
     <script>
         lucide.createIcons();
-        
-        // Initialize Supabase client - use window.supabaseClient from config.js if available
-        if (window.supabaseClient) {
-            window.supabase = window.supabaseClient;
-        } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-            const supabaseUrl = window.SUPABASE_CONFIG?.url;
-            const supabaseKey = window.SUPABASE_CONFIG?.key;
-            if (supabaseUrl && supabaseKey) {
-                window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
-            }
+
+        // Load news via server-side proxy (key NEVER goes through browser)
+        function waitForConfig() {
+          if (window.SUPABASE_CONFIG) {
+            initPage();
+          } else {
+            setTimeout(waitForConfig, 50);
+          }
         }
+        waitForConfig();
 
         async function initPage() {
             const params = new URLSearchParams(window.location.search);
@@ -338,12 +348,29 @@
             }
 
             try {
-                let query = supabase.from('featured_news').select('*').eq('status', 'published');
-                if (slug) query = query.eq('slug', slug);
-                else query = query.eq('id', id);
+                // Build query params
+                const queryParams = {
+                    table: 'featured_news',
+                    action: 'select',
+                    params: {
+                        select: '*',
+                        eq: { status: 'published' },
+                        single: true
+                    }
+                };
+                if (slug) queryParams.params.eq.slug = slug;
+                else queryParams.params.eq.id = id;
 
-                const { data: post, error } = await query.single();
-                if (error || !post) throw error;
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(queryParams))));
+                const res = await fetch('/api/news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payload: encoded })
+                });
+
+                const result = await res.json();
+                if (!res.ok || result.error || !result.data) throw new Error(result.error || 'Post not found');
+                const post = result.data;
 
                 // Render Main Post
                 renderPost(post);
@@ -382,8 +409,7 @@
                 // New format: generate HTML from JSON content
                 htmlContent = generateHTMLFromContent(post.content);
             } else if (post.content_html) {
-                // Old format: use content_html directly
-                htmlContent = post.content_html;
+                htmlContent = sanitizeLegacyArticleHtml(post.content_html);
             } else {
                 htmlContent = 'Nội dung đang cập nhật...';
             }
@@ -453,6 +479,47 @@
             lucide.createIcons();
         }
 
+        function sanitizeYouTubeIframeForDisplay(raw) {
+            if (!raw || typeof raw !== 'string') return '';
+            const doc = new DOMParser().parseFromString(raw.trim(), 'text/html');
+            const iframe = doc.querySelector('iframe');
+            if (!iframe || !iframe.getAttribute('src')) return '';
+            const src = iframe.getAttribute('src').trim();
+            try {
+                const u = new URL(src, 'https://www.youtube.com');
+                const host = u.hostname.replace(/^www\./, '');
+                if (host !== 'youtube.com' && host !== 'youtube-nocookie.com') return '';
+                if (!u.pathname.startsWith('/embed/')) return '';
+            } catch (e) {
+                return '';
+            }
+            const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            const title = esc((iframe.getAttribute('title') || 'YouTube').slice(0, 200));
+            const safeSrc = esc(src);
+            return `<div class="youtube-embed-wrapper" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin:1.25rem 0;border-radius:0.75rem;"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;" src="${safeSrc}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>`;
+        }
+
+        /** Chuẩn hóa iframe YouTube trong bài cũ (content_html) */
+        function sanitizeLegacyArticleHtml(html) {
+            if (!html || typeof html !== 'string') return html;
+            try {
+                const doc = new DOMParser().parseFromString('<div class="sanitize-article-root">' + html + '</div>', 'text/html');
+                const root = doc.body.querySelector('.sanitize-article-root');
+                if (!root) return html;
+                root.querySelectorAll('iframe').forEach((ifr) => {
+                    const safe = sanitizeYouTubeIframeForDisplay(ifr.outerHTML);
+                    const tmp = doc.createElement('template');
+                    tmp.innerHTML = safe;
+                    const rep = tmp.content.firstElementChild;
+                    if (rep) ifr.replaceWith(rep);
+                    else ifr.remove();
+                });
+                return root.innerHTML;
+            } catch (e) {
+                return html;
+            }
+        }
+
         // ==========================================
         // GENERATE HTML FROM CONTENT (JSON array)
         // Converts blocks to HTML for display
@@ -519,44 +586,11 @@
                             html += `<figure><img src="${content}" alt="Image"></figure>`;
                         }
                         break;
-                    case 'case':
-                        // Case block - hiển thị như lựa chọn có thể mở rộng
-                        const caseNum = block.caseNumber || '';
-                        const subCases = block.subCases || [];
-                        let subCasesHtml = '';
-                        if (subCases.length > 0) {
-                            subCases.forEach((subCase, idx) => {
-                                subCasesHtml += `
-                                    <div class="guide-node sub-case" data-case-number="${caseNum}" data-sub-case="${idx + 1}">
-                                        <div class="guide-node-header" onclick="toggleGuideNode(this)">
-                                            <div class="guide-node-number">${caseNum}.${idx + 1}</div>
-                                            <div class="guide-node-title">${subCase.title || 'Case con ' + (idx + 1)}</div>
-                                            <div class="guide-node-toggle">
-                                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                                            </div>
-                                        </div>
-                                        <div class="guide-node-content">
-                                            <div class="guide-node-body">${(subCase.content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                        }
-                        html += `<div class="guide-case" data-case-number="${caseNum}">
-                            <div class="guide-case-header" onclick="toggleGuideCase(this)">
-                                <span class="guide-case-icon">⚡</span>
-                                <span class="guide-case-label">Lựa chọn ${caseNum}</span>
-                                <span class="guide-case-title">${block.title || 'Lựa chọn ' + caseNum}</span>
-                                <div class="guide-case-toggle">
-                                    <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                                </div>
-                            </div>
-                            <div class="guide-case-content">
-                                <div class="guide-case-body">${(block.content || '').replace(/\s*contenteditable="[^"]*"/g, '')}</div>
-                                ${subCasesHtml}
-                            </div>
-                        </div>`;
+                    case 'youtube': {
+                        const emb = sanitizeYouTubeIframeForDisplay(block.content || '');
+                        if (emb) html += emb;
                         break;
+                    }
                 }
             });
 
@@ -564,15 +598,29 @@
         }
 
         async function loadPopularNews(currentId) {
-            const { data, error } = await supabase.from('featured_news')
-                .select('slug, title, thumbnail_url, published_at')
-                .eq('status', 'published')
-                .neq('id', currentId)
-                .order('published_at', { ascending: false })
-                .limit(5);
+            const rawPayload = {
+                table: 'featured_news',
+                action: 'select',
+                params: {
+                    select: 'slug, title, thumbnail_url, published_at',
+                    eq: { status: 'published' },
+                    neq: { id: currentId },
+                    order: { column: 'published_at', ascending: false },
+                    limit: 5
+                }
+            };
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(rawPayload))));
+            const res = await fetch('/api/news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payload: encoded })
+            });
 
+            const result = await res.json();
+            const data = result.data;
+            const error = result.error;
             const container = document.getElementById('popularNews');
-            if (error) {
+            if (error || !data) {
                 console.error("Error loading popular news:", error);
                 container.innerHTML = '<p class="text-sm text-gray-500">Không thể tải tin khác.</p>';
                 return;
@@ -615,8 +663,6 @@
             }
             lucide.createIcons();
         }
-
-        initPage();
     </script>
 
   <!-- Chatbot UI -->

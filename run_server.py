@@ -25,6 +25,10 @@ try:
     print("feedback imported", flush=True)
     import api.security_config
     print("security_config imported", flush=True)
+    import api.config
+    print("config imported", flush=True)
+    import api.news
+    print("news imported", flush=True)
 
 except Exception as e:
     print(f"Error importing API modules: {e}", flush=True)
@@ -49,10 +53,22 @@ def get_security_config():
 def inject_security_config_into_html(html_content):
     """Inject security config into HTML as inline JS"""
     config_json = json.dumps(get_security_config())
-    # Replace the placeholder with actual config
-    pattern = r'/\*INJECT_SECURITY_CONFIG\*/[^/]+/\*END_INJECT\*/'
+    # Replace the placeholder with actual config (dùng [\s\S]*? vì JSON có thể chứa dấu / trong URL)
+    pattern = r'/\*INJECT_SECURITY_CONFIG\*/[\s\S]*?/\*END_INJECT\*/'
     replacement = f'/*INJECT_SECURITY_CONFIG*/{config_json}/*END_INJECT*/'
-    return re.sub(pattern, replacement, html_content)
+    html_content = re.sub(pattern, replacement, html_content)
+
+    # Also inject SERVER_ENV (SCAN_API_URL and other client-side env vars)
+    server_env = {
+        k[10:]: v  # strip "SERVER_ENV_" prefix
+        for k, v in os.environ.items()
+        if k.startswith("SERVER_ENV_") and v
+    }
+    env_json = json.dumps(server_env)
+    env_pattern = r'/\*INJECT_SERVER_ENV\*/[\s\S]*?/\*END_INJECT\*/'
+    env_replacement = f'/*INJECT_SERVER_ENV*/window.SERVER_ENV={env_json};/*END_INJECT*/'
+    html_content = re.sub(env_pattern, env_replacement, html_content)
+    return html_content
 
 
 class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
@@ -75,9 +91,20 @@ class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
             api.security_config.handler.do_POST(self)
             return
 
+        if self.path == '/api/news':
+            print(f"Routing POST {self.path} to api.news")
+            api.news.python_do_POST(self)
+            return
 
-        # Default behavior for other POSTs (if any, otherwise 404 or 501)
-        super().do_POST()
+    def do_OPTIONS(self):
+        if self.path == '/api/news':
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+            self.end_headers()
+            return
+        super().do_OPTIONS()
 
     def do_GET(self):
         # Route API requests (if any GET endpoints exist)
@@ -91,6 +118,10 @@ class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
 
         if self.path == '/api/security-config':
              api.security_config.handler.do_GET(self)
+             return
+
+        if self.path == '/api/config':
+             api.config.handler.do_GET(self)
              return
 
         # Check if requesting index.html - inject security config
@@ -128,10 +159,10 @@ class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Check if this HTML needs config injection
-            if '/*INJECT_SECURITY_CONFIG*/' in content:
+            # Inject security config + SERVER_ENV nếu có placeholder (PDF miniapp có thể chỉ có SERVER_ENV)
+            if '/*INJECT_SECURITY_CONFIG*/' in content or '/*INJECT_SERVER_ENV*/' in content:
                 content = inject_security_config_into_html(content)
-                print(f"[Security] Injected config into {filepath}")
+                print(f"[Config] Injected security/env into {filepath}")
             
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
