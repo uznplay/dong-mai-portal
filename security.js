@@ -52,6 +52,15 @@
     };
     script.onerror = function() {
       console.warn('[security.js] Không tải được disable-devtool từ CDN:', CDN);
+      // Fallback: Chặn tất cả (chuột phải, select, copy, cut) nhưng cho phép PASTE như user yêu cầu
+      console.log('[security.js] Kích hoạt chế độ bảo vệ fallback (Native)');
+      
+      document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, false);
+      document.addEventListener('selectstart', function(e) { e.preventDefault(); }, false);
+      document.addEventListener('copy', function(e) { e.preventDefault(); }, false);
+      document.addEventListener('cut', function(e) { e.preventDefault(); }, false);
+      
+      // Paste vẫn được phép (không chặn)
     };
     document.head.appendChild(script);
   }

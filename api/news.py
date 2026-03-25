@@ -1,6 +1,7 @@
 import json
 import os
 import base64
+from http.server import BaseHTTPRequestHandler
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 if os.path.exists(env_path):
@@ -67,7 +68,12 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Standard Vercel POST handler"""
-        if not _rate_limit(self.client_address[0]):
+        try:
+            client_ip = self.headers.get('X-Forwarded-For', self.client_address[0]).split(',')[0].strip()
+        except (AttributeError, IndexError):
+            client_ip = 'unknown'
+
+        if not _rate_limit(client_ip):
             _send(self, 429, {'error': 'Too many requests. Please slow down.'})
             return
 
@@ -144,29 +150,27 @@ class handler(BaseHTTPRequestHandler):
 
 
 # Python HTTP Server: called by UnifiedHandler in run_server.py
-def python_do_POST(handler):
+def python_do_POST(server_handler):
     """Called by run_server.py: api.news.python_do_POST(self)"""
-    from http.server import BaseHTTPRequestHandler
-
-    if not hasattr(handler, 'path') or handler.path != '/api/news':
+    if not hasattr(server_handler, 'path') or server_handler.path != '/api/news':
         return False  # Not handled, pass through
 
     try:
-        ip = getattr(handler, 'client_address', ('0.0.0.0', 0))[0]
+        ip = getattr(server_handler, 'client_address', ('0.0.0.0', 0))[0]
     except Exception:
         ip = 'unknown'
 
     if not _rate_limit(ip):
-        _send(handler, 429, {'error': 'Too many requests. Please slow down.'})
+        _send(server_handler, 429, {'error': 'Too many requests. Please slow down.'})
         return True
 
     if not supabase:
-        _send(handler, 500, {'error': 'Supabase not configured'})
+        _send(server_handler, 500, {'error': 'Supabase not configured'})
         return True
 
     try:
-        content_len = int(handler.headers.get('Content-Length', 0))
-        raw = handler.rfile.read(content_len)
+        content_len = int(server_handler.headers.get('Content-Length', 0))
+        raw = server_handler.rfile.read(content_len)
         body = json.loads(raw.decode('utf-8'))
 
         # Decode Base64-encoded payload
@@ -176,43 +180,56 @@ def python_do_POST(handler):
             body = json.loads(decoded)
 
         table = body.get('table', '')
+        action = body.get('action', 'select') # default to select
         params = body.get('params', {})
 
         if table not in ALLOWED_TABLES:
-            _send(handler, 403, {'error': 'Table not allowed'})
+            _send(server_handler, 403, {'error': 'Table not allowed'})
             return True
 
-        query = supabase.table(table).select(params.get('select', '*'))
+        if action == 'select':
+            query = supabase.table(table).select(params.get('select', '*'))
+            for col, val in params.get('eq', {}).items():
+                query = query.eq(col, val)
+            for col, val in params.get('neq', {}).items():
+                query = query.neq(col, val)
+            
+            of = params.get('or')
+            if of:
+                query = query.or_(of)
 
-        for col, val in params.get('eq', {}).items():
-            query = query.eq(col, val)
-        for col, val in params.get('neq', {}).items():
-            query = query.neq(col, val)
+            ord_ = params.get('order')
+            if ord_:
+                col = ord_.get('column', 'published_at')
+                asc = ord_.get('ascending', False)
+                query = query.order(col, desc=not asc)
 
-        of = params.get('or')
-        if of:
-            query = query.or_(of)
+            lim = params.get('limit')
+            if lim:
+                query = query.limit(lim)
 
-        ord_ = params.get('order')
-        if ord_:
-            col = ord_.get('column', 'published_at')
-            asc = ord_.get('ascending', False)
-            query = query.order(col, desc=not asc)
-
-        lim = params.get('limit')
-        if lim:
-            query = query.limit(lim)
-
-        if params.get('single'):
-            result = query.single().execute()
-        else:
-            result = query.execute()
-
-        _send(handler, 200, {'data': result.data})
+            if params.get('single'):
+                result = query.single().execute()
+            else:
+                result = query.execute()
+            
+            _send(server_handler, 200, {'data': result.data})
+            
+        elif action == 'insert':
+            result = supabase.table(table).insert(params.get('values')).execute()
+            _send(server_handler, 200, {'data': result.data})
+            
+        elif action == 'update':
+            result = supabase.table(table).update(params.get('values')).eq('id', params.get('id')).execute()
+            _send(server_handler, 200, {'data': result.data})
+            
+        elif action == 'delete':
+            result = supabase.table(table).delete().eq('id', params.get('id')).execute()
+            _send(server_handler, 200, {'data': result.data})
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        _send(handler, 500, {'error': f'Server error: {e}'})
+        _send(server_handler, 500, {'error': f'Server error: {e}'})
 
     return True
