@@ -329,7 +329,7 @@
 
         // Load news via server-side proxy (key NEVER goes through browser)
         function waitForConfig() {
-          if (window.SUPABASE_CONFIG) {
+          if (window.supabaseClient || window.SUPABASE_CONFIG) {
             initPage();
           } else {
             setTimeout(waitForConfig, 50);

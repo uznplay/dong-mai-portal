@@ -403,7 +403,7 @@
 
         // Wait for config to be loaded, then load news
         function waitForConfig() {
-          if (window.SUPABASE_CONFIG) {
+          if (window.supabaseClient || window.SUPABASE_CONFIG) {
             loadNews();
           } else {
             setTimeout(waitForConfig, 50);
@@ -463,21 +463,6 @@
     </div>
   </div>
   <script src="chatbot.js"></script>
-  <!-- Supabase Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script>
-    // Initialize Supabase client if not already set by config.js
-    if (window.supabaseClient) {
-      window.supabase = window.supabaseClient;
-    } else if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-      const supabaseUrl = window.SUPABASE_CONFIG?.url;
-      const supabaseKey = window.SUPABASE_CONFIG?.key;
-      if (supabaseUrl && supabaseKey) {
-        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
-      }
-    }
-  </script>
   <script>
     lucide.createIcons();
   </script>

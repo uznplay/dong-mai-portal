@@ -56,7 +56,7 @@ class SecurityConfig:
         """
         return {
             "disableDevtool": {
-                "enabled": False,
+                "enabled": True,
                 "disableMenu": True,
                 "disableSelect": False,
                 "disableCopy": False,
