@@ -2210,6 +2210,43 @@
                 }
             }
 
+            async function compressPDFForAI(originalBytes) {
+                try {
+                    const pdf = await pdfjsLib.getDocument({ data: originalBytes.slice(0) }).promise;
+                    const { PDFDocument } = PDFLib;
+                    const outPdf = await PDFDocument.create();
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        // Scale 0.8 is usually enough for AI to read text (~100-120 DPI depending on original)
+                        const viewport = page.getViewport({ scale: 0.8 }); 
+                        const canvas = document.createElement('canvas');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                        
+                        // Low quality JPEG (0.3 is very compressed but still readable)
+                        const imgData = canvas.toDataURL('image/jpeg', 0.3);
+                        const imgBytes = await (await fetch(imgData)).arrayBuffer();
+                        const image = await outPdf.embedJpg(imgBytes);
+                        
+                        const outPage = outPdf.addPage([image.width, image.height]);
+                        outPage.drawImage(image, {
+                            x: 0,
+                            y: 0,
+                            width: image.width,
+                            height: image.height,
+                        });
+                    }
+                    return await outPdf.save();
+                } catch (e) {
+                    console.error('Compression failed, using original', e);
+                    return originalBytes;
+                }
+            }
+
             async function analyzeWithAI() {
                 const apiKey = apiKeyInput.value.trim();
                 if (!apiKey) {
@@ -2221,15 +2258,15 @@
                 spinner.classList.add('ai');
 
                 try {
-                    loadingText.textContent = 'Đang chuẩn bị file...';
-                    const base64PDF = await new Promise((resolve, reject) => {
+                    loadingText.textContent = 'Đang nén file tối đa cho AI...';
+                    const compressedBytes = await compressPDFForAI(currentPdfBytes);
+                    
+                    loadingText.textContent = 'Đang chuẩn bị dữ liệu...';
+                    const base64PDF = await new Promise((resolve) => {
+                        const blob = new Blob([compressedBytes], { type: 'application/pdf' });
                         const reader = new FileReader();
-                        reader.onload = () => {
-                            const result = reader.result;
-                            resolve(result.split(',')[1]);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(currentFile);
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
                     });
 
                     loadingText.textContent = 'Đang gửi lên AI...';
