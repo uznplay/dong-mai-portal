@@ -1,44 +1,28 @@
 (function() {
   'use strict';
 
-  var cdnLoading = false;
-  var CDN = 'https://cdn.jsdelivr.net/npm/disable-devtool@0.3.9/disable-devtool.min.js';
+  var LOCAL_SCRIPT = '/js/portal-security.js';
+  var initialized = false;
 
-  function fetchWithTimeout(url, timeout) {
-    timeout = timeout || 5000;
-    return Promise.race([
-      fetch(url, { cache: 'no-store' }),
-      new Promise(function(_, reject) {
-        setTimeout(function() { reject(new Error('timeout')); }, timeout);
-      })
-    ]);
-  }
-
-  function loadScriptAndInit(ddConfig) {
-    if (!ddConfig || !ddConfig.enabled) return;
-    if (cdnLoading) return;
-    if (document.querySelector('script[src*="disable-devtool"]')) return;
-    cdnLoading = true;
-
-    var script = document.createElement('script');
-    script.src = CDN;
-    script.crossOrigin = 'anonymous';
-    script.onload = function() {
-      var fn = typeof DisableDevtool !== 'undefined' ? DisableDevtool
-        : (typeof window.disableDevtool === 'function' ? window.disableDevtool : null);
-      if (typeof fn !== 'function') {
-        console.warn('[security.js] Không tìm thấy DisableDevtool sau khi tải CDN');
-        return;
-      }
+  function init(config) {
+    if (initialized) return;
+    if (!config || config.enabled === false) return;
+    
+    var fn = typeof DisableDevtool !== 'undefined' ? DisableDevtool
+           : (typeof window.disableDevtool === 'function' ? window.disableDevtool : null);
+    
+    if (typeof fn === 'function') {
+      initialized = true;
       fn({
-        disableMenu: ddConfig.disableMenu !== false,
-        disableSelect: ddConfig.disableSelect === true,
-        disableCopy: ddConfig.disableCopy === true,
-        disableCut: ddConfig.disableCut === true,
-        disablePaste: ddConfig.disablePaste !== false,
-        detectors: ddConfig.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
-        interval: ddConfig.interval || 200,
+        disableMenu: config.disableMenu !== false,
+        disableSelect: config.disableSelect === true,
+        disableCopy: config.disableCopy === true,
+        disableCut: config.disableCut === true,
+        disablePaste: config.disablePaste !== false,
+        detectors: config.detectors || [0, 1, 2, 3, 4, 5, 6, 7],
+        interval: config.interval || 200,
         ondevtoolopen: function(type, next) {
+          console.warn('[Security] DevTools detected:', type);
           if (navigator.sendBeacon) {
             navigator.sendBeacon('/api/security-log', JSON.stringify({
               event: 'devtool_open',
@@ -49,44 +33,70 @@
           next();
         }
       });
+    }
+  }
+
+  function loadAndInit(data) {
+    if (document.querySelector('script[src*="disable-devtool"]')) {
+      init(data.disableDevtool);
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.src = LOCAL_SCRIPT;
+    script.onload = function() {
+      init(data.disableDevtool);
     };
     script.onerror = function() {
-      console.warn('[security.js] Không tải được disable-devtool từ CDN:', CDN);
-      // Fallback: Chặn tất cả (chuột phải, select, copy, cut) nhưng cho phép PASTE như user yêu cầu
-      console.log('[security.js] Kích hoạt chế độ bảo vệ fallback (Native)');
+      console.error('[Security] Critical: Local security script blocked. Activating High-Level Native Protection.');
       
-      document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, false);
-      document.addEventListener('selectstart', function(e) { e.preventDefault(); }, false);
-      document.addEventListener('copy', function(e) { e.preventDefault(); }, false);
-      document.addEventListener('cut', function(e) { e.preventDefault(); }, false);
+      // 1. Chặn chuột phải
+      document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, true);
       
-      // Paste vẫn được phép (không chặn)
+      // 2. Chặn phím tắt (F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U)
+      document.addEventListener('keydown', function(e) {
+        if (
+          e.keyCode === 123 || // F12
+          (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) || // Ctrl+Shift+I/C/J
+          (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      }, true);
+
+      // 3. Chặn bôi đen và copy
+      document.addEventListener('selectstart', function(e) { e.preventDefault(); }, true);
+      document.addEventListener('copy', function(e) { e.preventDefault(); }, true);
+      document.addEventListener('cut', function(e) { e.preventDefault(); }, true);
+      
+      // 4. Liên tục xóa console (nếu devtool vẫn mở được)
+      setInterval(function() {
+        console.clear();
+      }, 1000);
     };
     document.head.appendChild(script);
   }
 
-  function tryApply(data) {
-    if (!data || !data.disableDevtool || !data.disableDevtool.enabled) return;
-    loadScriptAndInit(data.disableDevtool);
+  // 1) Ưu tiên dùng config đã được inject sẵn vào window
+  if (window.SERVER_SECURITY_CONFIG && window.SERVER_SECURITY_CONFIG.disableDevtool) {
+    loadAndInit(window.SERVER_SECURITY_CONFIG);
+  } else {
+    // 2) Nếu không có thì fetch từ API
+    fetch('/api/security-config')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.disableDevtool) {
+          loadAndInit(data);
+        } else {
+          throw new Error('Invalid config');
+        }
+      })
+      .catch(function(err) {
+        console.warn('[Security] API Failure. Activating High-Level Fallback.');
+        loadAndInit({
+          disableDevtool: { enabled: true, disableMenu: true }
+        });
+      });
   }
-
-  // 1) Trang có inject (index.html, admin) — áp dụng ngay, không chờ mạng
-  if (typeof window !== 'undefined' && window.SERVER_SECURITY_CONFIG) {
-    tryApply(window.SERVER_SECURITY_CONFIG);
-  }
-
-  // 2) Các trang chỉ có fetch (huong-dan, tin-noi-bat, …) hoặc bổ sung nếu inject = null
-  fetchWithTimeout('/api/security-config')
-    .then(function(r) {
-      if (!r || !r.ok) throw new Error('HTTP ' + (r ? r.status : '?'));
-      return r.json();
-    })
-    .then(function(data) {
-      tryApply(data);
-    })
-    .catch(function(err) {
-      if (!cdnLoading && !document.querySelector('script[src*="disable-devtool"]')) {
-        console.warn('[security.js] Không lấy được /api/security-config — chạy python run_server.py và mở http://localhost:8000/...', err && err.message ? err.message : err);
-      }
-    });
 })();

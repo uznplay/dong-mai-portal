@@ -101,6 +101,14 @@ class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
                 api.news.python_do_POST(self)
                 return
 
+            if self.path == '/api/security-log':
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length)
+                print(f"[SECURITY LOG] {post_data.decode('utf-8')}", flush=True)
+                self.send_response(204)
+                self.end_headers()
+                return
+
             if self.path == '/api/scanner':
                 content_length = int(self.headers.get('Content-Length', 0))
                 print(f"Routing POST {self.path} to api.scanner (Size: {content_length} bytes)", flush=True)
