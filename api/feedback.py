@@ -99,6 +99,7 @@ class handler(BaseHTTPRequestHandler):
             name = data.get("name", "Ẩn danh")
             phone = data.get("phone", "Không có")
             is_anonymous = data.get("anonymous", False)
+            attachments = data.get("attachments", []) # List of {filename, content} base64
 
             if is_anonymous:
                 name = f"{name} (Ẩn danh)"
@@ -156,7 +157,8 @@ class handler(BaseHTTPRequestHandler):
                     "from": "DongMaiPortal <onboarding@resend.dev>",
                     "to": [TARGET_EMAIL],
                     "subject": f"[PHẢN ÁNH] {title} - {name}",
-                    "html": html_content
+                    "html": html_content,
+                    "attachments": attachments
                 }
             )
 

@@ -171,6 +171,15 @@
             }
         });
 
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
         document.getElementById('feedbackForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
@@ -182,22 +191,42 @@
             const name = document.getElementById('senderName').value;
             const phone = document.getElementById('senderPhone').value;
             const anonymous = document.getElementById('anonymous').checked;
-
-            if (!topic || !title || !content || !name || !phone) {
-                showNotification('Vui lòng điền đầy đủ các thông tin bắt buộc', 'error');
-                return;
-            }
-
+            
+            // Collect files
+            const attachments = [];
+            const files = fileInput.files;
+            
             const hideLoading = showLoading(btn);
 
             try {
+                // Process images to base64
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        showNotification(`Tệp ${file.name} vượt quá 5MB.`, 'error');
+                        hideLoading();
+                        return;
+                    }
+                    const base64Content = await fileToBase64(file);
+                    attachments.push({
+                        filename: file.name,
+                        content: base64Content
+                    });
+                }
+
+                if (!topic || !title || !content || !name || !phone) {
+                    showNotification('Vui lòng điền đầy đủ các thông tin bắt buộc', 'error');
+                    hideLoading();
+                    return;
+                }
+
                 const response = await fetch('/api/feedback', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        topic, title, content, name, phone, anonymous
+                        topic, title, content, name, phone, anonymous, attachments
                     })
                 });
 
