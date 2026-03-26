@@ -39,6 +39,14 @@
         document.head.appendChild(script);
       })();
     </script>
+    <script>
+      // Silence Tailwind production warning
+      const _warn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return;
+        _warn.apply(console, args);
+      };
+    </script>
     <title>Tin nổi bật - Admin Portal Đông Mai</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
@@ -2881,6 +2889,18 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for Supabase config to be ready (from config.js)
+            if (window.supabaseReady) {
+                await window.supabaseReady;
+            }
+            
+            // Ensure global supabase is the client from config.js
+            // If window.supabaseClient exists (from config.js), use it.
+            // This is critical when running in proxy mode!
+            if (window.supabaseClient) {
+                window.supabase = window.supabaseClient;
+            }
+
             await checkAuth();
             initEditorFeatures();
             initImagePasteHandler(); // Initialize paste handler for images
