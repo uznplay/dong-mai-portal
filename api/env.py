@@ -13,7 +13,8 @@ class handler(BaseHTTPRequestHandler):
         
         public_env = {}
         for env_name, json_key in public_env_mappings:
-            val = os.getenv(env_name)
+            # Check both name and SERVER_ENV_ prefix (fallback for local run_server.py)
+            val = os.getenv(env_name) or os.getenv(f"SERVER_ENV_{env_name}")
             if val is not None:
                 public_env[json_key] = val
         

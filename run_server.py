@@ -29,6 +29,10 @@ try:
     print("config imported", flush=True)
     import api.news
     print("news imported", flush=True)
+    import api.env
+    print("env imported", flush=True)
+    import api.scanner
+    print("scanner imported", flush=True)
 
 except Exception as e:
     print(f"Error importing API modules: {e}", flush=True)
@@ -74,26 +78,44 @@ def inject_security_config_into_html(html_content):
 class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         # Route API requests
-        if self.path == '/api/chatbot':
-            print(f"Routing POST {self.path} to api.chatbot")
-            # Call the do_POST method of the chatbot handler, passing 'self'
-            # effective monkey-patching / mixin behavior
-            api.chatbot.handler.do_POST(self)
-            return
-            
-        if self.path == '/api/feedback':
-            print(f"Routing POST {self.path} to api.feedback")
-            api.feedback.handler.do_POST(self)
-            return
+        try:
+            if self.path == '/api/chatbot':
+                print(f"Routing POST {self.path} to api.chatbot", flush=True)
+                # Call the do_POST method of the chatbot handler, passing 'self'
+                # effective monkey-patching / mixin behavior
+                api.chatbot.handler.do_POST(self)
+                return
+                
+            if self.path == '/api/feedback':
+                print(f"Routing POST {self.path} to api.feedback", flush=True)
+                api.feedback.handler.do_POST(self)
+                return
 
-        if self.path == '/api/security-config/update':
-            print(f"Routing POST {self.path} to api.security_config")
-            api.security_config.handler.do_POST(self)
-            return
+            if self.path == '/api/security-config/update':
+                print(f"Routing POST {self.path} to api.security_config", flush=True)
+                api.security_config.handler.do_POST(self)
+                return
 
-        if self.path == '/api/news':
-            print(f"Routing POST {self.path} to api.news")
-            api.news.python_do_POST(self)
+            if self.path == '/api/news':
+                print(f"Routing POST {self.path} to api.news", flush=True)
+                api.news.python_do_POST(self)
+                return
+
+            if self.path == '/api/scanner':
+                content_length = int(self.headers.get('Content-Length', 0))
+                print(f"Routing POST {self.path} to api.scanner (Size: {content_length} bytes)", flush=True)
+                api.scanner.handler.do_POST(self)
+                return
+        except Exception as e:
+            print(f"ERROR in do_POST for {self.path}: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            try:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(f"Server Error: {e}".encode())
+            except:
+                pass
             return
 
     def do_OPTIONS(self):
@@ -122,6 +144,11 @@ class UnifiedHandler(http.server.SimpleHTTPRequestHandler):
 
         if self.path == '/api/config':
              api.config.handler.do_GET(self)
+             return
+
+        if self.path == '/api/env':
+             print(f"Routing GET {self.path} to api.env")
+             api.env.handler.do_GET(self)
              return
 
         # Check if requesting index.html - inject security config

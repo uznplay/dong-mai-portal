@@ -1951,9 +1951,14 @@
                 </div>
 
                 <div id="previewArea"
-                    style="position: relative; width: 100%; max-height: 500px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <canvas id="scanCanvas" style="max-width: 25%; max-height: 500px; display: block;"></canvas>
-                    <canvas id="cornersCanvas" style="position: absolute; top: 0; left: 0; cursor: crosshair;"></canvas>
+                    style="position: relative; width: 100%; max-height: 600px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <!-- Container cho việc chỉnh sửa ảnh -->
+                    <div id="scanEditorActive" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="scanCanvas" style="max-width: 90%; max-height: 500px; display: block;"></canvas>
+                        <canvas id="cornersCanvas" style="position: absolute; top: 0; left: 0; cursor: move;"></canvas>
+                    </div>
+                    <!-- Container cho việc xem kết quả PDF -->
+                    <div id="scanResultPreview" style="display: none; width: 100%; height: 100%;"></div>
                 </div>
 
                 <div class="actionsChange" id="actionsChange"
@@ -3364,16 +3369,10 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 } catch (_) { /* silent — server có thể không có /api/env */ }
             }
 
-            /** Lấy SCAN_API_URL — dùng async để load từ Vercel nếu cần */
-            const SCAN_API_URL = (window.SERVER_ENV && window.SERVER_ENV.SCAN_API_URL) || '';
+            /** Lấy SCAN_API_URL — dùng local proxy */
             async function getScanApiUrl() {
-                if (SCAN_API_URL) return SCAN_API_URL;
-                // Gọi Vercel API
-                await loadEnvFromVercel();
-                const url = (window.SERVER_ENV && window.SERVER_ENV.SCAN_API_URL) || '';
-                if (url) return url;
-                // Fallback: thử cổng 8080 trước, rồi 8000
-                return 'http://localhost:8080/api/scanner';
+                // Ưu tiên dùng proxy nội bộ để không lộ ngrok URL
+                return '/api/scanner';
             }
 
             // Kick-off fetch Vercel env ngay khi trang load (không block)
@@ -3823,16 +3822,20 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     }
                     currentScanResultUrl = URL.createObjectURL(processedBlob);
 
-                    // --- PHẦN HIỂN THỊ XEM TRƯỚC PDF ---
-                    const previewArea = document.getElementById('previewArea');
-                        previewArea.innerHTML = ''; 
+                    // --- PHẦN HIỂN THỊ XEM TRƯỚC PDF (FIX: Không xóa canvas) ---
+                    const editorArea = document.getElementById('scanEditorActive');
+                    const resultArea = document.getElementById('scanResultPreview');
+                    
+                    if (editorArea) editorArea.style.display = 'none';
+                    if (resultArea) {
+                        resultArea.style.display = 'block';
+                        resultArea.innerHTML = ''; 
 
                         // --- TỐI ƯU CHO MOBILE ---
                         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
                         if (isMobile) {
-                            // Trên điện thoại: Hiện nút bấm để mở Tab mới (Native Viewer)
-                            previewArea.innerHTML = `
+                            resultArea.innerHTML = `
                                 <div style="text-align:center; padding: 40px 20px;">
                                     <div style="font-size: 50px; margin-bottom: 20px;">📄</div>
                                     <p style="color: var(--text); margin-bottom: 20px;">Tài liệu PDF đã sẵn sàng!</p>
@@ -3842,14 +3845,14 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                                 </div>
                             `;
                         } else {
-                            // Trên máy tính: Vẫn dùng iframe như cũ
                             const pdfViewer = document.createElement('iframe');
                             pdfViewer.src = currentScanResultUrl;
                             pdfViewer.style.width = '100%';
                             pdfViewer.style.height = '600px';
                             pdfViewer.style.border = 'none';
-                            previewArea.appendChild(pdfViewer);
+                            resultArea.appendChild(pdfViewer);
                         }
+                    }
 
                     // 5. Hiển thị khu vực tải về
                     actionsChange.style.display = 'none';
@@ -3949,13 +3952,24 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 actionsChange.style.display = 'flex';
                 downloadArea.style.display = 'none';
 
-                // 6. Xóa trắng canvas chính
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // 6. Xóa trắng canvas chính (FIX: Kiểm tra tồn tại)
+                const canv = document.getElementById('scanCanvas');
+                if (canv) {
+                    const ctx = canv.getContext('2d');
+                    ctx.clearRect(0, 0, canv.width, canv.height);
+                }
 
                 // 7. Quay về trạng thái ban đầu
-                dropZoneScan.style.display = 'block'; // Hiện lại ô thả file
-                scanEditorContainer.style.display = 'none'; // Ẩn trình biên tập
+                const editorArea = document.getElementById('scanEditorActive');
+                const resultArea = document.getElementById('scanResultPreview');
+                if (editorArea) editorArea.style.display = 'flex';
+                if (resultArea) {
+                    resultArea.style.display = 'none';
+                    resultArea.innerHTML = '';
+                }
+
+                dropZoneScan.style.display = 'block'; 
+                scanEditorContainer.style.display = 'none'; 
                 cameraModal.style.display = 'none'; // Ẩn camera
                 
                 if (typeof showToast === 'function') showToast("Đã làm mới hoàn toàn!");
@@ -4428,10 +4442,12 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 if (scanFiles.length === 0) {
                     currentActiveIndex = -1;
                     currentScanDataUrl = null;
-                    // Xóa sạch canvas
-                    const canvas = document.getElementById('scanCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // Xóa sạch canvas (FIX: Kiểm tra tồn tại)
+                    const canv = document.getElementById('scanCanvas');
+                    if (canv) {
+                        const ctx = canv.getContext('2d');
+                        ctx.clearRect(0, 0, canv.width, canv.height);
+                    }
                 } else if (currentActiveIndex === index) {
                     currentActiveIndex = Math.min(index, scanFiles.length - 1);
                     selectScanImage(currentActiveIndex);
