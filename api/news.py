@@ -107,6 +107,10 @@ class handler(BaseHTTPRequestHandler):
                 for col, val in params.get('neq', {}).items():
                     query = query.neq(col, val)
                 
+                # Handle 'not' filters
+                for nf in params.get('not', []):
+                    query = query.filter(nf.get('column'), f"not.{nf.get('operator')}", nf.get('value'))
+                
                 of = params.get('or')
                 if of:
                     query = query.or_(of)
@@ -169,6 +173,13 @@ class handler(BaseHTTPRequestHandler):
                         _send(self, 200, {'data': {'user': user_dict, 'session': session_dict}, 'error': None})
                     except Exception as e:
                         _send(self, 200, {'data': {'user': None, 'session': None}, 'error': {'message': str(e)}})
+                elif method == 'updateUser':
+                    try:
+                        data = params.get('data', {})
+                        res = supabase.auth.update_user(data)
+                        _send(self, 200, {'data': {'user': {'id': res.user.id, 'email': res.user.email}}, 'error': None})
+                    except Exception as e:
+                        _send(self, 200, {'data': None, 'error': {'message': str(e)}})
                 else:
                     _send(self, 400, {'error': f'Unknown auth method: {method}'})
 
@@ -225,6 +236,10 @@ def python_do_POST(server_handler):
                 query = query.eq(col, val)
             for col, val in params.get('neq', {}).items():
                 query = query.neq(col, val)
+            
+            # Handle 'not' filters
+            for nf in params.get('not', []):
+                query = query.filter(nf.get('column'), f"not.{nf.get('operator')}", nf.get('value'))
             
             of = params.get('or')
             if of:
@@ -286,6 +301,13 @@ def python_do_POST(server_handler):
                     _send(server_handler, 200, {'data': {'user': user_dict, 'session': session_dict}, 'error': None})
                 except Exception as e:
                     _send(server_handler, 200, {'data': {'user': None, 'session': None}, 'error': {'message': str(e)}})
+            elif method == 'updateUser':
+                try:
+                    data = params.get('data', {})
+                    res = supabase.auth.update_user(data)
+                    _send(server_handler, 200, {'data': {'user': {'id': res.user.id, 'email': res.user.email}}, 'error': None})
+                except Exception as e:
+                    _send(server_handler, 200, {'data': None, 'error': {'message': str(e)}})
             else:
                 _send(server_handler, 400, {'error': f'Unknown auth method: {method}'})
 

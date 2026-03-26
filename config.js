@@ -22,7 +22,7 @@
     return;
   }
 
-  Promise.all([fetchConfig(), fetchSecurityConfig()])
+  window.supabaseReady = Promise.all([fetchConfig(), fetchSecurityConfig()])
     .then(function (results) {
       var cfg = results[0];
       var sec = results[1];
@@ -48,6 +48,15 @@
         ProxyQueryBuilder.prototype.neq = function (col, val) {
           if (!this.params.neq) this.params.neq = {};
           this.params.neq[col] = val;
+          return this;
+        };
+        ProxyQueryBuilder.prototype.not = function (col, op, val) {
+          if (!this.params.not) this.params.not = [];
+          this.params.not.push({ column: col, operator: op, value: val });
+          return this;
+        };
+        ProxyQueryBuilder.prototype.or = function (query) {
+          this.params.or = query;
           return this;
         };
         ProxyQueryBuilder.prototype.order = function (col, opts) {
@@ -95,6 +104,28 @@
                 body: JSON.stringify({
                   action: 'auth',
                   params: { method: 'signInWithPassword', creds: creds }
+                })
+              }).then(function (r) { return r.json(); });
+            },
+            getUser: function () {
+              const sessionStr = localStorage.getItem('supabaseSession');
+              if (sessionStr) {
+                try {
+                  const session = JSON.parse(sessionStr);
+                  return Promise.resolve({ data: { user: session.user }, error: null });
+                } catch (e) {
+                  return Promise.resolve({ data: { user: null }, error: { message: "Invalid session" } });
+                }
+              }
+              return Promise.resolve({ data: { user: null }, error: null });
+            },
+            updateUser: function (data) {
+              return fetch('/api/news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'auth',
+                  params: { method: 'updateUser', data: data }
                 })
               }).then(function (r) { return r.json(); });
             },

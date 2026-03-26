@@ -9,7 +9,11 @@
 let currentTab = 'dashboard';
 const TABS = ['dashboard', 'news', 'guides', 'users', 'settings'];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for Supabase config to be ready (from config.js)
+    if (window.supabaseReady) {
+        await window.supabaseReady;
+    }
     initSPA();
 });
 
@@ -472,13 +476,7 @@ async function loadGuidesList() {
     }
 }
 
-// --- Users Logic ---
-async function loadUsersList() {
-    // Similar to news, migration of admin-users.html logic
-    const listContainer = document.getElementById('usersList');
-    if (!listContainer) return;
-    // ... (Implementation continues)
-}
+
 
 // ==========================================
 // PASSWORD CHANGE
