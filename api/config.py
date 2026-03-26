@@ -24,8 +24,8 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
 
             config = {
-                'url': os.getenv('SUPABASE_URL', ''),
-                'key': os.getenv('SUPABASE_KEY', '')
+                'mode': 'proxy',
+                'status': 'active'
             }
 
             self.wfile.write(json.dumps(config).encode('utf-8'))

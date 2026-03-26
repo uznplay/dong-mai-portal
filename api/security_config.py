@@ -52,24 +52,21 @@ class SecurityConfig:
     @staticmethod
     def get_config():
         """
-        Lấy cấu hình bảo mật từ server.
-        Người dùng không thể bypass vì config được server quản lý.
+        Lấy cấu hình bảo mật từ server (Hardcoded Fallback).
         """
         return {
-            # Cấu hình disable-devtool
             "disableDevtool": {
-                "enabled": _env_bool("DISABLE_DEVTOOL_ENABLED", "true"),
-                "disableMenu": _env_bool("DISABLE_DEVTOOL_DISABLE_MENU", "true"),
-                "disableSelect": _env_bool("DISABLE_DEVTOOL_DISABLE_SELECT", "false"),
-                "disableCopy": _env_bool("DISABLE_DEVTOOL_DISABLE_COPY", "false"),
-                "disableCut": _env_bool("DISABLE_DEVTOOL_DISABLE_CUT", "false"),
-                "disablePaste": _env_bool("DISABLE_DEVTOOL_DISABLE_PASTE", "false"),
-                "detectors": _env_detectors(),
-                "interval": _env_int("DISABLE_DEVTOOL_INTERVAL", 200),
+                "enabled": True,
+                "disableMenu": True,
+                "disableSelect": False,
+                "disableCopy": False,
+                "disableCut": False,
+                "disablePaste": False,
+                "detectors": [0, 1, 2, 3, 4, 5, 6, 7],
+                "interval": 200,
             },
-            # Các cấu hình bảo mật khác có thể thêm sau
             "security": {
-                "enabled": _env_bool("SECURITY_ENABLED", "true"),
+                "enabled": True,
             }
         }
 
