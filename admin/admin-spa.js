@@ -120,7 +120,7 @@ function loadTab(tabId) {
 
 // Helper function to open news editor (within SPA if possible)
 function openNewsEditor(postId = null) {
-    const url = postId ? `admin-news-edit.html?id=${postId}` : `admin-news-edit.html?action=new`;
+    const url = postId ? `/admin/admin-news-edit.html?id=${postId}` : `/admin/admin-news-edit.html?action=new`;
     window.location.href = url; // Navigate directly (same tab)
 }
 
@@ -310,7 +310,7 @@ async function loadNewsList() {
                             title="Nhân bản">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                         </button>
-                        <a href="admin-news-edit.html?id=${post.id}" target="_blank"
+                        <a href="/admin/admin-news-edit.html?id=${post.id}" target="_blank"
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </a>
@@ -455,7 +455,7 @@ async function loadGuidesList() {
                             title="Nhân bản">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                         </button>
-                        <a href="admin-news-edit.html?id=${post.id}" target="_blank"
+                        <a href="/admin/admin-news-edit.html?id=${post.id}" target="_blank"
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </a>

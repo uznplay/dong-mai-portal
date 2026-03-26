@@ -78,6 +78,19 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         print("DEBUG: feedback_v2_active - No Signature Check")
         try:
+            # --- LAYER 0: GEOGRAPHIC BLOCKING (VN Only) ---
+            country_code = self.headers.get('x-vercel-ip-country')
+            if country_code and country_code.upper() != 'VN':
+                print(f"BLOCK: Foreign IP detected ({country_code})")
+                self.send_response(403)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "error": "Tính năng này chỉ hỗ trợ người dùng tại Việt Nam. (Foreign IP blocked)",
+                    "code": "GEO_BLOCKED"
+                }).encode('utf-8'))
+                return
+
             # --- LAYER 1: IP RATE LIMIT (Keep this for basic protection) ---
             client_ip = self.headers.get('X-Forwarded-For', self.client_address[0]).split(',')[0].strip()
             
