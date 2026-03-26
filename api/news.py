@@ -24,7 +24,7 @@ if SUPABASE_URL and SUPABASE_KEY:
 _rate_map = {}
 
 # Table whitelist
-ALLOWED_TABLES = ["featured_news"]
+ALLOWED_TABLES = ["featured_news", "admin_users"]
 
 import time as _time
 
@@ -96,7 +96,7 @@ class handler(BaseHTTPRequestHandler):
             action = body.get('action', 'select')
             params = body.get('params', {})
 
-            if table not in ALLOWED_TABLES:
+            if action != 'auth' and table not in ALLOWED_TABLES:
                 _send(self, 403, {'error': 'Table not allowed'})
                 return
 
@@ -139,6 +139,38 @@ class handler(BaseHTTPRequestHandler):
             elif action == 'delete':
                 result = supabase.table(table).delete().eq('id', params.get('id')).execute()
                 _send(self, 200, {'data': result.data})
+
+            elif action == 'auth':
+                method = params.get('method', '')
+                creds = params.get('creds', {})
+                if method == 'signInWithPassword':
+                    try:
+                        res = supabase.auth.sign_in_with_password(creds)
+                        # Return in a format similar to supabase-js v2
+                        # Ensure we convert the session/user objects to dicts
+                        session_dict = None
+                        if res.session:
+                            session_dict = {
+                                'access_token': res.session.access_token,
+                                'refresh_token': res.session.refresh_token,
+                                'expires_in': res.session.expires_in,
+                                'token_type': res.session.token_type,
+                                'user': {
+                                    'id': res.user.id,
+                                    'email': res.user.email,
+                                }
+                            }
+                        user_dict = None
+                        if res.user:
+                            user_dict = {
+                                'id': res.user.id,
+                                'email': res.user.email,
+                            }
+                        _send(self, 200, {'data': {'user': user_dict, 'session': session_dict}, 'error': None})
+                    except Exception as e:
+                        _send(self, 200, {'data': {'user': None, 'session': None}, 'error': {'message': str(e)}})
+                else:
+                    _send(self, 400, {'error': f'Unknown auth method: {method}'})
 
             else:
                 _send(self, 400, {'error': f'Unknown action: {action}'})
@@ -183,7 +215,7 @@ def python_do_POST(server_handler):
         action = body.get('action', 'select') # default to select
         params = body.get('params', {})
 
-        if table not in ALLOWED_TABLES:
+        if action != 'auth' and table not in ALLOWED_TABLES:
             _send(server_handler, 403, {'error': 'Table not allowed'})
             return True
 
@@ -226,6 +258,36 @@ def python_do_POST(server_handler):
         elif action == 'delete':
             result = supabase.table(table).delete().eq('id', params.get('id')).execute()
             _send(server_handler, 200, {'data': result.data})
+
+        elif action == 'auth':
+            method = params.get('method', '')
+            creds = params.get('creds', {})
+            if method == 'signInWithPassword':
+                try:
+                    res = supabase.auth.sign_in_with_password(creds)
+                    session_dict = None
+                    if res.session:
+                        session_dict = {
+                            'access_token': res.session.access_token,
+                            'refresh_token': res.session.refresh_token,
+                            'expires_in': res.session.expires_in,
+                            'token_type': res.session.token_type,
+                            'user': {
+                                'id': res.user.id,
+                                'email': res.user.email,
+                            }
+                        }
+                    user_dict = None
+                    if res.user:
+                        user_dict = {
+                            'id': res.user.id,
+                            'email': res.user.email,
+                        }
+                    _send(server_handler, 200, {'data': {'user': user_dict, 'session': session_dict}, 'error': None})
+                except Exception as e:
+                    _send(server_handler, 200, {'data': {'user': None, 'session': None}, 'error': {'message': str(e)}})
+            else:
+                _send(server_handler, 400, {'error': f'Unknown auth method: {method}'})
 
     except Exception as e:
         import traceback

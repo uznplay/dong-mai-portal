@@ -86,7 +86,22 @@
         };
 
         window.supabase = {
-          from: function (table) { return new ProxyQueryBuilder(table); }
+          from: function (table) { return new ProxyQueryBuilder(table); },
+          auth: {
+            signInWithPassword: function (creds) {
+              return fetch('/api/news', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'auth',
+                  params: { method: 'signInWithPassword', creds: creds }
+                })
+              }).then(function (r) { return r.json(); });
+            },
+            signOut: function () {
+              return Promise.resolve({ error: null });
+            }
+          }
         };
         window.supabaseClient = window.supabase;
       }
