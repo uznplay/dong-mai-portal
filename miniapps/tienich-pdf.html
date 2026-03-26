@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Disable DevTools - Server Controlled -->
     <script src="/security.js"></script>
+    <script>
+        // Silence Tailwind production warning
+        const _warn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return;
+            _warn.apply(console, args);
+        };
+    </script>
     <!-- Server-side env injection (phải nằm trong <script>, không thì trình duyệt in ra màn hình) -->
     <script>
         /*INJECT_SERVER_ENV*/window.SERVER_ENV = {};/*END_INJECT*/
@@ -20,6 +28,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="../styles.css">
     <style>
@@ -1868,6 +1877,78 @@
 
         <!-- Tab Content: cho Scanner-->
         <div class="tab-content" id="tab-scan-pdf">
+            <!-- Office Hours Banner -->
+            <div class="mb-6 p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-white/10 backdrop-blur-xl flex items-center gap-5 shadow-2xl relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-lg mb-1 flex items-center gap-2">
+                        Thông báo hệ thống
+                        <span id="scannerStatusBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            Đang kiểm tra...
+                        </span>
+                    </h4>
+                    <p class="text-gray-300 text-sm leading-relaxed max-w-md">
+                        Dịch vụ <span class="text-indigo-400 font-semibold text-base">Scanner AI</span> chỉ hỗ trợ xử lý trong giờ hành chính <span class="text-white font-medium">(8:00 - 17:30)</span> từ <span class="text-white font-medium">Thứ 2 đến Thứ 6</span> hàng tuần.
+                    </p>
+                </div>
+            </div>
+
+            <script>
+                async function updateScannerStatus() {
+                    const now = new Date();
+                    const day = now.getDay();
+                    const hour = now.getHours();
+                    const minute = now.getMinutes();
+                    const time = hour + minute / 60;
+                    
+                    const badge = document.getElementById('scannerStatusBadge');
+                    const isWorkDay = day >= 1 && day <= 5;
+                    const isWorkHour = time >= 8 && time <= 17.5;
+                    
+                    // Priority 1: Check if outside office hours
+                    if (!isWorkDay || !isWorkHour) {
+                        badge.innerText = 'Đã nghỉ';
+                        badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/20';
+                        return;
+                    }
+
+                    // Priority 2: Ping API to check if alive
+                    try {
+                        badge.innerText = 'Đang kiểm tra...';
+                        badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/20 animate-pulse';
+                        
+                        const controller = new AbortController();
+                        const id = setTimeout(() => controller.abort(), 3000); // 3s timeout
+                        
+                        let response;
+                        try {
+                            response = await fetch('/api/scanner', { method: 'HEAD', signal: controller.signal });
+                            if (!response.ok) throw new Error("HEAD failed");
+                        } catch(e) {
+                            response = await fetch('/api/scanner', { method: 'GET', signal: controller.signal });
+                        }
+                        
+                        clearTimeout(id);
+                        
+                        // Check if the service is actually operational (not 404, 500, etc)
+                        if (response.ok) {
+                            badge.innerText = 'Đang hoạt động';
+                            badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/20';
+                        } else {
+                            throw new Error("HTTP error: " + response.status);
+                        }
+                    } catch (err) {
+                        badge.innerText = 'Máy chủ bận';
+                        badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/20';
+                    }
+                }
+                updateScannerStatus();
+                // Check every 2 minutes
+                setInterval(updateScannerStatus, 120000);
+            </script>
 
             <div id="scanApiErrorBanner" class="scan-api-error-banner" role="alert">
                 <div class="scan-api-error-inner">
@@ -3461,12 +3542,12 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 dropZoneScan.addEventListener('dragleave', () => {
                     dropZoneScan.classList.remove('dragover');
                 });
-                dropZoneScan.addEventListener('drop', (e) => {
+                dropZoneScan.addEventListener('drop', async (e) => {
                     e.preventDefault();
                     const files = Array.from(e.dataTransfer.files);
-                    files.forEach(file => {
-                        if (file.type.startsWith('image/')) handleScanFile(file);
-                    });
+                    for (const file of files) {
+                        if (file.type.startsWith('image/')) await handleScanFile(file);
+                    }
                 });
                 btnOpenCamera.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -3477,9 +3558,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     handleSendScanAPI();
                 });
                 btnCloseCamera.addEventListener('click', () => closeCamera());
-                scanFileInput.addEventListener('change', (e) => {
+                scanFileInput.addEventListener('change', async (e) => {
                     const files = Array.from(e.target.files);
-                    files.forEach(file => handleScanFile(file));
+                    for (const file of files) {
+                        if (file.type.startsWith('image/')) await handleScanFile(file);
+                    }
                     e.target.value = ''; // Reset để có thể chọn lại cùng 1 file nếu cần
                 });
                 if (btnRotateScanLeft) {
@@ -3630,6 +3713,17 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 modal.style.display = 'none';
             }
 
+            function capturePhotoIsUserFacing(video) {
+                try {
+                    const tracks = video.srcObject && video.srcObject.getVideoTracks && video.srcObject.getVideoTracks();
+                    const t = tracks && tracks[0];
+                    const s = t && t.getSettings && t.getSettings();
+                    return !!(s && s.facingMode === 'user');
+                } catch (e) {
+                    return false;
+                }
+            }
+
             function capturePhoto() {
                 const video = document.getElementById('cameraStream');
                 const canvas = document.getElementById('captureCanvas');
@@ -3638,6 +3732,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 // Thiết lập kích thước chuẩn theo video
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+                // Camera trước (user) thường mirror — lật ngang để chữ không bị ngược
+                if (capturePhotoIsUserFacing(video)) {
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                }
                 ctx.drawImage(video, 0, 0);
 
                 // Xuất ảnh Base64
@@ -3647,7 +3746,8 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 const newFile = dataURLtoFile(dataUrl, `capture_${Date.now()}.jpg`);
                 scanFiles.push({
                     file: newFile,
-                    rotation: 0
+                    rotation: 0,
+                    exifOffset: 0
                 });
 
                 // Hiện nút "Xong"
@@ -3799,6 +3899,85 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 return x;
             }
 
+            /** Góc hiển thị / xuất file = xoay tay + bù EXIF ảnh chụp điện thoại */
+            function effectiveScanRotationDeg(item) {
+                if (!item) return 0;
+                return normalizeRotationDeg((item.rotation || 0) + (item.exifOffset || 0));
+            }
+
+            /** Đọc EXIF Orientation (1–8) từ JPEG, không cần thư viện ngoài */
+            async function getJpegExifOrientation(file) {
+                if (!file || typeof file.slice !== 'function') return 1;
+                const name = (file.name || '').toLowerCase();
+                const mime = (file.type || '').toLowerCase();
+                if (!mime.includes('jpeg') && !name.endsWith('.jpg') && !name.endsWith('.jpeg')) return 1;
+                try {
+                    const buf = await file.slice(0, 131072).arrayBuffer();
+                    const u = new Uint8Array(buf);
+                    const dv = new DataView(buf);
+                    if (u.length < 4 || u[0] !== 0xff || u[1] !== 0xd8) return 1;
+                    let pos = 2;
+                    while (pos < u.length - 4) {
+                        if (u[pos] !== 0xff) { pos++; continue; }
+                        const marker = u[pos + 1];
+                        if (marker === 0xd9) break;
+                        const segLen = dv.getUint16(pos + 2, false);
+                        if (segLen < 2 || pos + 2 + segLen > u.length) break;
+                        if (marker === 0xe1) {
+                            const exifStart = pos + 4;
+                            if (exifStart + 6 <= u.length &&
+                                u[exifStart] === 0x45 && u[exifStart + 1] === 0x78 && u[exifStart + 2] === 0x69 && u[exifStart + 3] === 0x66 &&
+                                u[exifStart + 4] === 0 && u[exifStart + 5] === 0) {
+                                const tiff = exifStart + 6;
+                                if (tiff + 8 > u.length) break;
+                                const le = u[tiff] === 0x49 && u[tiff + 1] === 0x49;
+                                const bom = dv.getUint16(tiff, false);
+                                if (bom !== 0x4949 && bom !== 0x4d4d) break;
+                                const ifd0Off = dv.getUint32(tiff + 4, le);
+                                const ifd0 = tiff + ifd0Off;
+                                if (ifd0 + 2 > u.length) break;
+                                const numEntries = dv.getUint16(ifd0, le);
+                                for (let e = 0; e < numEntries; e++) {
+                                    const ent = ifd0 + 2 + e * 12;
+                                    if (ent + 12 > u.length) break;
+                                    if (dv.getUint16(ent, le) === 0x0112) {
+                                        const val = dv.getUint16(ent + 8, le);
+                                        return Math.min(8, Math.max(1, val));
+                                    }
+                                }
+                            }
+                        }
+                        pos += 2 + segLen;
+                    }
+                    return 1;
+                } catch (err) {
+                    return 1;
+                }
+            }
+
+            function exifOrientationToOffsetDeg(exifTag) {
+                switch (exifTag) {
+                    case 3: return 180;
+                    case 6: return 90;
+                    case 8: return 270;
+                    default: return 0;
+                }
+            }
+
+            async function docSegOnnxUrlReachable(url) {
+                try {
+                    let r = await fetch(url, { method: 'HEAD', cache: 'force-cache' });
+                    if (r.ok) return true;
+                    if (r.status === 405 || r.status === 501) {
+                        r = await fetch(url, { headers: { Range: 'bytes=0-0' }, cache: 'force-cache' });
+                        return r.ok || r.status === 206;
+                    }
+                    return false;
+                } catch (e) {
+                    return false;
+                }
+            }
+
             function hideScanApiError() {
                 if (scanApiErrorBanner) scanApiErrorBanner.classList.remove('visible');
             }
@@ -3901,33 +4080,18 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     btnDownloadResult.onclick = function () {
                         const link = document.createElement('a');
                         link.href = currentScanResultUrl;
-                        link.download = 'scan_document.pdf'; // Đổi sang đuôi .pdf nếu server trả về pdf
+                        link.download = 'scan_document.pdf'; 
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
                     };
 
                 } catch (error) {
-                    console.error("Lỗi xử lý danh sách ảnh:", error);
                     if (typeof showLoading === 'function') showLoading(false);
-                    const msg = (error && error.message) ? String(error.message) : '';
-                    const isNetwork =
-                        msg === 'Failed to fetch' ||
-                        msg.indexOf('NetworkError') !== -1 ||
-                        msg.indexOf('Load failed') !== -1 ||
-                        msg.indexOf('Network request failed') !== -1 ||
-                        (error && error.name === 'TypeError');
-                    if (isNetwork) {
-                        showScanApiError(
-                            'Dịch vụ tạo PDF từ ảnh đang bận hoặc chưa sẵn sàng',
-                            'Không thể xử lý ảnh ngay lúc này. Vui lòng chờ giây lát rồi thử lại.'
-                        );
-                    } else {
-                        showScanApiError(
-                            'Xử lý scan thất bại',
-                            'Đã xảy ra lỗi khi tạo PDF. Vui lòng thử lại.'
-                        );
-                    }
+                    showScanApiError(
+                        'Không thể xử lý ảnh',
+                        'Vui lòng thử lại.'
+                    );
                 }
             }
 
@@ -3938,12 +4102,11 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     img.onload = () => {
                         const tempCanvas = document.createElement('canvas');
                         const tempCtx = tempCanvas.getContext('2d');
-                        const rad = (item.rotation * Math.PI) / 180;
+                        const rad = (effectiveScanRotationDeg(item) * Math.PI) / 180;
                         const c = Math.abs(Math.cos(rad));
                         const s = Math.abs(Math.sin(rad));
                         tempCanvas.width = Math.max(1, Math.round(img.width * c + img.height * s));
                         tempCanvas.height = Math.max(1, Math.round(img.width * s + img.height * c));
-
                         tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
                         tempCtx.rotate(rad);
                         tempCtx.drawImage(img, -img.width / 2, -img.height / 2);
@@ -4012,13 +4175,18 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 if (typeof showToast === 'function') showToast("Đã làm mới hoàn toàn!");
             }
 
+
+
+
             async function runAutoDetectAndCrop() {
                 const canvas = document.getElementById('scanCanvas');
 
                 // Show preview that we're processing
                 showLoading(true, 'Đang quét AI...');
 
-                // Run async detection (AI first, then edge detection, then fallback)
+
+
+                // AI first, then edge detection, then fallback
                 const corners = await detectDocumentCorners(canvas);
 
                 if (corners) {
@@ -4410,11 +4578,13 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                 runAutoDetectAndCrop();
             }
 
-            function handleScanFile(file) {
-                // 1. Thêm file mới vào danh sách VỚI GÓC XOAY MẶC ĐỊNH LÀ 0
+            async function handleScanFile(file) {
+                const exifTag = await getJpegExifOrientation(file);
+                const exifOffset = exifOrientationToOffsetDeg(exifTag);
                 scanFiles.push({
                     file: file,
-                    rotation: 0 // Thêm thuộc tính này để quản lý góc xoay
+                    rotation: 0,
+                    exifOffset
                 });
                 
                 // 2. Vẽ lại danh sách Thumbnail
@@ -4444,7 +4614,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     img.src = URL.createObjectURL(item.file);
                     
                     // THÊM: Xoay luôn cái thumbnail cho khớp với góc bạn đã chỉnh
-                    img.style.transform = `rotate(${item.rotation}deg)`;
+                    img.style.transform = `rotate(${effectiveScanRotationDeg(item)}deg)`;
                     
                     img.className = `scan-thumb ${index === currentActiveIndex ? 'active' : ''}`;
                     img.onclick = () => selectScanImage(index);
@@ -4506,15 +4676,16 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
             function refreshCurrentScanCanvasFromRotation() {
                 if (currentActiveIndex < 0) return;
                 const item = scanFiles[currentActiveIndex];
+                const rotEff = effectiveScanRotationDeg(item);
                 if (currentScanDataUrl) {
-                    handleScanImagePreview(currentScanDataUrl, item.rotation);
+                    handleScanImagePreview(currentScanDataUrl, rotEff);
                     renderScanThumbnails();
                     return;
                 }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     currentScanDataUrl = e.target.result;
-                    handleScanImagePreview(e.target.result, item.rotation);
+                    handleScanImagePreview(e.target.result, rotEff);
                     renderScanThumbnails();
                 };
                 reader.readAsDataURL(item.file);
@@ -4555,7 +4726,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
                     currentScanDataUrl = e.target.result;
                     fileData.rotation = normalizeRotationDeg(fileData.rotation);
                     syncScanRotationUI(fileData.rotation);
-                    handleScanImagePreview(e.target.result, fileData.rotation);
+                    handleScanImagePreview(e.target.result, effectiveScanRotationDeg(fileData));
                 };
 
                 // 4. FIX LỖI: Truyền fileData.file (đối tượng Blob/File thực sự)
@@ -5647,6 +5818,8 @@ CHỈ TRẢ VỀ JSON, KHÔNG GIẢI THÍCH, KHÔNG MỞ ĐẦU/KẾT THÚC.`;
 
                 showToast('Đã xuất ảnh!');
             };
+
+
         </script>
 
         <!-- Chatbot UI for PDF Tool -->

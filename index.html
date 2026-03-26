@@ -9,7 +9,6 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <!-- Security: Disable DevTools as early as possible -->
-  <!-- TEMPORARILY DISABLED FOR TESTING -->
   <script>
     // Silence Tailwind production warning
     const _warn = console.warn;
@@ -18,15 +17,13 @@
       _warn.apply(console, args);
     };
   </script>
+  <script src="/security.js"></script>
   <script src="lunar.js"></script>
   
   <!-- Server-side security config injection -->
   <script>
     window.SERVER_SECURITY_CONFIG = /*INJECT_SECURITY_CONFIG*/null/*END_INJECT*/;
   </script>
-  
-  <!-- Disable DevTools - Server Controlled -->
-  <script src="/security.js"></script>
   
   <title>Đông Mai Số - Hành chính phục vụ</title>
 
