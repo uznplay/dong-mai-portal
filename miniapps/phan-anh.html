@@ -76,13 +76,14 @@
 
                 <div class="form-group">
                     <label class="form-label">Hình ảnh/Video đính kèm</label>
-                    <div
-                        class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
-                        <i data-lucide="image-plus" class="mx-auto text-gray-400 mb-2"
+                    <div id="dropzone"
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-red-500 transition-colors cursor-pointer bg-gray-50 flex flex-col items-center justify-center min-h-[120px]">
+                        <i data-lucide="image-plus" class="text-gray-400 mb-2"
                             style="width: 32px; height: 32px;"></i>
-                        <p class="text-sm text-gray-500">Nhấn để tải lên hình ảnh hoặc video minh chứng</p>
-                        <input type="file" class="hidden" multiple accept="image/*,video/*">
+                        <p class="text-sm text-gray-500" id="file-status">Nhấn để tải lên hình ảnh hoặc video minh chứng</p>
+                        <input type="file" id="fileInput" class="hidden" multiple accept="image/*,video/*">
                     </div>
+                    <div id="file-list" class="mt-2 space-y-1"></div>
                 </div>
 
                 <div class="border-t border-gray-200 my-6 pt-6">
@@ -142,6 +143,34 @@
 
     <script src="common.js"></script>
     <script>
+        // File Upload Logic
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('file-list');
+        const fileStatus = document.getElementById('file-status');
+
+        dropzone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            const files = Array.from(this.files);
+            if (files.length > 0) {
+                fileStatus.textContent = `Đã chọn ${files.length} tệp`;
+                fileList.innerHTML = files.map(f => `
+                    <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-100 p-2 rounded-lg">
+                        <i data-lucide="file" class="w-3 h-3"></i>
+                        <span class="truncate flex-1">${f.name}</span>
+                        <span class="text-gray-400">(${(f.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } else {
+                fileStatus.textContent = 'Nhấn để tải lên hình ảnh hoặc video minh chứng';
+                fileList.innerHTML = '';
+            }
+        });
+
         document.getElementById('feedbackForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
